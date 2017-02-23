@@ -31,6 +31,15 @@ int main()
 	i = sol_fa_rule_inspect(r1);
 	printf("rule for 3 & c is: %s", i);
 	sol_dfa_free_inspect(i);
+
+	SolDfa *dfa = sol_dfa_new(book, 1, 3);
+	SOL_FA_STATE s1 = sol_dfa_read_character(dfa, 'a');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'a',  s1, sol_dfa_is_accepting(dfa));
+	s1 = sol_dfa_read_character(dfa, 'b');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'b',  s1, sol_dfa_is_accepting(dfa));
+	s1 = sol_dfa_read_character(dfa, 'c');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'c',  s1, sol_dfa_is_accepting(dfa));
+
 	sol_dfa_rule_book_release(book);
 	return 0;
 }

@@ -150,3 +150,38 @@ void sol_dfa_free_inspect(char *i)
 	sol_free(i);
 }
 
+SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state)
+{
+	SolDfa *dfa;
+	dfa = sol_alloc(sizeof(dfa));
+	if (dfa == NULL) {
+		return NULL;
+	}
+	dfa->rule_book = rule_book;
+	dfa->current_state = current_state;
+	dfa->accept_state = accept_state;
+	return dfa;
+}
+
+void sol_dfa_release(SolDfa *dfa)
+{
+	sol_dfa_rule_book_release(dfa->rule_book);
+	sol_free(dfa);
+}
+
+bool sol_dfa_is_accepting(SolDfa *dfa)
+{
+	if (dfa->current_state == dfa->accept_state) {
+		return true;
+	}
+	return false;
+}
+
+SOL_FA_STATE sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character)
+{
+	if (dfa == NULL || dfa->rule_book == NULL) {
+		return SOL_FA_STATE_NONE;
+	}
+	dfa->current_state = sol_dfa_rule_book_next_state(dfa->rule_book, dfa->current_state, character);
+	return dfa->current_state;
+}
