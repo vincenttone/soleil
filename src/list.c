@@ -94,7 +94,7 @@ vListIter *vListGetIterator(vList *list, enum VListDirection direction)
 	return iterator;
 }
 
-void vListRealseIterator(vListIter *iterator)
+void vListReleaseIterator(vListIter *iterator)
 {
 	free(iterator);
 }

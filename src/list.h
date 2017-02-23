@@ -33,7 +33,7 @@ vList *vListAddNode(vList *list, void *val, enum VListDirection direction);
 void vListDelNode(vList *list, vListNode *node);
 
 vListIter *vListGetIterator(vList *list, enum VListDirection direction);
-void vListRealseIterator(vListIter *iterator);
+void vListReleaseIterator(vListIter *iterator);
 void vListRewind(vList *list, vListIter *iterator);
 vListNode *vListNextNode(vListIter *iterator);
 
