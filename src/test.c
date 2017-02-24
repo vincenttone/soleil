@@ -41,5 +41,6 @@ int main()
 	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'c',  s1, sol_dfa_is_accepting(dfa));
 
 	sol_dfa_rule_book_release(book);
+	sol_dfa_release(dfa);
 	return 0;
 }
