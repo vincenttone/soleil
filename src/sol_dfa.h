@@ -38,7 +38,7 @@ SOL_FA_CHARACTER sol_fa_rule_character(SolFaRule *rule);
 bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character);
 char* sol_fa_rule_inspect(SolFaRule *rule);
 
-#define sol_fa_character_match_rule(r, c) (r->character == c)
+#define sol_fa_rule_character_match(r, c) (r->character == c)
 
 void sol_dfa_free_inspect(char *i);
 

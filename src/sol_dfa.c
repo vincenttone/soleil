@@ -22,7 +22,7 @@ void sol_destory_fa_rule(SolFaRule *rule)
 
 bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character)
 {
-	if (rule->state == state && sol_fa_character_match_rule(rule, character)) {
+	if (rule->state == state && sol_fa_rule_character_match(rule, character)) {
 		return true;
 	}
 	return false;
