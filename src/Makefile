@@ -4,8 +4,9 @@ VPATH :=libs
 
 all: sol_dfa.o list.o
 
-sol_dfa.o: sol_common.h sol_dfa.h
 list.o: list.h
+sol_fa.o: sol_common.h sol_fa.h
+sol_dfa.o: sol_common.h sol_dfa.h
 
 test:  sol_dfa.o list.o test.c
 	if [ ! -d output ]; then mkdir output; fi
