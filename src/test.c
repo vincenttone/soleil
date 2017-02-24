@@ -21,12 +21,14 @@ int main()
 	sol_dfa_rule_book_add_rule(book, rule5);
 	char *j = sol_dfa_rule_book_inspect(book);
 	printf("%s", j);
+	sol_dfa_free_inspect(j);
 	printf("next state of 1 & a -> %ld\n", sol_dfa_rule_book_next_state(book, 1, 'a'));
 	printf("next state of 1 & b -> %ld\n", sol_dfa_rule_book_next_state(book, 1, 'b'));
 	printf("next state of 2 & b -> %ld\n", sol_dfa_rule_book_next_state(book, 2, 'c'));
 	SolFaRule *r1 = sol_dfa_rule_book_rule_for(book, 2, 'c');
 	i = sol_fa_rule_inspect(r1);
 	printf("rule for 2 & c is: %s", i);
+	sol_dfa_free_inspect(i);
 	r1 = sol_dfa_rule_book_rule_for(book, 3, 'c');
 	i = sol_fa_rule_inspect(r1);
 	printf("rule for 3 & c is: %s", i);
@@ -42,7 +44,6 @@ int main()
 	sol_dfa_read_character(dfa, 'c');
 	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'c',  dfa->current_state, sol_dfa_is_accepting(dfa));
 
-	sol_dfa_rule_book_release(book);
 	sol_dfa_release(dfa);
 	return 0;
 }

@@ -45,7 +45,7 @@ SOL_FA_CHARACTER sol_fa_rule_character(SolFaRule *rule)
 
 char* sol_fa_rule_inspect(SolFaRule *rule)
 {
-	char* i = sol_alloc(sizeof(char) * SOL_FA_RULE_INS_LEN);
+	char *i = sol_alloc(sizeof(char) * SOL_FA_RULE_INS_LEN);
 	sprintf(i, "--FA: state <%ld> -> <%ld>, character: <%c>--\n",
 			rule->state, rule->next_state, rule->character);
 	return i;
@@ -58,6 +58,7 @@ SolDfaRuleBook* sol_dfa_rule_book_new()
 	SolList *rules;
 	rules = sol_alloc(sizeof(SolList));
 	sol_list_init(rules);
+	rules->free = (void*)sol_destory_fa_rule;
 	book->rules = rules;
 	SolListIter *iter = sol_list_get_iterator(rules);
 	book->iter = iter;
@@ -68,17 +69,6 @@ void sol_dfa_rule_book_release(SolDfaRuleBook *book)
 {
 	if (book == NULL) {
 		return;
-	}
-	SolFaRule *rule;
-	SolListNode *node;
-	sol_list_rewind(book->rules, book->iter);
-	for (;;) {
-		node = sol_list_next_node(book->iter);
-		if (node == NULL) {
-			break;
-		}
-		rule = node->val;
-		sol_destory_fa_rule(rule);
 	}
 	sol_list_release(book->rules);
 	sol_list_release_iterator(book->iter);
@@ -127,9 +117,9 @@ char *sol_dfa_rule_book_inspect(SolDfaRuleBook *book)
 	SolListNode *node;
 	unsigned count = sol_dfa_rule_book_len(book);
 	unsigned len = SOL_FA_RULE_INS_LEN * count;
-	char *i = sol_alloc(sizeof(char) * len + 13);
+	char *i = sol_calloc(len + 13, sizeof(char));
 	strcat(i, "DFA rulebook:\n");
-	char *ir = sol_alloc(sizeof(char) * SOL_FA_RULE_INS_LEN);
+	char *ir;
 	sol_list_rewind(book->rules, book->iter);
 	for (;;) {
 		node = sol_list_next_node(book->iter);
@@ -139,8 +129,8 @@ char *sol_dfa_rule_book_inspect(SolDfaRuleBook *book)
 		rule = node->val;
 		ir = sol_fa_rule_inspect(rule);
 		strcat(i, ir);
+		sol_free(ir);
 	}
-	sol_free(ir);
 	return i;
 }
 
@@ -152,7 +142,7 @@ void sol_dfa_free_inspect(char *i)
 SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state)
 {
 	SolDfa *dfa;
-	dfa = sol_alloc(sizeof(dfa));
+	dfa = sol_alloc(sizeof(SolDfa));
 	if (dfa == NULL) {
 		return NULL;
 	}

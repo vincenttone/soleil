@@ -23,7 +23,7 @@ void vListRelease(vList *list)
 	if (current != NULL) {
 		while (len--) {
 			next = current->next;
-			if (list->free) list->free(current->val);
+			if (list->free) (*list->free)(current->val);
 			if (current != NULL) free(current);
 			current = next;
 		}
@@ -73,7 +73,7 @@ void vListDelNode(vList *list, vListNode *node)
 		list->tail = node->pre;
 	}
 	if (list->free) {
-		list->free(node->val);
+		(*list->free)(node->val);
 	}
 	free(node);
 }
