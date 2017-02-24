@@ -2,9 +2,11 @@
 #define _SOL_DFA_H_ 1
 
 #include <stdbool.h>
+#include <string.h>
 #include "sol_common.h"
 
 #define SOL_FA_CHARACTER char
+#define SOL_FA_STRING char*
 #define SOL_FA_STATE unsigned long
 
 #define SOL_FA_STATE_NONE 0
@@ -24,8 +26,8 @@ typedef struct SolFaRuleBook {
 
 typedef struct SolDfa {
 	SolDfaRuleBook *rule_book;
-	SOL_FA_STATE *current_state;
-	SOL_FA_STATE *accept_state;
+	SOL_FA_STATE current_state;
+	SOL_FA_STATE accept_state;
 } SolDfa;
 
 SolFaRule* sol_new_fa_rule(SOL_FA_STATE state, SOL_FA_STATE next_state, SOL_FA_CHARACTER character);
@@ -36,13 +38,15 @@ SOL_FA_CHARACTER sol_fa_rule_character(SolFaRule *rule);
 bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character);
 char* sol_fa_rule_inspect(SolFaRule *rule);
 
+#define sol_fa_character_match_rule(r, c) (r->character == c)
+
 void sol_dfa_free_inspect(char *i);
 
-#define __sol_debug_print_fa_rule(r) do{ \
-		char *__debug_i;\
-		__debug_i = sol_fa_rule_inspect(r);\
-		printf("DEBUG: %s", __debug_i);		   \
-		sol_dfa_free_inspect(__debug_i);\
+#define __sol_debug_print_fa_rule(r) do{		\
+		char *__debug_i;						\
+		__debug_i = sol_fa_rule_inspect(r);		\
+		printf("DEBUG: %s", __debug_i);			\
+		sol_dfa_free_inspect(__debug_i);		\
 }while(0)
 
 SolDfaRuleBook* sol_dfa_rule_book_new();
@@ -58,6 +62,6 @@ char *sol_dfa_rule_book_inspect(SolDfaRuleBook *book);
 SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state);
 void sol_dfa_release(SolDfa *dfa);
 bool sol_dfa_is_accepting(SolDfa *dfa);
-SOL_FA_STATE sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character);
+void sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character);
 
 #endif

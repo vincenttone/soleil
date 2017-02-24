@@ -33,12 +33,14 @@ int main()
 	sol_dfa_free_inspect(i);
 
 	SolDfa *dfa = sol_dfa_new(book, 1, 3);
-	SOL_FA_STATE s1 = sol_dfa_read_character(dfa, 'a');
-	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'a',  s1, sol_dfa_is_accepting(dfa));
-	s1 = sol_dfa_read_character(dfa, 'b');
-	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'b',  s1, sol_dfa_is_accepting(dfa));
-	s1 = sol_dfa_read_character(dfa, 'c');
-	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'c',  s1, sol_dfa_is_accepting(dfa));
+	sol_dfa_read_character(dfa, 'a');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'a',  dfa->current_state, sol_dfa_is_accepting(dfa));
+	sol_dfa_read_character(dfa, 'c');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'c',  dfa->current_state, sol_dfa_is_accepting(dfa));
+	sol_dfa_read_character(dfa, 'b');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'b',  dfa->current_state, sol_dfa_is_accepting(dfa));
+	sol_dfa_read_character(dfa, 'c');
+	printf("DFA input <%c>, state now is: %ld accepting? <%d>\n", 'c',  dfa->current_state, sol_dfa_is_accepting(dfa));
 
 	sol_dfa_rule_book_release(book);
 	sol_dfa_release(dfa);

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 #include "sol_dfa.h"
 
@@ -23,7 +22,7 @@ void sol_destory_fa_rule(SolFaRule *rule)
 
 bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character)
 {
-	if (rule->state == state && rule->character == character) {
+	if (rule->state == state && sol_fa_character_match_rule(rule, character)) {
 		return true;
 	}
 	return false;
@@ -177,11 +176,13 @@ bool sol_dfa_is_accepting(SolDfa *dfa)
 	return false;
 }
 
-SOL_FA_STATE sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character)
+void sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character)
 {
 	if (dfa == NULL || dfa->rule_book == NULL) {
-		return SOL_FA_STATE_NONE;
+		return;
 	}
-	dfa->current_state = sol_dfa_rule_book_next_state(dfa->rule_book, dfa->current_state, character);
-	return dfa->current_state;
+	SOL_FA_STATE s = sol_dfa_rule_book_next_state(dfa->rule_book, dfa->current_state, character);
+	if (s != SOL_FA_STATE_NONE) {
+		dfa->current_state = s;
+	}
 }
