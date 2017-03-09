@@ -3,12 +3,20 @@
 
 #include "sol_common.h"
 
-typedef struct NfaRules {
-	SolList *rules;
-} NfaRules;
+#define SolStateSet SolList;
 
-typedef struct NfaRulesBook {
+typedef struct SolNfaRuleBook {
 	SolList *rules;
-} NfaRulesBook;
+} SolNfaRuleBook;
+
+typedef struct SolNfa {
+	SolNfaRuleBook *book;
+	SolStateSet *current_state;
+	SolStateSet *accept_states;
+} SolNfa;
+
+SolNfaRuleBook* sol_nfa_rule_book_new();
+sol_nfa_rule_book_add_rule(SolNfaRuleBook*, SOL_FA_STATE, SOL_FA_STATE, SOL_FA_CHARACTER);
+
 
 #endif
