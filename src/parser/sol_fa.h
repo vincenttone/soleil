@@ -32,7 +32,7 @@ void sol_fa_free_inspect(char *i);
 		char *__debug_i;						\
 		__debug_i = sol_fa_rule_inspect(r);		\
 		printf("DEBUG: %s", __debug_i);			\
-		sol_dfa_free_inspect(__debug_i);		\
+		sol_fa_free_inspect(__debug_i);			\
 }while(0)
 
 #define sol_fa_rule_character_match(r, c) (r->character == c)
