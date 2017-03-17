@@ -5,9 +5,7 @@ VPATH :=../basekit:test
 all: sol_dfa.o
 
 sol_fa.o: sol_fa.c sol_common.h list.o
-	$(CC) $(CFLAGS) -c $<
 sol_dfa.o: sol_dfa.c sol_common.h sol_fa.o list.o
-	$(CC) $(CFLAGS) -c $<
 test: test_dfa.c sol_dfa.o sol_fa.o list.o
 	if [ ! -d output ]; then mkdir output; fi
 	$(CC) $(CFLAGS) -o output/$@ $^
