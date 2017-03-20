@@ -6,6 +6,7 @@
 #define sol_alloc malloc
 #define sol_calloc calloc
 #define sol_free free
+#define sol_realloc realloc
 
 #include "list.h"
 #define SolList vList
