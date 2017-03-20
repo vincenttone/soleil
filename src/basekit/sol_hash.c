@@ -6,7 +6,7 @@ SolHash *sol_hash_new()
 	if (hash == NULL) {
 		return NULL;
 	}
-	if (sol_hash_set_size(*hash, SOL_HASH_INIT_SIZE)) {
+	if (sol_hash_set_size(hash, SOL_HASH_INIT_SIZE)) {
 		return NULL;
 	}
 	return hash;
@@ -18,22 +18,16 @@ void sol_hash_free(SolHash *hash)
 	sol_free(hash);
 }
 
-void sol_hash_records_free(SolHashRecords *records)
+void sol_hash_records_free(SolHashRecord *records)
 {
 	sol_free(records);
 }
 
 int sol_hash_set_size(SolHash *hash, size_t size)
 {
-	hash->records = sol_realloc(hash->records, size * sizeof(SolHashRecord));
+	hash->records = sol_calloc(1, size * sizeof(SolHashRecord));
 	if (hash->records == NULL) {
 		return 1;
-	}
-	if (size > hash->size) {
-		memset(hash->records + size * sizeof(SolHashRecord),
-			   0x0,
-			   (size - hash->size) * sizeof(SolHashRecord)
-			   );
 	}
 	hash->size = size;
 	sol_hash_update_mask(hash);
@@ -45,17 +39,17 @@ void sol_hash_update_mask(SolHash *hash)
 	hash->mask = hash->size -1;
 }
 
-void sol_hash_set_hash_func1(SolHash *hash, SolHashFunc *f)
+void sol_hash_set_hash_func1(SolHash *hash, SolHashFunc f)
 {
 	hash->hash_func1 = f;
 }
 
-void sol_hash_set_hash_func2(SolHash *hash, SolHashFunc *f)
+void sol_hash_set_hash_func2(SolHash *hash, SolHashFunc f)
 {
 	hash->hash_func2 = f;
 }
 
-void sol_hash_set_equal_func(SolHash *hash, SolHashEqualFunc *f)
+void sol_hash_set_equal_func(SolHash *hash, SolHashEqualFunc f)
 {
 	hash->equal_func = f;
 }
@@ -68,11 +62,11 @@ size_t sol_hash_count(SolHash *hash)
 void* sol_hash_find_value(SolHash *hash, void *k)
 {
 	SolHashRecord *r1 = sol_hash_record1_of_key(hash, k);
-	if (r1->k != 0x0 && hash->equal_func(k, r1->k)) {
+	if (r1->k != 0x0 && hash->equal_func(k, r1->k) == 0) {
 		return r1->v;
 	}
 	SolHashRecord *r2 = sol_hash_record2_of_key(hash, k);
-	if (r2->k != 0x0 && hash->equal_func(k, r2->k)) {
+	if (r2->k != 0x0 && hash->equal_func(k, r2->k) == 0) {
 		return r1->v;
 	}
 	return NULL;
@@ -88,21 +82,21 @@ int sol_hash_put_key_and_val(SolHash *hash, void *k, void *v)
 	SolHashRecord* r;
 	r = sol_hash_record1_of_key(hash, k);
 	if (r->k == 0x0) {
-		sol_hash_record_set_key_and_value(r, k, v);
+		sol_hash_record_set_key_and_val(r, k, v);
 		hash->count++;
 		return 0;
 	}
-	if (hash->equal_func(k, hash->k)) {
+	if (hash->equal_func(k, r->k)) {
 		r->v = v;
 		return 0;
 	}
 	r = sol_hash_record2_of_key(hash, k);
 	if (r->k == 0x0) {
-		sol_hash_record_set_key_and_value(r, k, v);
+		sol_hash_record_set_key_and_val(r, k, v);
 		hash->count++;
 		return 0;
 	}
-	if (hash->equal_func(k, hash->k)) {
+	if (hash->equal_func(k, r->k)) {
 		r->v = v;
 		return 0;
 	}
@@ -114,21 +108,21 @@ int sol_hash_put_key_and_val(SolHash *hash, void *k, void *v)
 int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 {
 	int i = 0;
-	SolHashRecord r, record;
-	record.k = k;
-	record.v = v;
+	SolHashRecord *r, *record;
+	record->k = k;
+	record->v = v;
 	for (i; i < SOL_HASH_UPGRADE_LIMIT; i++) {
 		r = sol_hash_record1_of_key(hash, k);
 		sol_hash_record_switch(r, record);
 		if (r->k == 0x0) {
-			sol_hash_record_set_key_and_value(r, k, v);
+			sol_hash_record_set_key_and_val(r, k, v);
 			hash->count++;
 			return 0;
 		}
-		r = sol_hash_record2_of_key(hash, r1->k);
+		r = sol_hash_record2_of_key(hash, r->k);
 		sol_hash_record_switch(r, record);
 		if (r->k == 0x0) {
-			sol_hash_record_set_key_and_value(r, k, v);
+			sol_hash_record_set_key_and_val(r, k, v);
 			hash->count++;
 			return 0;
 		}
@@ -144,7 +138,7 @@ int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 
 int sol_hash_resize(SolHash *hash, size_t size)
 {
-	SolHashRecords *records = hash->records;
+	SolHashRecord *records = hash->records;
 	size_t old_size = hash->size;
 	int loop_limit = SOL_HASH_RESIZE_MAX_LOOP;
 	hash->is_resizing = 1;
