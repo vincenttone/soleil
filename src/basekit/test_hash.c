@@ -36,7 +36,14 @@ int main()
 	sol_hash_put_key_and_val(hash, "key1", "value1");
 	sol_hash_put_key_and_val(hash, "key2", "value2");
 	sol_hash_put_key_and_val(hash, "key3", "value3");
+	sol_hash_put_key_and_val(hash, "key4", "value4");
+	sol_hash_put_key_and_val(hash, "key5", "value5");
+	sol_hash_put_key_and_val(hash, "key6", "value6");
+	sol_hash_put_key_and_val(hash, "key7", "value7");
+	sol_hash_put_key_and_val(hash, "key8", "value8");
+	sol_hash_put_key_and_val(hash, "key9", "value9");
 	printf("count is %d\n", (int)sol_hash_count(hash));
+	printf("hash size is %d\n", (int)hash->size);
 	printf("value of key1 is %s\n", (char*)sol_hash_find_value(hash, "key1"));
 	printf("value of key2 is %s\n", (char*)sol_hash_find_value(hash, "key2"));
 	printf("value of key3 is %s\n", (char*)sol_hash_find_value(hash, "key3"));
