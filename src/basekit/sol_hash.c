@@ -1,6 +1,6 @@
 #include "sol_hash.h"
 
-SolHash *sol_hash_new()
+SolHash* sol_hash_new()
 {
 	SolHash *hash = sol_calloc(1, sizeof(SolHash));
 	if (hash == NULL) {
