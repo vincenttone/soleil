@@ -82,6 +82,7 @@ int sol_hash_put_key_and_val(SolHash *hash, void *k, void *v)
 	SolHashRecord* r;
 	r = sol_hash_record1_of_key(hash, k);
 	if (r->k == NULL) {
+		SOL_HASH_record_extend(r);
 		r->k = k;
 		r->v = v;
 		hash->count++;
@@ -93,6 +94,7 @@ int sol_hash_put_key_and_val(SolHash *hash, void *k, void *v)
 	}
 	r = sol_hash_record2_of_key(hash, k);
 	if (r->k == NULL) {
+		SOL_HASH_record_extend(r);
 		r->k = k;
 		r->v = v;
 		hash->count++;
@@ -103,7 +105,7 @@ int sol_hash_put_key_and_val(SolHash *hash, void *k, void *v)
 		return 0;
 	}
 	// no place to put
-	// optimizing and resize
+	// adjust and resize
 	return sol_hash_try_to_put(hash, k, v);
 }
 
@@ -118,6 +120,7 @@ int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 		r = sol_hash_record1_of_key(hash, k);
 		// try to put record
 		if (r->k == NULL) {
+			SOL_HASH_record_extend(r);
 			r->k = k;
 			r->v = v;
 			hash->count++;
@@ -129,6 +132,7 @@ int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 		// second hash step
 		r = sol_hash_record2_of_key(hash, rs.k);
 		if (r->k == NULL) {
+			SOL_HASH_record_extend(r);
 			r->k = rs.k;
 			r->v = rs.v;
 			hash->count++;
@@ -139,7 +143,7 @@ int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 	if (hash->is_resizing) {
 		return 1;
 	}
-	if (sol_hash_grow(hash)) {
+	if (SOL_HASH_grow(hash)) {
 		return 1;
 	}
 	return sol_hash_put_key_and_val(hash, rs.k, rs.v);
@@ -180,7 +184,7 @@ inline int sol_hash_add_records(SolHash *hash, SolHashRecord *records, size_t si
 	SolHashRecord *r;
 	size_t offset = 0;
 	for (offset; offset < size; offset++) {
-		r = sol_hash_record_at_offset(records, offset);
+		r = SOL_HASH_record_at_offset(records, offset);
 		if (r->k) {
 			if (sol_hash_put_key_and_val(hash, r->k, r->v)) {
 				return 1;
@@ -200,12 +204,51 @@ inline void sol_hash_record_switch(SolHashRecord *r1, SolHashRecord *r2)
 inline SolHashRecord* sol_hash_record1_of_key(SolHash *hash, void *k)
 {
 	size_t offset = (hash->hash_func1(k) & hash->mask);
-	return sol_hash_record_at_offset(hash->records, offset);
+	return SOL_HASH_record_at_offset(hash->records, offset);
 }
 
 inline SolHashRecord* sol_hash_record2_of_key(SolHash *hash, void *k)
 {
 	size_t offset = (hash->hash_func2(k) & hash->mask);
-	SolHashRecord *record = sol_hash_record_at_offset(hash->records, offset);
+	SolHashRecord *record = SOL_HASH_record_at_offset(hash->records, offset);
 	return record;
+}
+
+SolHashIter* sol_hash_iter_new(SolHash *hash)
+{
+	SolHashIter *iter = sol_alloc(sizeof(SolHashIter));
+	if (iter == NULL) {
+		return NULL;
+	}
+	iter->hash = hash;
+	sol_hash_iter_rewind(iter);
+	return iter;
+}
+
+void sol_hash_iter_free(SolHashIter *iter)
+{
+	sol_free(iter);
+}
+
+SolHashRecord* sol_hash_iter_current_record(SolHashIter *iter)
+{
+	return iter->record;
+}
+
+void sol_hash_iter_rewind(SolHashIter *iter)
+{
+	iter->record = iter->hash->records;
+	iter->num = 1;
+}
+
+SolHashRecord* sol_hash_iter_next(SolHashIter *iter)
+{
+	if (iter->num++ < iter->hash->size) {
+		iter->record++;
+		if (iter->record->k) {
+			return iter->record;
+		}
+		return NULL;
+	}
+	return NULL;
 }

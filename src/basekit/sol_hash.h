@@ -7,8 +7,9 @@
 #define SOL_HASH_UPGRADE_LIMIT 5
 #define SOL_HASH_RESIZE_MAX_LOOP 100
 
-#define sol_hash_record_at_offset(r, o) (SolHashRecord*)(r + o * sizeof(SolHashRecord))
-#define sol_hash_grow(h) sol_hash_resize(h, h->size * 2)
+#define SOL_HASH_record_at_offset(r, o) (SolHashRecord*)(r + o)
+#define SOL_HASH_grow(h) sol_hash_resize(h, h->size * 2)
+#define SOL_HASH_record_extend(r) //
 
 typedef size_t (*SolHashFunc)(void*);
 typedef int (*SolHashEqualFunc)(void*, void*);
@@ -29,6 +30,12 @@ typedef struct SolHash {
 	int is_resizing;
 } SolHash;
 
+typedef struct SolHashIter {
+	SolHash *hash;
+	SolHashRecord *record;
+	size_t num;
+} SolHashIter;
+
 SolHash* sol_hash_new();
 void sol_hash_free(SolHash*);
 int sol_hash_set_size(SolHash*, size_t);
@@ -41,6 +48,11 @@ size_t sol_hash_count(SolHash*);
 int sol_hash_has_key(SolHash*, void*);
 void* sol_hash_find_value(SolHash*, void *);
 
+SolHashIter* sol_hash_iter_new(SolHash*);
+void sol_hash_iter_free(SolHashIter*);
+void sol_hash_iter_rewind(SolHashIter*);
+SolHashRecord* sol_hash_iter_current_record(SolHashIter *iter);
+SolHashRecord* sol_hash_iter_next(SolHashIter*);
 
 void sol_hash_set_hash_func1(SolHash*, SolHashFunc);
 void sol_hash_set_hash_func2(SolHash*, SolHashFunc);

@@ -47,5 +47,20 @@ int main()
 	printf("value of key1 is %s\n", (char*)sol_hash_find_value(hash, "key1"));
 	printf("value of key2 is %s\n", (char*)sol_hash_find_value(hash, "key2"));
 	printf("value of key3 is %s\n", (char*)sol_hash_find_value(hash, "key3"));
+	size_t i = 0;
+	SolHashRecord *r;
+	SolHashIter *iter = sol_hash_iter_new(hash);
+	do {
+		r = sol_hash_iter_current_record(iter);
+		if (r == NULL) {
+			printf("ITER GOT(%d):\tNULL\n", (int)i);
+		} else if (r->k == NULL) {
+			printf("ITER GOT(%d):\tempty data\n", (int)i);
+		} else {
+			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
+		}
+		sol_hash_iter_next(iter);
+	} while (i++ < hash->size);
+	sol_hash_iter_free(iter);
 	sol_hash_free(hash);
 }
