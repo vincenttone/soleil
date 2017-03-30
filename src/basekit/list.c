@@ -75,6 +75,7 @@ void vListDelNode(vList *list, vListNode *node)
 	if (list->free) {
 		(*list->free)(node->val);
 	}
+	list->len--;
 	free(node);
 }
 
