@@ -4,7 +4,6 @@
 #include "sol_common.h"
 
 #define SOL_HASH_INIT_SIZE 8
-#define SOL_HASH_UPGRADE_LIMIT 5
 #define SOL_HASH_RESIZE_MAX_LOOP 100
 
 #define SOL_HASH_record_at_offset(r, o) (SolHashRecord*)(r + o)

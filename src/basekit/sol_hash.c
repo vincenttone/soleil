@@ -111,11 +111,11 @@ int sol_hash_put_key_and_val(SolHash *hash, void *k, void *v)
 
 int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 {
-	int i = 0;
 	SolHashRecord *r, rs;
 	rs.k = k;
 	rs.v = v;
-	for (i; i < SOL_HASH_UPGRADE_LIMIT; i++) {
+	int i = 0;
+	for (; i < hash->size * 2; i++) {
 		// get conflict hash record
 		r = sol_hash_record1_of_key(hash, k);
 		// try to put record
@@ -183,7 +183,7 @@ inline int sol_hash_add_records(SolHash *hash, SolHashRecord *records, size_t si
 {
 	SolHashRecord *r;
 	size_t offset = 0;
-	for (offset; offset < size; offset++) {
+	for (; offset < size; offset++) {
 		r = SOL_HASH_record_at_offset(records, offset);
 		if (r->k) {
 			if (sol_hash_put_key_and_val(hash, r->k, r->v)) {

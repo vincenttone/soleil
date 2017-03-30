@@ -63,4 +63,5 @@ int main()
 	} while (i++ < hash->size);
 	sol_hash_iter_free(iter);
 	sol_hash_free(hash);
+	return 0;
 }
