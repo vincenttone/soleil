@@ -34,42 +34,26 @@ int sol_hash_set_size(SolHash *hash, size_t size)
 	return 0;
 }
 
-void sol_hash_update_mask(SolHash *hash)
+SolHashRecord* sol_hash_find_record_by_key(SolHash *hash, void *k)
 {
-	hash->mask = hash->size -1;
-}
-
-void sol_hash_set_hash_func1(SolHash *hash, SolHashFunc f)
-{
-	hash->hash_func1 = f;
-}
-
-void sol_hash_set_hash_func2(SolHash *hash, SolHashFunc f)
-{
-	hash->hash_func2 = f;
-}
-
-void sol_hash_set_equal_func(SolHash *hash, SolHashEqualFunc f)
-{
-	hash->equal_func = f;
-}
-
-size_t sol_hash_count(SolHash *hash)
-{
-	return hash->count;
+	SolHashRecord *r = sol_hash_record1_of_key(hash, k);
+	if (r->k != NULL && hash->equal_func(k, r->k) == 0) {
+		return r;
+	}
+	r = sol_hash_record2_of_key(hash, k);
+	if (r->k != NULL && hash->equal_func(k, r->k) == 0) {
+		return r;
+	}
+	return NULL;
 }
 
 void* sol_hash_find_value(SolHash *hash, void *k)
 {
-	SolHashRecord *r = sol_hash_record1_of_key(hash, k);
-	if (r->k != NULL && hash->equal_func(k, r->k) == 0) {
-		return r->v;
+	SolHashRecord *r = sol_hash_find_record_by_key(hash, k);
+	if (r == NULL) {
+		return NULL;
 	}
-	r = sol_hash_record2_of_key(hash, k);
-	if (r->k != NULL && hash->equal_func(k, r->k) == 0) {
-		return r->v;
-	}
-	return NULL;
+	return r->k;
 }
 
 int sol_hash_has_key(SolHash *hash, void *k)
@@ -147,6 +131,14 @@ int sol_hash_try_to_put(SolHash *hash, void *k, void *v)
 		return 1;
 	}
 	return sol_hash_put_key_and_val(hash, rs.k, rs.v);
+}
+
+void sol_hash_remove_by_key(SolHash *hash, void *k)
+{
+	SolHashRecord *r = sol_hash_find_record_by_key(hash, k);
+	if (r && r->k != NULL) {
+		r->k = NULL;
+	}
 }
 
 int sol_hash_resize(SolHash *hash, size_t size)
@@ -232,7 +224,10 @@ void sol_hash_iter_free(SolHashIter *iter)
 
 SolHashRecord* sol_hash_iter_current_record(SolHashIter *iter)
 {
-	return iter->record;
+	if (iter->record->k) {
+		return iter->record;
+	}
+	return NULL;
 }
 
 void sol_hash_iter_rewind(SolHashIter *iter)
@@ -241,14 +236,10 @@ void sol_hash_iter_rewind(SolHashIter *iter)
 	iter->num = 1;
 }
 
-SolHashRecord* sol_hash_iter_next(SolHashIter *iter)
+void sol_hash_iter_next(SolHashIter *iter)
 {
-	if (iter->num++ < iter->hash->size) {
+	if (iter->num < iter->hash->size) {
 		iter->record++;
-		if (iter->record->k) {
-			return iter->record;
-		}
-		return NULL;
+		iter->num++;
 	}
-	return NULL;
 }

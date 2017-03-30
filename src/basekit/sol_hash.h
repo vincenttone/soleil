@@ -38,12 +38,16 @@ typedef struct SolHashIter {
 SolHash* sol_hash_new();
 void sol_hash_free(SolHash*);
 int sol_hash_set_size(SolHash*, size_t);
-void sol_hash_update_mask(SolHash*);
 int sol_hash_try_to_put(SolHash*, void*, void*);
 int sol_hash_resize(SolHash*, size_t);
+SolHashRecord* sol_hash_find_record_by_key(SolHash*, void *);
+
+#define sol_hash_size(h) h->size
+#define sol_hash_count(h) h->count
+#define sol_hash_update_mask(h) h->mask = h->size - 1
 
 int sol_hash_put_key_and_val(SolHash*, void*, void*);
-size_t sol_hash_count(SolHash*);
+void sol_hash_remove_by_key(SolHash*, void*);
 int sol_hash_has_key(SolHash*, void*);
 void* sol_hash_find_value(SolHash*, void *);
 
@@ -51,11 +55,11 @@ SolHashIter* sol_hash_iter_new(SolHash*);
 void sol_hash_iter_free(SolHashIter*);
 void sol_hash_iter_rewind(SolHashIter*);
 SolHashRecord* sol_hash_iter_current_record(SolHashIter *iter);
-SolHashRecord* sol_hash_iter_next(SolHashIter*);
+void sol_hash_iter_next(SolHashIter*);
 
-void sol_hash_set_hash_func1(SolHash*, SolHashFunc);
-void sol_hash_set_hash_func2(SolHash*, SolHashFunc);
-void sol_hash_set_equal_func(SolHash*, SolHashEqualFunc);
+#define sol_hash_set_hash_func1(h, f) h->hash_func1 = f
+#define sol_hash_set_hash_func2(h, f) h->hash_func2 = f
+#define sol_hash_set_equal_func(h, f) h->equal_func = f
 
 inline void sol_hash_records_free(SolHashRecord*);
 inline SolHashRecord* sol_hash_record1_of_key(SolHash *hash, void *k);

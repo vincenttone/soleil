@@ -11,7 +11,7 @@ end
 define precords
   set $x = 0
   while ($x < $arg0)
-	set $record = (SolHashRecord*)($arg1 + $x * sizeof(SolHashRecord))
+	set $record = (SolHashRecord*)($arg1 + $x)
 	precord $record
 	set $x = $x + 1
   end

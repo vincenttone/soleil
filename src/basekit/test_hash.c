@@ -61,6 +61,21 @@ int main()
 		}
 		sol_hash_iter_next(iter);
 	} while (i++ < hash->size);
+	sol_hash_remove_by_key(hash, "key3");
+	printf("remove key key3");
+	sol_hash_iter_rewind(iter);
+	i = 0;
+	do {
+		r = sol_hash_iter_current_record(iter);
+		if (r == NULL) {
+			printf("ITER GOT(%d):\tNULL\n", (int)i);
+		} else if (r->k == NULL) {
+			printf("ITER GOT(%d):\tempty data\n", (int)i);
+		} else {
+			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
+		}
+		sol_hash_iter_next(iter);
+	} while (i++ < hash->size);
 	sol_hash_iter_free(iter);
 	sol_hash_free(hash);
 	return 0;

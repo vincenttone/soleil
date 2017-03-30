@@ -2,6 +2,9 @@
 #define _SOL_COMMON_H_ 1
 
 #include <stdlib.h>
+#include <stddef.h>
+
+#define SolNil NULL
 
 #define sol_alloc malloc
 #define sol_calloc calloc
