@@ -21,7 +21,7 @@ void solSet_free(SolSet*);
 #define solSet_count(s) sol_hash_count(s->hash)
 #define solSet_add(s, v) sol_hash_put_key_and_val(s->hash, v, SolNil)
 #define solSet_remove(s, v) sol_hash_remove_by_key(s->hash, v)
-#define solSet_has_value(s, v) sol_hash_has_key(s->hash, v)
+#define solSet_in_set(s, v) sol_hash_has_key(s->hash, v)
 
 void* solSet_get_value(SolSet*);
 
