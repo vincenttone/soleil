@@ -26,21 +26,6 @@ bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTE
 	return false;
 }
 
-SOL_FA_STATE sol_fa_rule_current_state(SolFaRule *rule)
-{
-	return rule->state;
-}
-
-SOL_FA_STATE sol_fa_rule_next_state(SolFaRule *rule)
-{
-	return rule->next_state;
-}
-
-SOL_FA_CHARACTER sol_fa_rule_character(SolFaRule *rule)
-{
-	return rule->character;
-}
-
 char* sol_fa_rule_inspect(SolFaRule *rule)
 {
 	char *i = sol_alloc(sizeof(char) * SOL_FA_RULE_INS_LEN);

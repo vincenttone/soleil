@@ -21,9 +21,11 @@ typedef struct SolFaRule {
 
 SolFaRule* sol_new_fa_rule(SOL_FA_STATE state, SOL_FA_STATE next_state, SOL_FA_CHARACTER character);
 void sol_destory_fa_rule(SolFaRule *rule);
-SOL_FA_STATE sol_fa_rule_current_state(SolFaRule *rule);
-SOL_FA_STATE sol_fa_rule_next_state(SolFaRule *rule);
-SOL_FA_CHARACTER sol_fa_rule_character(SolFaRule *rule);
+
+#define sol_fa_rule_current_state(r) r->state
+#define sol_fa_rule_next_state(r) r->next_state
+#define sol_fa_rule_character(r) r->character
+
 bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character);
 char* sol_fa_rule_inspect(SolFaRule *rule);
 void sol_fa_free_inspect(char *i);
