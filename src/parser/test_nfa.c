@@ -4,7 +4,7 @@
 
 int main()
 {
-	solNfa *nfa = solNfa_new();
+	SolNfa *nfa = solNfa_new();
 	solNfa_free(nfa);
 	return 0;
 }

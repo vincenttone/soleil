@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "sol_common.h"
+#include "sol_utils.h"
 #include "sol_fa.h"
 
 typedef struct SolDfaRuleBook {

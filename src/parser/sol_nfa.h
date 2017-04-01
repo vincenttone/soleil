@@ -4,10 +4,11 @@
 #include "sol_common.h"
 #include "sol_set.h"
 #include "sol_fa.h"
+#include "sol_utils.h"
 
 #define SolNfaStates SolSet
 
-#define solNfaStates_new solSet_for_char_new_and_init
+#define solNfaStates_new solSet_new_and_init
 #define solNfaStates_free solSet_free
 #define solNfaStates_add solSet_add
 #define solNfaStates_rewind solSet_rewind

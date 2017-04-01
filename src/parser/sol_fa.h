@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "sol_common.h"
+#include "sol_utils.h"
 
 #define SOL_FA_CHARACTER char
 #define SOL_FA_STRING char*
