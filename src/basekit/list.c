@@ -3,8 +3,9 @@
 
 vList *vListInit(vList *list)
 {
-	if (list == NULL) 
-		return NULL;
+	if (list == NULL) {
+		list = malloc(sizeof(vList));
+	}
 	list->head = NULL;
 	list->tail = NULL;
 	list->len = 0;

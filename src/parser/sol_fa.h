@@ -8,6 +8,8 @@
 #define SOL_FA_CHARACTER char
 #define SOL_FA_STRING char*
 #define SOL_FA_STATE unsigned long
+#define SOL_FA_CHARACTER_PTR SOL_FA_CHARACTER*
+#define SOL_FA_STATE_PTR SOL_FA_STATE*
 
 #define SOL_FA_STATE_NONE 0
 

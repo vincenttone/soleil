@@ -5,6 +5,21 @@
 #include "sol_set.h"
 #include "sol_fa.h"
 
+#define SolNfaStates SolSet
+
+#define solNfaStates_new solSet_for_char_new_and_init
+#define solNfaStates_free solSet_free
+#define solNfaStates_add solSet_add
+#define solNfaStates_rewind solSet_rewind
+#define solNfaStates_get solSet_get
+#define solNfaStates_in solSet_in_set
+#define solNfaStates_empty solSet_is_empty
+#define solNfaStates_not_empty solSet_is_not_empty
+#define solNfaStates_merge solSet_merge
+#define solNfaStates_is_substates solSet_is_subset
+
+#define solNfaStates_set_hash_func1
+
 typedef struct SolNfaRuleBook {
 	SolList *rules;
 	SolListIter *iter;
@@ -12,26 +27,19 @@ typedef struct SolNfaRuleBook {
 
 typedef struct SolNfa {
 	SolNfaRuleBook *book;
-	void *current_states;
-	void *accept_states;
-	void* (*s_new)();
-	void (*s_free)(void*);
-	void* (*s_add)(void*);
-	void (*s_rewind)(void*);
-	void* (*s_get)(void*);
-	void (*s_in)(void*, void*);
-	int (*s_empty)(void*);
-	void (*s_merge)(void*, void*);
+	SolNfaStates *current_states;
+	SolNfaStates *accept_states;
 } SolNfa;
 
 // nfa functions
 SolNfa* solNfa_new();
 void solNfa_free(SolNfa*);
 
-int solNfa_accepting(SolNfa*);
-void solNfa_read_character(SolNfa*, SOL_FA_CHARACTER);
+int solNfa_accepting(SolNfa*, SOL_FA_STATE*);
+void solNfa_read_character(SolNfa*, SOL_FA_CHARACTER_PTR);
 // void solNfa_read_string(SolNfa*, SOL_FA_STRING);
-void* solNfa_current_states(SolNfa*);
+SolNfaStates* solNfa_current_states(SolNfa*);
+SolNfa* solNfa_free_moves(SolNfa*);
 
 // rule book functions
 SolNfaRuleBook* solNfaRuleBook_new();
@@ -40,10 +48,10 @@ void solNfaRuleBook_free(SolNfaRuleBook*);
 #define solNfaRuleBook_count(b) solList_len(b->rules)
 
 SolNfaRuleBook* solNfaRuleBook_add_rule(SolNfaRuleBook*, SOL_FA_STATE, SOL_FA_STATE, SOL_FA_CHARACTER);
-void* solNfaRuleBook_next_states(SolNfaRuleBook*, void*, SOL_FA_CHARACTER);
-void solNfaRuleBook_free_moves(SolNfaRuleBook*);
+SolNfaStates* solNfaRuleBook_next_states(SolNfaStates*, SolNfaRuleBook*, SolNfaStates*, SOL_FA_CHARACTER_PTR);
+SolNfaStates* solNfaRuleBook_free_moves(SolNfaStates*, SolNfaRuleBook*, SolNfaStates*);
 
-SOL_FA_STATE solNfaRuleBookIter_follow_rule(SOL_FA_STATE s1, SOL_FA_CHARACTER c);
-void solNfaRuleBookIter_rewind(solNfaRuleBook *book)
+SOL_FA_STATE solNfaRuleBookIter_follow_rule(SolNfaRuleBook*, SOL_FA_STATE_PTR, SOL_FA_CHARACTER_PTR);
+void solNfaRuleBookIter_rewind(SolNfaRuleBook*);
 
 #endif
