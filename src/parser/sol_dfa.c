@@ -62,29 +62,6 @@ SolFaRule* sol_dfa_rule_book_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, 
 	return NULL;
 }
 
-char *sol_dfa_rule_book_inspect(SolDfaRuleBook *book)
-{
-	SolFaRule *rule;
-	SolListNode *node;
-	unsigned count = sol_dfa_rule_book_len(book);
-	unsigned len = SOL_FA_RULE_INS_LEN * count;
-	char *i = sol_calloc(len + 13, sizeof(char));
-	strcat(i, "DFA rulebook:\n");
-	char *ir;
-	sol_list_rewind(book->rules, book->iter);
-	for (;;) {
-		node = sol_list_next_node(book->iter);
-		if (node == NULL) {
-			break;
-		}
-		rule = node->val;
-		ir = sol_fa_rule_inspect(rule);
-		strcat(i, ir);
-		sol_free(ir);
-	}
-	return i;
-}
-
 SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state)
 {
 	SolDfa *dfa;

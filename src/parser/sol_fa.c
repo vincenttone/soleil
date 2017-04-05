@@ -17,24 +17,21 @@ void sol_destory_fa_rule(SolFaRule *rule)
 {
 	sol_free(rule);
 }
-
-bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character)
+bool sol_fa_rule_match(SolFaRule *r, SOL_FA_CHARACTER c)
 {
-	if (rule->state == state && sol_fa_rule_character_match(rule, character)) {
+	if (c == SolNil) { //free moves
+		return true;
+	}
+	if (sol_fa_rule_character_match(r, c)) {
 		return true;
 	}
 	return false;
 }
 
-char* sol_fa_rule_inspect(SolFaRule *rule)
+bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character)
 {
-	char *i = sol_alloc(sizeof(char) * SOL_FA_RULE_INS_LEN);
-	sprintf(i, "--FA: state <%ld> -> <%ld>, character: <%c>--\n",
-			rule->state, rule->next_state, rule->character);
-	return i;
-}
-
-void sol_fa_free_inspect(char *i)
-{
-	sol_free(i);
+	if (rule->state == state && sol_fa_rule_match(rule, character)) {
+		return true;
+	}
+	return false;
 }

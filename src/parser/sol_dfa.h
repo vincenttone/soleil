@@ -22,7 +22,6 @@ SolDfaRuleBook* sol_dfa_rule_book_new();
 void sol_dfa_rule_book_release(SolDfaRuleBook *book);
 SOL_FA_STATE sol_dfa_rule_book_next_state(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character);
 SolFaRule* sol_dfa_rule_book_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character);
-char* sol_dfa_rule_book_inspect(SolDfaRuleBook *book);
 
 #define sol_dfa_rule_book_add_rule(b, r) sol_list_add_node(b->rules, r)
 #define sol_dfa_rule_book_remove_rule(b, r) sol_list_del_node(b->rules, r)

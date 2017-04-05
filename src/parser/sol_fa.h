@@ -6,11 +6,8 @@
 #include "sol_common.h"
 #include "sol_utils.h"
 
-#define SOL_FA_CHARACTER char
-#define SOL_FA_STRING char*
-#define SOL_FA_STATE unsigned long
-#define SOL_FA_CHARACTER_PTR SOL_FA_CHARACTER*
-#define SOL_FA_STATE_PTR SOL_FA_STATE*
+#define SOL_FA_CHARACTER char*
+#define SOL_FA_STATE long
 
 #define SOL_FA_STATE_NONE 0
 
@@ -30,16 +27,10 @@ void sol_destory_fa_rule(SolFaRule *rule);
 #define sol_fa_rule_character(r) r->character
 
 bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character);
-char* sol_fa_rule_inspect(SolFaRule *rule);
-void sol_fa_free_inspect(char *i);
-
-#define __sol_debug_print_fa_rule(r) do{		\
-		char *__debug_i;						\
-		__debug_i = sol_fa_rule_inspect(r);		\
-		printf("DEBUG: %s", __debug_i);			\
-		sol_fa_free_inspect(__debug_i);			\
-}while(0)
-
+bool sol_fa_rule_match(SolFaRule*, SOL_FA_CHARACTER);
 #define sol_fa_rule_character_match(r, c) (r->character == c)
+
+#define sol_fa_rule_inspect(r) printf("--FA: state <%ld> -> <%ld>, character: <%s>--\n", \
+									  r->state, r->next_state, r->character)
 
 #endif
