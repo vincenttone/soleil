@@ -18,7 +18,7 @@ void solNfa_free(SolNfa *nfa)
 	sol_free(nfa);
 }
 
-int solNfa_accepting(SolNfa *nfa, SOL_FA_STATE *s)
+int solNfa_accepting(SolNfa *nfa, SOL_FA_STATE_PTR s)
 {
 	SolNfaStates *cs = solNfa_current_states(nfa);
 	solNfaStates_rewind(cs);
@@ -121,7 +121,7 @@ SolNfaStates* solNfaRuleBook_next_states(SolNfaStates *ns, SolNfaRuleBook *book,
 
 SolNfaStates* solNfaRuleBook_free_moves(SolNfaStates *cs, SolNfaRuleBook *book, SolNfaStates *s)
 {
-	if (solNfaRuleBook_next_states(s, book, cs, SolNil)) {
+	if (solNfaRuleBook_next_states(s, book, cs, SOL_FA_STATE_NONE)) {
 		if (solNfaStates_is_substates(cs, s) == 1) {
 			if (solNfaStates_merge(cs, s) == 0) {
 				solNfaRuleBook_free_moves(cs, book, s);

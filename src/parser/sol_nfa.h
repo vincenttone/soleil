@@ -36,7 +36,11 @@ typedef struct SolNfa {
 SolNfa* solNfa_new();
 void solNfa_free(SolNfa*);
 
-int solNfa_accepting(SolNfa*, SOL_FA_STATE*);
+#define solNfa_add_rule(n, s1, s2, c) solNfaRuleBook_add_rule(n->book, s1, s2, c)
+#define solNfa_add_current_state(n, s) solNfaStates_add(n->current_states, s)
+#define solNfa_add_accept_state(n, s) solNfaStates_add(n->accept_states, s)
+
+int solNfa_accepting(SolNfa*, SOL_FA_STATE_PTR);
 void solNfa_read_character(SolNfa*, SOL_FA_CHARACTER_PTR);
 // void solNfa_read_string(SolNfa*, SOL_FA_STRING);
 SolNfaStates* solNfa_current_states(SolNfa*);
