@@ -31,10 +31,10 @@ void* solSet_get(SolSet *s)
 	void *v;
 	do {
 		v = solSet_current(s);
+		solSet_next(s);
 		if (v) {
 			return v;
 		}
-		solSet_next(s);
 	} while (v == NULL && s->iter->num < solSet_size(s));
 	return NULL;
 }

@@ -50,7 +50,6 @@ int main()
 	while ((c = solSet_get(s))) {
 		printf("Got:\t%s\n", (char *)c);
 		// printf("Set size: %d\t, iter num: %d\n", (int)solSet_size(s), (int)s->iter->num);
-		solSet_next(s);
 	}
 	solSet_free(s);
 	return 0;
