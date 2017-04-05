@@ -29,13 +29,13 @@ inline void* solSet_current(SolSet *s)
 void* solSet_get(SolSet *s)
 {
 	void *v;
-	do {
+	while (solSetIter_num(s) < solSet_size(s)) {
 		v = solSet_current(s);
 		solSet_next(s);
 		if (v) {
 			return v;
 		}
-	} while (v == NULL && s->iter->num < solSet_size(s));
+	}
 	return NULL;
 }
 

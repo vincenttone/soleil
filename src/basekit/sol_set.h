@@ -35,6 +35,7 @@ int solSet_merge(SolSet*, SolSet*);
 
 #define solSet_rewind(s) sol_hash_iter_rewind(s->iter)
 #define solSet_next(s) sol_hash_iter_next(s->iter)
+#define solSetIter_num(s) s->iter->num
 inline void* solSet_current(SolSet*);
 
 #endif
