@@ -3,11 +3,10 @@
 
 #define solFaRule_inspect(r) printf("--FA: state <%ld> -> <%ld>, character: <%s>--\n", \
 									  r->state, r->next_state, r->character)
-
-int match(void* c1, void* c2);
-int match(void* c1, void* c2)
+int match(SolFaRule*, SOL_FA_STATE, SOL_FA_CHARACTER);
+int match(SolFaRule *r, SOL_FA_STATE s, SOL_FA_CHARACTER c)
 {
-	if ((SOL_FA_CHARACTER)c1 == (SOL_FA_CHARACTER)c2) {
+	if ( r->state == s && r->character == c) {
 		return 0;
 	}
 	return 1;

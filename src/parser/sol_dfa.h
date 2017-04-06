@@ -7,12 +7,12 @@
 #include "sol_utils.h"
 #include "sol_fa.h"
 
-typedef struct SolDfaRuleBook {
+typedef struct _SolDfaRuleBook {
 	SolList *rules;
 	SolListIter *iter;
 } SolDfaRuleBook;
 
-typedef struct SolDfa {
+typedef struct _SolDfa {
 	SolDfaRuleBook *rule_book;
 	SOL_FA_STATE current_state;
 	SOL_FA_STATE accept_state;
