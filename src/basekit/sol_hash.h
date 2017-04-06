@@ -60,6 +60,9 @@ void sol_hash_iter_next(SolHashIter*);
 #define sol_hash_set_hash_func1(h, f) h->hash_func1 = f
 #define sol_hash_set_hash_func2(h, f) h->hash_func2 = f
 #define sol_hash_set_equal_func(h, f) h->equal_func = f
+#define sol_hash_hash_func1(h) h->hash_func1
+#define sol_hash_hash_func2(h) h->hash_func2
+#define sol_hash_equal_func(h) h->equal_func
 
 inline void sol_hash_records_free(SolHashRecord*);
 inline SolHashRecord* sol_hash_record1_of_key(SolHash *hash, void *k);
