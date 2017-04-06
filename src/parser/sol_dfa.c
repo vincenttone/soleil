@@ -2,21 +2,21 @@
 #include <stdio.h>
 #include "sol_dfa.h"
 
-SolDfaRuleBook* sol_dfa_rule_book_new()
+SolDfaRuleBook* solDfaRuleBook_new()
 {
 	SolDfaRuleBook *book;
 	book = sol_alloc(sizeof(SolDfaRuleBook));
 	SolList *rules;
 	rules = sol_alloc(sizeof(SolList));
 	sol_list_init(rules);
-	rules->free = (void*)sol_destory_fa_rule;
+	rules->free = (void*)solFaRule_free;
 	book->rules = rules;
 	SolListIter *iter = sol_list_get_iterator(rules);
 	book->iter = iter;
 	return book;
 }
 
-void sol_dfa_rule_book_release(SolDfaRuleBook *book)
+void solDfaRuleBook_free(SolDfaRuleBook *book)
 {
 	if (book == NULL) {
 		return;
@@ -26,7 +26,7 @@ void sol_dfa_rule_book_release(SolDfaRuleBook *book)
 	sol_free(book);
 }
 
-SOL_FA_STATE sol_dfa_rule_book_next_state(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character)
+SOL_FA_STATE solDfaRuleBook_next_state(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character)
 {
 	SolFaRule *rule;
 	SolListNode *node;
@@ -37,14 +37,14 @@ SOL_FA_STATE sol_dfa_rule_book_next_state(SolDfaRuleBook *book, SOL_FA_STATE sta
 			break;
 		}
 		rule = node->val;
-		if (sol_fa_rule_applies_to(rule, state, character)) {
-			return sol_fa_rule_next_state(rule);
+		if (solFaRule_applies_to(rule, state, character)) {
+			return solFaRule_next_state(rule);
 		}
 	}
 	return SOL_FA_STATE_NONE;
 }
 
-SolFaRule* sol_dfa_rule_book_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character)
+SolFaRule* solDfaRuleBook_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character)
 {
 	SolFaRule *rule;
 	SolListNode *node;
@@ -55,14 +55,14 @@ SolFaRule* sol_dfa_rule_book_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, 
 			break;
 		}
 		rule = node->val;
-		if (sol_fa_rule_applies_to(rule, state, character) == true) {
+		if (solFaRule_applies_to(rule, state, character) == true) {
 			return rule;
 		}
 	}
 	return NULL;
 }
 
-SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state)
+SolDfa* solDfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state)
 {
 	SolDfa *dfa;
 	dfa = sol_alloc(sizeof(SolDfa));
@@ -75,13 +75,13 @@ SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_F
 	return dfa;
 }
 
-void sol_dfa_release(SolDfa *dfa)
+void solDfa_free(SolDfa *dfa)
 {
-	sol_dfa_rule_book_release(dfa->rule_book);
+	solDfaRuleBook_free(dfa->rule_book);
 	sol_free(dfa);
 }
 
-bool sol_dfa_is_accepting(SolDfa *dfa)
+bool solDfa_is_accepting(SolDfa *dfa)
 {
 	if (dfa->current_state == dfa->accept_state) {
 		return true;
@@ -89,12 +89,12 @@ bool sol_dfa_is_accepting(SolDfa *dfa)
 	return false;
 }
 
-void sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character)
+void solDfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character)
 {
 	if (dfa == NULL || dfa->rule_book == NULL) {
 		return;
 	}
-	SOL_FA_STATE s = sol_dfa_rule_book_next_state(dfa->rule_book, dfa->current_state, character);
+	SOL_FA_STATE s = solDfaRuleBook_next_state(dfa->rule_book, dfa->current_state, character);
 	if (s != SOL_FA_STATE_NONE) {
 		dfa->current_state = s;
 	}

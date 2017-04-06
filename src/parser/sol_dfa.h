@@ -18,18 +18,18 @@ typedef struct SolDfa {
 	SOL_FA_STATE accept_state;
 } SolDfa;
 
-SolDfaRuleBook* sol_dfa_rule_book_new();
-void sol_dfa_rule_book_release(SolDfaRuleBook *book);
-SOL_FA_STATE sol_dfa_rule_book_next_state(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character);
-SolFaRule* sol_dfa_rule_book_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character);
+SolDfaRuleBook* solDfaRuleBook_new();
+void solDfaRuleBook_free(SolDfaRuleBook *book);
+SOL_FA_STATE solDfaRuleBook_next_state(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character);
+SolFaRule* solDfaRuleBook_rule_for(SolDfaRuleBook *book, SOL_FA_STATE state, SOL_FA_CHARACTER character);
 
-#define sol_dfa_rule_book_add_rule(b, r) sol_list_add_node(b->rules, r)
-#define sol_dfa_rule_book_remove_rule(b, r) sol_list_del_node(b->rules, r)
-#define sol_dfa_rule_book_len(b) b->rules->len
+#define solDfaRuleBook_add_rule(b, r) sol_list_add_node(b->rules, r)
+#define solDfaRuleBook_remove_rule(b, r) sol_list_del_node(b->rules, r)
+#define solDfaRuleBook_len(b) b->rules->len
 
-SolDfa* sol_dfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state);
-void sol_dfa_release(SolDfa *dfa);
-bool sol_dfa_is_accepting(SolDfa *dfa);
-void sol_dfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character);
+SolDfa* solDfa_new(SolDfaRuleBook *rule_book, SOL_FA_STATE current_state, SOL_FA_STATE accept_state);
+void solDfa_free(SolDfa *dfa);
+bool solDfa_is_accepting(SolDfa *dfa);
+void solDfa_read_character(SolDfa *dfa, SOL_FA_CHARACTER character);
 
 #endif

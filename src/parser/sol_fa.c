@@ -1,6 +1,6 @@
 #include "sol_fa.h"
 
-SolFaRule* sol_new_fa_rule(SOL_FA_STATE state, SOL_FA_STATE next_state, SOL_FA_CHARACTER character)
+SolFaRule* solFaRule_new(SOL_FA_STATE state, SOL_FA_STATE next_state, SOL_FA_CHARACTER character)
 {
 	SolFaRule *rule;
 	rule = sol_alloc(sizeof(SolFaRule));
@@ -13,24 +13,14 @@ SolFaRule* sol_new_fa_rule(SOL_FA_STATE state, SOL_FA_STATE next_state, SOL_FA_C
 	return rule;
 }
 
-void sol_destory_fa_rule(SolFaRule *rule)
+void solFaRule_free(SolFaRule *rule)
 {
 	sol_free(rule);
 }
-bool sol_fa_rule_match(SolFaRule *r, SOL_FA_CHARACTER c)
-{
-	if (c == SolNil) { //free moves
-		return true;
-	}
-	if (sol_fa_rule_character_match(r, c)) {
-		return true;
-	}
-	return false;
-}
 
-bool sol_fa_rule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character)
+bool solFaRule_applies_to(SolFaRule *rule, SOL_FA_STATE state, SOL_FA_CHARACTER character)
 {
-	if (rule->state == state && sol_fa_rule_match(rule, character)) {
+	if (rule->state == state && rule->match(rule->character, character) == 0) {
 		return true;
 	}
 	return false;
