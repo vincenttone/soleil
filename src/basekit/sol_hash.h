@@ -46,6 +46,9 @@ SolHashRecord* sol_hash_find_record_by_key(SolHash*, void *);
 #define sol_hash_count(h) h->count
 #define sol_hash_update_mask(h) h->mask = h->size - 1
 
+#define sol_hash_put(h, k, v) sol_hash_put_key_and_val(h, k, v)
+#define sol_hash_get(h, k) sol_hash_find_value(h, k)
+
 int sol_hash_put_key_and_val(SolHash*, void*, void*);
 void sol_hash_remove_by_key(SolHash*, void*);
 int sol_hash_has_key(SolHash*, void*);

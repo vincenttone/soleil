@@ -22,7 +22,7 @@
 #define solList_new() vListInit(NULL)
 #define solList_free vListRelease
 #define solList_len(l) l->len
-#define solList_add_node(l, v) vListAddNode(l, v, vListDirectionForward)
+#define solList_add(l, v) vListAddNode(l, v, vListDirectionForward)
 #define solList_del_node vListDelNode
 #define solListIter_new(l) vListGetIterator(l, vListDirectionForward)
 #define solListIter_free vListReleaseIterator
