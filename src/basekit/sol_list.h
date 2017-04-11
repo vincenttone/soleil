@@ -18,10 +18,10 @@ typedef struct _SolList {
 	SolListNode *head;
 	SolListNode *tail;
 	unsigned long len;
-	void *(*f_dup)(void *ptr);
-	void (*f_free)(void *ptr);
-	int (*f_match)(void *ptr);
-	void *(*f_mnu)(void *ptr); // match and update
+	void *(*f_dup)(void*);
+	void (*f_free)(void*);
+	int (*f_match)(void*);
+	void *(*f_mnu)(void*); // match and update
 } SolList;
 
 typedef struct _SolListIter {
@@ -35,6 +35,11 @@ void solList_free(SolList*);
 
 #define solList_len(l) l->len
 #define solList_set_free_func(l, f) l->free = f
+#define solList_set_dup_func(l, f) l->dup = f
+#define solList_set_match_func(l, f) l->match = f
+#define solList_set_match_and_up_func(l, f) l->fnu = f
+
+#define solListNodeVal_free(l, n) if (l->f_free) {(*l->f_free)(n->val);}
 
 SolList* solList_add(SolList*, void*, enum _SolListDir);
 void solList_del_node(SolList*, SolListNode*);

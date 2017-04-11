@@ -19,9 +19,7 @@ void solList_free(SolList *l)
 	if (c != NULL) {
 		while (len--) {
 			n = c->next;
-			if (l->f_free) {
-				(*l->f_free)(c->val);
-			}
+			solListNodeVal_free(l, c);
 			if (c != NULL) {
 				sol_free(c);
 			}
@@ -72,9 +70,7 @@ void solList_del_node(SolList *l, SolListNode *n)
 	} else {
 		l->tail = n->pre;
 	}
-	if (l->f_free) {
-		(*l->f_free)(n->val);
-	}
+	solListNodeVal_free(l, n);
 	l->len--;
 	sol_free(n);
 }
