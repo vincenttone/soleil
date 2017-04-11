@@ -3,13 +3,13 @@
 
 #include <stddef.h>
 #include "sol_common.h"
-#include "list.h"
+#include "sol_list.h"
 
-typedef vList SolStack;
+typedef SolList SolStack;
 
 SolStack* solStack_new();
-#define solStack_free(s) vListRelease(s)
-#define solStack_push(s, d) vListAddNode(s, d, vListDirectionForward)
+#define solStack_free(s) solList_free(s)
+#define solStack_push(s, d) solList_add(s, d, _SolListDirFwd)
 void* solStack_pop(SolStack*);
 
 #endif

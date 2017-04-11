@@ -3,7 +3,7 @@
 SolStack* solStack_new()
 {
 	SolStack *s = sol_alloc(sizeof(SolStack));
-	return vListInit(s);
+	return solList_new(s);
 }
 
 void* solStack_pop(SolStack *s)
@@ -12,6 +12,6 @@ void* solStack_pop(SolStack *s)
 		return NULL;
 	}
 	void *val = s->tail->val;
-	vListDelNode(s, s->tail);
+	solList_del_node(s, s->tail);
 	return val;
 }
