@@ -6,14 +6,14 @@
 #include "sol_set.h"
 #include "sol_util.h"
 
-typedef struct _SolPdaStates {
+typedef struct _SolPdaState {
 	void *s;  // state
 	SolHash *n; // next states hash
 	SolSet *f; // free moves
-} SolPdaStates;
+} SolPdaState;
 
 typedef struct _SolPda {
-	SolPdaStates *s; // current state
+	SolPdaState *s; // current state
 	SolList *l; // state list
 	SolListIter *li; // list iter
 	int (*f_sm)(void*, void*); // func state match
@@ -27,9 +27,9 @@ void solPda_free();
 int solPda_add_rule(SolPda*, void*, void*, void*);
 void* solPda_next_states(SolPda *p, void* c);
 
-SolPdaStates* solPdaStates_new();
-void solPdaStates_free(SolPdaStates*);
-SolPdaStates* solPdaStates_add_rule(SolPdaStates*, void*, void*, void*);
-#define solPdaStates_set_state(ps, s) ps->s = s
+SolPdaState* solPdaState_new();
+void solPdaState_free(SolPdaState*);
+SolPdaState* solPdaState_add_rule(SolPdaState*, void*, void*, void*);
+#define solPdaState_set_state(ps, s) ps->s = s
 
 #endif

@@ -1,8 +1,8 @@
 #include "sol_pda.h"
 
-SolPdaStates* solPdaStates_new()
+SolPdaState* solPdaState_new()
 {
-	SolPdaStates *ps = sol_alloc(sizeof(SolPdaStates));
+	SolPdaState *ps = sol_alloc(sizeof(SolPdaState));
 	if (ps == NULL) {
 		return NULL;
 	}
@@ -11,7 +11,7 @@ SolPdaStates* solPdaStates_new()
 	return ps;
 }
 
-void solPdaStates_free(SolPdaStates *ps)
+void solPdaState_free(SolPdaState *ps)
 {
 	if (ps->n) {
 		sol_hash_free(p->n);
@@ -24,11 +24,11 @@ void solPdaStates_free(SolPdaStates *ps)
 	}
 }
 
-SolPdaStates* solPdaStates_add_rule(SolPdaStates *ps, void *s1, void *s2, void *c)
+SolPdaState* solPdaState_add_rule(SolPdaState *ps, void *s1, void *s2, void *c)
 {
-	solPdaStates_set_state(ps, s1);
-	SolPdaStates *psn = solPdaStates_new();
-	solPdaStates_set_state(psn, s2);
+	solPdaState_set_state(ps, s1);
+	SolPdaState *psn = solPdaState_new();
+	solPdaState_set_state(psn, s2);
 	if (c == NULL) {
 		if (ps->f == NULL) {
 			ps->f = solSet_new();
@@ -50,7 +50,7 @@ SolPdaStates* solPdaStates_add_rule(SolPdaStates *ps, void *s1, void *s2, void *
 	}
 }
 
-void* solPdaStates_get_next_states(solPdaStates *ps, void *c)
+void* solPdaState_get_next_states(solPdaState *ps, void *c)
 {
 	if (c == NULL) {
 		return ps->f;
@@ -65,7 +65,7 @@ SolPda* solPda_new()
 	p->s = NULL;
 	p->l = solList_new();
 	p->li = solListIter_new(p->l);
-	solList_set_free_func(p->l, &solPdaStates_free);
+	solList_set_free_func(p->l, &solPdaState_free);
 	return p;
 }
 
@@ -79,11 +79,11 @@ void solPda_free(SolPda *p)
 int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 {
 	int rtn = 1;
-	SolPdaStates *ps;
+	SolPdaState *ps;
 	if (p->s == NULL) {
-		p->s = solPdaStates_new();
+		p->s = solPdaState_new();
 		if (p->s) {
-			ps = solPdaStates_add_rule(p->s, s1, s2, c);
+			ps = solPdaState_add_rule(p->s, s1, s2, c);
 			if (ps) {
 				if (solList_add(p->l, p->s)	&& solList_add(p->, ps)) {
 						rtn = 0;
@@ -102,7 +102,7 @@ int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 	SolListNode *n;
 	while (n = solListIter_next(p->li)) {
 		if (p->f_sm(n->val, s1) == 0) {
-			ps = solPdaStates_add_rule(n->val->s, s1, s2, c);
+			ps = solPdaState_add_rule(n->val->s, s1, s2, c);
 			if (ps) {
 				if (solList_add(p->l, ps) == NULL) {
 					rtn = -2;
