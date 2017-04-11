@@ -25,11 +25,12 @@ typedef struct _SolList {
 } SolList;
 
 typedef struct _SolListIter {
+	SolList *l;
 	SolListNode *next;
 	enum _SolListDir dir;
 } SolListIter;
 
-SolList* solList_new(SolList*);
+SolList* solList_new();
 void solList_free(SolList*);
 
 #define solList_len(l) l->len
@@ -40,7 +41,7 @@ void solList_del_node(SolList*, SolListNode*);
 
 SolListIter* solListIter_new(SolList*, enum _SolListDir);
 void solListIter_free(SolListIter*);
-SolListNode* lolListIter_next(SolListIter*);
-void solListIter_rewind(SolList*, SolListIter*);
+SolListNode* solListIter_next(SolListIter*);
+void solListIter_rewind(SolListIter*);
 
 #endif

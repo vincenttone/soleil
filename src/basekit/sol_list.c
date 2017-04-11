@@ -1,19 +1,12 @@
 #include <stddef.h>
 #include "sol_list.h"
 
-SolList* solList_new(SolList *l)
+SolList* solList_new()
 {
-	l = sol_alloc(sizeof(SolList));
+	SolList *l = sol_calloc(1, sizeof(SolList));
 	if (l == NULL) {
 		return NULL;
 	}
-	l->head = NULL;
-	l->tail = NULL;
-	l->len = 0;
-	l->f_free = NULL;
-	l->f_dup = NULL;
-	l->f_match = NULL;
-	l->f_mnu = NULL;
 	return l;
 }
 
@@ -88,10 +81,14 @@ void solList_del_node(SolList *l, SolListNode *n)
 
 SolListIter* solListIter_new(SolList *l, enum _SolListDir d)
 {
+	if (l == NULL) {
+		return NULL;
+	}
 	SolListIter *i = sol_alloc(sizeof(SolListIter));
 	if (i == NULL) {
 		return NULL;
 	}
+	i->l = l;
 	i->dir = d;
 	if (d == _SolListDirBak) {
 		i->next = l->tail;
@@ -103,15 +100,17 @@ SolListIter* solListIter_new(SolList *l, enum _SolListDir d)
 
 void solListIter_free(SolListIter *i)
 {
-	sol_free(i);
+	if (i != NULL) {
+		sol_free(i);
+	}
 }
 
-void solList_rewind(SolList *l, SolListIter *i)
+void solListIter_rewind(SolListIter *i)
 {
 	if (i->dir == _SolListDirBak) {
-		i->next = l->tail;
+		i->next = i->l->tail;
 	} else {
-		i->next = l->head;
+		i->next = i->l->head;
 	}
 }
 
