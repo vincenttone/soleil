@@ -3,15 +3,15 @@
 
 #include "sol_common.h"
 
-enum SolListDir {
-	SolListDirFwd = 1,
-	SolListDirBak = 2,
+enum _SolListDir {
+	_SolListDirFwd = 1,
+	_SolListDirBak = 2,
 };
 
 typedef struct _SolListNode {
 	void *val;
-	struct SolListNode *pre;
-	struct SolListNode *next;
+	struct _SolListNode *pre;
+	struct _SolListNode *next;
 } SolListNode;
 
 typedef struct _SolList {
@@ -25,8 +25,8 @@ typedef struct _SolList {
 } SolList;
 
 typedef struct _SolListIter {
-	struct SolListNode *next;
-	enum SolListDirection dir;
+	SolListNode *next;
+	enum _SolListDir dir;
 } SolListIter;
 
 SolList* solList_new(SolList*);
@@ -35,12 +35,12 @@ void solList_free(SolList*);
 #define solList_len(l) l->len
 #define solList_set_free_func(l, f) l->free = f
 
-SolList* solList_add(SolList*, void*, enum SolListDirection);
+SolList* solList_add(SolList*, void*, enum _SolListDir);
 void solList_del_node(SolList*, SolListNode*);
 
-SolListIter* solListIter_new(SolList*, enum SolListDirection);
+SolListIter* solListIter_new(SolList*, enum _SolListDir);
 void solListIter_free(SolListIter*);
-SolListNode* lolListIter_next(sOLListIter*);
+SolListNode* lolListIter_next(SolListIter*);
 void solListIter_rewind(SolList*, SolListIter*);
 
 #endif

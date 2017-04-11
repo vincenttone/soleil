@@ -1,39 +1,44 @@
 #include <stddef.h>
-#include "list.h"
+#include "sol_list.h"
 
-SolList* solList_new()
+SolList* solList_new(SolList *l)
 {
-	SolList *l = sol_alloc(sizeof(SolList));
+	l = sol_alloc(sizeof(SolList));
+	if (l == NULL) {
+		return NULL;
+	}
 	l->head = NULL;
 	l->tail = NULL;
 	l->len = 0;
-	l->free = NULL;
-	l->dup = NULL;
+	l->f_free = NULL;
+	l->f_dup = NULL;
+	l->f_match = NULL;
+	l->f_mnu = NULL;
 	return l;
 }
 
 void solList_free(SolList *l)
 {
 	unsigned long len;
-	SolListNode *current, *next;
-	current = l->head;
+	SolListNode *c, *n;
+	c = l->head;
 	len = l->len;
-	if (current != NULL) {
+	if (c != NULL) {
 		while (len--) {
-			next = current->next;
-			if (l->free) {
-				(*l->free)(current->val);
+			n = c->next;
+			if (l->f_free) {
+				(*l->f_free)(c->val);
 			}
-			if (current != NULL) {
-				sol_free(current);
+			if (c != NULL) {
+				sol_free(c);
 			}
-			current = next;
+			c = n;
 		}
 	}
 	sol_free(l);
 }
 
-SolList *solList_add(SolList *l, void *v, enum SolListDir d)
+SolList *solList_add(SolList *l, void *v, enum _SolListDir d)
 {
 	SolListNode  *n = sol_alloc(sizeof(SolListNode));
 	if (n == NULL) {
@@ -46,7 +51,7 @@ SolList *solList_add(SolList *l, void *v, enum SolListDir d)
 		n->pre = NULL;
 		n->next = NULL;
 	} else {
-		if (d == SolListDirBak) {
+		if (d == _SolListDirBak) {
 			n->pre = NULL;
 			n->next = l->head;
 			l->head->pre = n;
@@ -74,21 +79,21 @@ void solList_del_node(SolList *l, SolListNode *n)
 	} else {
 		l->tail = n->pre;
 	}
-	if (l->free) {
-		(*l->free)(n->val);
+	if (l->f_free) {
+		(*l->f_free)(n->val);
 	}
 	l->len--;
 	sol_free(n);
 }
 
-SolListIter* solListIter_new(SolList *l, enum SolListDir d)
+SolListIter* solListIter_new(SolList *l, enum _SolListDir d)
 {
 	SolListIter *i = sol_alloc(sizeof(SolListIter));
 	if (i == NULL) {
 		return NULL;
 	}
 	i->dir = d;
-	if (d == SolListDirBak) {
+	if (d == _SolListDirBak) {
 		i->next = l->tail;
 	} else {
 		i->next = l->head;
@@ -103,7 +108,7 @@ void solListIter_free(SolListIter *i)
 
 void solList_rewind(SolList *l, SolListIter *i)
 {
-	if (i->dir == SolListDirBak) {
+	if (i->dir == _SolListDirBak) {
 		i->next = l->tail;
 	} else {
 		i->next = l->head;
@@ -114,7 +119,7 @@ SolListNode* solListIter_next(SolListIter *i)
 {
 	SolListNode *cn = i->next;
 	if (cn != NULL) {
-		if (i->dir == SolListDirBak) {
+		if (i->dir == _SolListDirBak) {
 			i->next = cn->pre;
 		} else {
 			i->next = cn->next;
