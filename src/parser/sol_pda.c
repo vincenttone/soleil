@@ -62,35 +62,72 @@ void* solPdaStates_get_next_states(solPdaStates *ps, void *c)
 SolPda* solPda_new()
 {
 	SolPda *p = sol_alloc(sizeof(solPda));
-	p->s = solPdaStates_new();
+	p->s = NULL;
 	p->l = solList_new();
+	p->li = solListIter_new(p->l);
+	solList_set_free_func(p->l, &solPdaStates_free);
 	return p;
 }
 
 void solPda_free(SolPda *p)
 {
-	solPdaStates_free(p->s);
+	solListIter_free(p->li);
 	solList_free(p->l);
 	sol_free(p);
 }
 
 int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 {
-	SolListIter *i = solListIter_new(p->l);
-	SolListNode *n;
+	int rtn = 1;
 	SolPdaStates *ps;
-	while (n = solListIter_next(i)) {
-		if (p->sm(n->val, s1) == 0) {
+	if (p->s == NULL) {
+		p->s = solPdaStates_new();
+		if (p->s) {
+			ps = solPdaStates_add_rule(p->s, s1, s2, c);
+			if (ps) {
+				if (solList_add(p->l, p->s)	&& solList_add(p->, ps)) {
+						rtn = 0;
+						goto finish;
+				}
+				rtn = -2;
+			} else {
+				rtn = -1;
+			}
+		} else {
+			rtn = -1;
+		}
+		goto err;
+	}
+	solListIter_rewind(p->li);
+	SolListNode *n;
+	while (n = solListIter_next(p->li)) {
+		if (p->f_sm(n->val, s1) == 0) {
 			ps = solPdaStates_add_rule(n->val->s, s1, s2, c);
 			if (ps) {
 				if (solList_add(p->l, ps) == NULL) {
-					return -2;
+					rtn = -2;
+					goto err;
 				}
 			} else {
-				return -1;
+				rtn = -1;
+				goto err;
 			}
-			return 0;
+			goto finish;
 		}
 	}
-	return 1;
+ err:
+ finish:
+	return rtn;
+}
+
+void* solPda_next_states(SolPda *p, void* c)
+{
+	if (c == NULL) {
+		return p->f;
+	} else {
+		if (sol_hash_has_key(p->l, c)) {
+			return sol_hash_get(p->l, c);
+		}
+	}
+	return NULL;
 }

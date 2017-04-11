@@ -10,17 +10,9 @@
 #define SolListNode vListNode
 #define SolListIter vListIter
 
-#define sol_list_init vListInit
-#define sol_list_release vListRelease
-#define sol_list_add_node(l, v) vListAddNode(l, v, vListDirectionForward)
-#define sol_list_del_node vListDelNode
-#define sol_list_get_iterator(l) vListGetIterator(l, vListDirectionForward)
-#define sol_list_release_iterator vListReleaseIterator
-#define sol_list_next_node vListNextNode
-#define sol_list_rewind vListRewind
-
 #define solList_new() vListInit(NULL)
 #define solList_free vListRelease
+#define solList_set_free_func(l, f) l->free = f
 #define solList_len(l) l->len
 #define solList_add(l, v) vListAddNode(l, v, vListDirectionForward)
 #define solList_del_node vListDelNode
