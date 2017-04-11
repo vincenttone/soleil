@@ -27,9 +27,9 @@ void solPda_free();
 int solPda_add_rule(SolPda*, void*, void*, void*);
 void* solPda_next_states(SolPda *p, void* c);
 
-SolPdaState* solPdaState_new();
+SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);
-SolPdaState* solPdaState_add_rule(SolPdaState*, void*, void*, void*);
+int solPdaState_add_rule(SolPdaState*, SolPdaState*, void*);
 #define solPdaState_set_state(ps, s) ps->s = s
 
 #endif
