@@ -1,124 +1,124 @@
-#include <stdlib.h>
+#include <stddef.h>
 #include "list.h"
 
-vList *vListInit(vList *list)
+SolList* solList_new()
 {
-	if (list == NULL) {
-		list = malloc(sizeof(vList));
-	}
-	list->head = NULL;
-	list->tail = NULL;
-	list->len = 0;
-	list->free = NULL;
-	list->dup = NULL;
-	return list;
+	SolList *l = sol_alloc(sizeof(SolList));
+	l->head = NULL;
+	l->tail = NULL;
+	l->len = 0;
+	l->free = NULL;
+	l->dup = NULL;
+	return l;
 }
 
-void vListRelease(vList *list)
+void solList_free(SolList *l)
 {
 	unsigned long len;
-	vListNode *current, *next;
-
-	current = list->head;
-	len = list->len;
+	SolListNode *current, *next;
+	current = l->head;
+	len = l->len;
 	if (current != NULL) {
 		while (len--) {
 			next = current->next;
-			if (list->free) (*list->free)(current->val);
-			if (current != NULL) free(current);
+			if (l->free) {
+				(*l->free)(current->val);
+			}
+			if (current != NULL) {
+				sol_free(current);
+			}
 			current = next;
 		}
 	}
-	free(list);
+	sol_free(l);
 }
 
-vList *vListAddNode(vList *list, void *val, enum VListDirection direction)
+SolList *solList_add(SolList *l, void *v, enum SolListDir d)
 {
-	vListNode  *node;
-	node = malloc(sizeof(vListNode));
-	if (node == NULL)
-		return NULL;
-	node->val = val;
-	if (list->len == 0) {
-		list->head = node;
-		list->tail = node;
-		node->pre = NULL;
-		node->next = NULL;
-	} else {
-		if (direction == vListDirectionBackward) {
-			node->pre = NULL;
-			node->next = list->head;
-			list->head->pre = node;
-			list->head = node;
-		} else {
-			node->pre = list->tail;
-			node->next = NULL;
-			list->tail->next = node;
-			list->tail = node;
-		}
-	}
-	list->len++;
-	return list;
-}
-
-void vListDelNode(vList *list, vListNode *node)
-{
-	if (node->pre) {
-		node->pre->next = node->next;
-	} else {
-		list->head = node->next;
-	}
-	if (node->next) {
-		node->next->pre = node->pre;
-	} else {
-		list->tail = node->pre;
-	}
-	if (list->free) {
-		(*list->free)(node->val);
-	}
-	list->len--;
-	free(node);
-}
-
-vListIter *vListGetIterator(vList *list, enum VListDirection direction)
-{
-	vListIter *iterator;
-	iterator = malloc(sizeof(vListIter));
-	if (iterator == NULL) {
+	SolListNode  *n = sol_alloc(sizeof(SolListNode));
+	if (n == NULL) {
 		return NULL;
 	}
-	iterator->direction = direction;
-	if (direction == vListDirectionBackward) {
-		iterator->next = list->tail;
+	n->val = v;
+	if (l->len == 0) {
+		l->head = n;
+		l->tail = n;
+		n->pre = NULL;
+		n->next = NULL;
 	} else {
-		iterator->next = list->head;
-	}
-	return iterator;
-}
-
-void vListReleaseIterator(vListIter *iterator)
-{
-	free(iterator);
-}
-
-void vListRewind(vList *list, vListIter *iterator)
-{
-	if (iterator->direction == vListDirectionBackward) {
-		iterator->next = list->tail;
-	} else {
-		iterator->next = list->head;
-	}
-}
-
-vListNode *vListNextNode(vListIter *iterator)
-{
-	vListNode *current = iterator->next;
-	if (current != NULL) {
-		if (iterator->direction == vListDirectionBackward) {
-			iterator->next = current->pre;
+		if (d == SolListDirBak) {
+			n->pre = NULL;
+			n->next = l->head;
+			l->head->pre = n;
+			l->head = n;
 		} else {
-			iterator->next = current->next;
+			n->pre = l->tail;
+			n->next = NULL;
+			l->tail->next = n;
+			l->tail = n;
 		}
 	}
-	return current;
+	l->len++;
+	return l;
+}
+
+void solList_del_node(SolList *l, SolListNode *n)
+{
+	if (n->pre) {
+		n->pre->next = n->next;
+	} else {
+		l->head = n->next;
+	}
+	if (n->next) {
+		n->next->pre = n->pre;
+	} else {
+		l->tail = n->pre;
+	}
+	if (l->free) {
+		(*l->free)(n->val);
+	}
+	l->len--;
+	sol_free(n);
+}
+
+SolListIter* solListIter_new(SolList *l, enum SolListDir d)
+{
+	SolListIter *i = sol_alloc(sizeof(SolListIter));
+	if (i == NULL) {
+		return NULL;
+	}
+	i->dir = d;
+	if (d == SolListDirBak) {
+		i->next = l->tail;
+	} else {
+		i->next = l->head;
+	}
+	return i;
+}
+
+void solListIter_free(SolListIter *i)
+{
+	sol_free(i);
+}
+
+void solList_rewind(SolList *l, SolListIter *i)
+{
+	if (i->dir == SolListDirBak) {
+		i->next = l->tail;
+	} else {
+		i->next = l->head;
+	}
+}
+
+SolListNode* solListIter_next(SolListIter *i)
+{
+	SolListNode *cn = i->next;
+	if (cn != NULL) {
+		if (i->dir == SolListDirBak) {
+			i->next = cn->pre;
+		} else {
+			i->next = cn->next;
+		}
+	}
+	return cn;
 }

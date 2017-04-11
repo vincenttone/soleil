@@ -1,40 +1,46 @@
-#ifndef _V_LIST_H_
-#define _V_LIST_H_ 1
+#ifndef _SOL_LIST_H_
+#define _SOL_LIST_H_ 1
 
-enum VListDirection {
-	vListDirectionForward = 1,
-	vListDirectionBackward = 2,
+#include "sol_common.h"
+
+enum SolListDir {
+	SolListDirFwd = 1,
+	SolListDirBak = 2,
 };
 
-typedef struct vListNode {
+typedef struct _SolListNode {
 	void *val;
-	struct vListNode *pre;
-	struct vListNode *next;
-} vListNode;
+	struct SolListNode *pre;
+	struct SolListNode *next;
+} SolListNode;
 
-typedef struct {
-	vListNode *head;
-	vListNode *tail;
+typedef struct _SolList {
+	SolListNode *head;
+	SolListNode *tail;
 	unsigned long len;
-	void *(*dup)(void *ptr);
-	void (*free)(void *ptr);
-	int (*match)(void *ptr);
-	void *(*matchAndUpdate)(void *ptr);
-} vList;
+	void *(*f_dup)(void *ptr);
+	void (*f_free)(void *ptr);
+	int (*f_match)(void *ptr);
+	void *(*f_mnu)(void *ptr); // match and update
+} SolList;
 
-typedef struct {
-	struct vListNode *next;
-	enum VListDirection direction;
-} vListIter;
+typedef struct _SolListIter {
+	struct SolListNode *next;
+	enum SolListDirection dir;
+} SolListIter;
 
-vList *vListInit(vList *list);
-void vListRelease(vList *list);
-vList *vListAddNode(vList *list, void *val, enum VListDirection direction);
-void vListDelNode(vList *list, vListNode *node);
+SolList* solList_new(SolList*);
+void solList_free(SolList*);
 
-vListIter *vListGetIterator(vList *list, enum VListDirection direction);
-void vListReleaseIterator(vListIter *iterator);
-void vListRewind(vList *list, vListIter *iterator);
-vListNode *vListNextNode(vListIter *iterator);
+#define solList_len(l) l->len
+#define solList_set_free_func(l, f) l->free = f
+
+SolList* solList_add(SolList*, void*, enum SolListDirection);
+void solList_del_node(SolList*, SolListNode*);
+
+SolListIter* solListIter_new(SolList*, enum SolListDirection);
+void solListIter_free(SolListIter*);
+SolListNode* lolListIter_next(sOLListIter*);
+void solListIter_rewind(SolList*, SolListIter*);
 
 #endif
