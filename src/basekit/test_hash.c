@@ -25,6 +25,11 @@ int equals(void *k1, void *k2)
 	return strcmp((char *)k1, (char *)k2);
 }
 
+void free_echo(void *v)
+{
+	printf("try to free %s\n", (char*)v);
+}
+
 int main()
 {
 	SolHash *hash = solHash_new();
@@ -33,6 +38,7 @@ int main()
 	solHash_set_hash_func1(hash, f1);
 	solHash_set_hash_func2(hash, f2);
 	solHash_set_equal_func(hash, &equals);
+	solHash_set_free_func(hash, &free_echo, &free_echo);
 	solHash_put_key_and_val(hash, "key1", "value1");
 	solHash_put_key_and_val(hash, "key2", "value2");
 	solHash_put_key_and_val(hash, "key3", "value3");
@@ -60,9 +66,9 @@ int main()
 			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
 		}
 		solHashIter_next(iter);
-	} while (i++ < hash->size);
+	} while (++i < hash->size);
 	solHash_remove_by_key(hash, "key3");
-	printf("remove key key3");
+	printf("remove key key3\n");
 	solHashIter_rewind(iter);
 	i = 0;
 	do {
@@ -75,7 +81,7 @@ int main()
 			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
 		}
 		solHashIter_next(iter);
-	} while (i++ < hash->size);
+	} while (++i < hash->size);
 	solHashIter_free(iter);
 	solHash_free(hash);
 	return 0;
