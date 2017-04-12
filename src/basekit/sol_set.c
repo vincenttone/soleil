@@ -2,8 +2,8 @@
 
 SolSet* solSet_new()
 {
-	SolHash *hash = sol_hash_new();
-	SolHashIter *iter = sol_hash_iter_new(hash);
+	SolHash *hash = solHash_new();
+	SolHashIter *iter = solHashIter_new(hash);
 	SolSet *s = sol_alloc(sizeof(SolSet));
 	s->hash = hash;
 	s->iter = iter;
@@ -12,14 +12,14 @@ SolSet* solSet_new()
 
 void solSet_free(SolSet *s)
 {
-	sol_hash_iter_free(s->iter);
-	sol_hash_free(s->hash);
+	solHashIter_free(s->iter);
+	solHash_free(s->hash);
 	sol_free(s);
 }
 
 inline void* solSet_current(SolSet *s)
 {
-	SolHashRecord *r = sol_hash_iter_current_record(s->iter);
+	SolHashRecord *r = solHashIter_current_record(s->iter);
 	if (r == NULL) {
 		return NULL;
 	}
@@ -29,13 +29,13 @@ inline void* solSet_current(SolSet *s)
 void* solSet_get(SolSet *s)
 {
 	void *v;
-	while (solSetIter_num(s) <= solSet_size(s)) {
+	do {
 		v = solSet_current(s);
 		solSet_next(s);
 		if (v) {
 			return v;
 		}
-	}
+	} while (solSetIter_current_count(s) < solSet_size(s));
 	return NULL;
 }
 

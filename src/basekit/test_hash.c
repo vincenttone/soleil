@@ -27,31 +27,31 @@ int equals(void *k1, void *k2)
 
 int main()
 {
-	SolHash *hash = sol_hash_new();
+	SolHash *hash = solHash_new();
 	size_t (*f1)(void*) = &hash_func_murmur;
 	size_t (*f2)(void*) = &hash_func_fnv32;
-	sol_hash_set_hash_func1(hash, f1);
-	sol_hash_set_hash_func2(hash, f2);
-	sol_hash_set_equal_func(hash, &equals);
-	sol_hash_put_key_and_val(hash, "key1", "value1");
-	sol_hash_put_key_and_val(hash, "key2", "value2");
-	sol_hash_put_key_and_val(hash, "key3", "value3");
-	sol_hash_put_key_and_val(hash, "key4", "value4");
-	sol_hash_put_key_and_val(hash, "key5", "value5");
-	sol_hash_put_key_and_val(hash, "key6", "value6");
-	sol_hash_put_key_and_val(hash, "key7", "value7");
-	sol_hash_put_key_and_val(hash, "key8", "value8");
-	sol_hash_put_key_and_val(hash, "key9", "value9");
-	printf("count is %d\n", (int)sol_hash_count(hash));
+	solHash_set_hash_func1(hash, f1);
+	solHash_set_hash_func2(hash, f2);
+	solHash_set_equal_func(hash, &equals);
+	solHash_put_key_and_val(hash, "key1", "value1");
+	solHash_put_key_and_val(hash, "key2", "value2");
+	solHash_put_key_and_val(hash, "key3", "value3");
+	solHash_put_key_and_val(hash, "key4", "value4");
+	solHash_put_key_and_val(hash, "key5", "value5");
+	solHash_put_key_and_val(hash, "key6", "value6");
+	solHash_put_key_and_val(hash, "key7", "value7");
+	solHash_put_key_and_val(hash, "key8", "value8");
+	solHash_put_key_and_val(hash, "key9", "value9");
+	printf("count is %d\n", (int)solHash_count(hash));
 	printf("hash size is %d\n", (int)hash->size);
-	printf("value of key1 is %s\n", (char*)sol_hash_find_value(hash, "key1"));
-	printf("value of key2 is %s\n", (char*)sol_hash_find_value(hash, "key2"));
-	printf("value of key3 is %s\n", (char*)sol_hash_find_value(hash, "key3"));
+	printf("value of key1 is %s\n", (char*)solHash_find_value(hash, "key1"));
+	printf("value of key2 is %s\n", (char*)solHash_find_value(hash, "key2"));
+	printf("value of key3 is %s\n", (char*)solHash_find_value(hash, "key3"));
 	size_t i = 0;
 	SolHashRecord *r;
-	SolHashIter *iter = sol_hash_iter_new(hash);
+	SolHashIter *iter = solHashIter_new(hash);
 	do {
-		r = sol_hash_iter_current_record(iter);
+		r = solHashIter_current_record(iter);
 		if (r == NULL) {
 			printf("ITER GOT(%d):\tNULL\n", (int)i);
 		} else if (r->k == NULL) {
@@ -59,14 +59,14 @@ int main()
 		} else {
 			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
 		}
-		sol_hash_iter_next(iter);
+		solHashIter_next(iter);
 	} while (i++ < hash->size);
-	sol_hash_remove_by_key(hash, "key3");
+	solHash_remove_by_key(hash, "key3");
 	printf("remove key key3");
-	sol_hash_iter_rewind(iter);
+	solHashIter_rewind(iter);
 	i = 0;
 	do {
-		r = sol_hash_iter_current_record(iter);
+		r = solHashIter_current_record(iter);
 		if (r == NULL) {
 			printf("ITER GOT(%d):\tNULL\n", (int)i);
 		} else if (r->k == NULL) {
@@ -74,9 +74,9 @@ int main()
 		} else {
 			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
 		}
-		sol_hash_iter_next(iter);
+		solHashIter_next(iter);
 	} while (i++ < hash->size);
-	sol_hash_iter_free(iter);
-	sol_hash_free(hash);
+	solHashIter_free(iter);
+	solHash_free(hash);
 	return 0;
 }
