@@ -47,7 +47,7 @@ int main()
 	printf("value10 is in set?\t%d\n", solSet_in_set(s, "value10"));
 	printf("value3 is in set?\t%d\n", solSet_in_set(s, "value3"));
 	void *c;
-	solSet_rewind(s);
+	solSetIter_rewind(s);
 	while ((c = solSet_get(s))) {
 		printf("Got:\t%s\n", (char *)c);
 		// printf("Set size: %d\t, iter num: %d\n", (int)solSet_size(s), (int)s->iter->num);

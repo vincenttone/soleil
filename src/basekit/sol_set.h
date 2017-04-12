@@ -30,8 +30,8 @@ int solSet_is_subset(SolSet*, SolSet*);
 int solSet_equal(SolSet*, SolSet*);
 int solSet_merge(SolSet*, SolSet*);
 
-#define solSet_rewind(s) solHashIter_rewind(s->iter)
-#define solSet_next(s) solHashIter_next(s->iter)
+#define solSetIter_rewind(s) solHashIter_rewind(s->iter)
+#define solSetIter_next(s) solHashIter_next(s->iter)
 #define solSetIter_current_count(s) s->iter->c
 inline void* solSet_current(SolSet*);
 
