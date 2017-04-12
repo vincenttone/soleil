@@ -63,7 +63,7 @@ void* solPdaState_get_next_states(solPdaState *ps, void *c)
 SolPda* solPda_new()
 {
 	SolPda *p = sol_alloc(sizeof(solPda));
-	p->cs = NULL;
+	p->cs = solSet_new();
 	p->as = solHash_new();
 	solList_set_free_func(p->l, &solPdaState_free);
 	return p;
@@ -99,11 +99,19 @@ int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 
 void* solPda_next_states(SolPda *p, void* c)
 {
-	if (c == NULL) {
-		return p->as->f;
-	} else {
-		if (p->cs && ps->cs->n) {
-			return solHash_get(p->cs->n, c);
+	solPdaState *cs;
+	solSet *s = solSet_new();
+	solSet_rewind(p->cs);
+	while ((cs = solSet_get(p->cs))) {
+		if (c == NULL) {
+			solSet_merge(s, cs->f);
+		} else {
+			if (cs->n) {
+				cs = solHash_get(cs->n, c);
+				if (cs) {
+					solSet_add(s, cs);
+				}
+			}
 		}
 	}
 	return NULL;

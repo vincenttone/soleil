@@ -12,7 +12,7 @@ typedef struct _SolPdaState {
 } SolPdaState;
 
 typedef struct _SolPda {
-	SolPdaState *cs; // current state
+	SolSet *cs; // current states
 	SolHash *as; // all states
 	int (*f_sm)(void*, void*); // func state match
 	int (*f_cm)(void*, void*); // func character match
