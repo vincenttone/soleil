@@ -31,7 +31,7 @@ void* solSet_get(SolSet *s)
 	void *v;
 	do {
 		v = solSet_current(s);
-		solSetIter_next(s);
+		solSet_next(s);
 		if (v) {
 			return v;
 		}
