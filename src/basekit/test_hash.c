@@ -38,7 +38,8 @@ int main()
 	solHash_set_hash_func1(hash, f1);
 	solHash_set_hash_func2(hash, f2);
 	solHash_set_equal_func(hash, &equals);
-	solHash_set_free_func(hash, &free_echo, &free_echo);
+	solHash_set_free_k_func(hash, &free_echo);
+	solHash_set_free_v_func(hash, &free_echo);
 	solHash_put_key_and_val(hash, "key1", "value1");
 	solHash_put_key_and_val(hash, "key2", "value2");
 	solHash_put_key_and_val(hash, "key3", "value3");

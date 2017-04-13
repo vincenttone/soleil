@@ -16,18 +16,21 @@ typedef struct _SolPda {
 	SolHash *as; // all states
 	int (*f_sm)(void*, void*); // func state match
 	int (*f_cm)(void*, void*); // func character match
-	void (*f_fs)(void*); // func free state
-	void (*f_fc)(void*); // func free character
+	void (*f_sf)(void*); // func state free
+	void (*f_cf)(void*); // func character free
 } SolPda;
 
 SolPda* solPda_new();
 void solPda_free();
 int solPda_add_rule(SolPda*, void*, void*, void*);
-void* solPda_next_states(SolPda *p, void* c);
+int solPda_step(SolPda *p, void* c);
+int solPda_add_current_state(solPda*, void*);
+#define solPda_set_current_states(p, s) p->cs = s
 
 SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);
 int solPdaState_add_rule(SolPdaState*, SolPdaState*, void*);
+SolSet* solPdaState_next_states(solPdaState *ps, void *c);
 #define solPdaState_set_state(ps, s) ps->cs = s
 
 #endif

@@ -17,6 +17,7 @@ void solSet_free(SolSet*);
 #define solSet_set_hash_func1(s, f) solHash_set_hash_func1(s->hash, f)
 #define solSet_set_hash_func2(s, f) solHash_set_hash_func2(s->hash, f)
 #define solSet_set_equal_func(s, f) solHash_set_equal_func(s->hash, f)
+#define solSet_set_free_func(s, f) solHash_set_free_k_func(s->hash, f)
 
 #define solSet_count(s) solHash_count(s->hash)
 #define solSet_add(s, v) solHash_put_key_and_val(s->hash, v, SolNil)

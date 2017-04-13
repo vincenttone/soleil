@@ -51,13 +51,24 @@ int solPdaState_add_rule(SolPdaState *ps, SolPdaState *ns, void *c)
 	}
 }
 
-void* solPdaState_get_next_states(solPdaState *ps, void *c)
+SolSet* solPdaState_next_states(solPdaState *ps, void *c)
 {
-	if (c == NULL) {
-		return ps->f;
-	} else {
-		return solHash_get(ps->n, c);
+	solPdaState *cs;
+	solSet *s = solSet_new();
+	solSet_rewind(ps);
+	while ((cs = solSet_get(ps))) {
+		if (c == NULL) {
+			solSet_merge(s, cs->f);
+		} else {
+			if (cs->n) {
+				cs = solHash_get(cs->n, c);
+				if (cs) {
+					solSet_add(s, cs);
+				}
+			}
+		}
 	}
+	return s;
 }
 
 SolPda* solPda_new()
@@ -65,7 +76,13 @@ SolPda* solPda_new()
 	SolPda *p = sol_alloc(sizeof(solPda));
 	p->cs = solSet_new();
 	p->as = solHash_new();
-	solList_set_free_func(p->l, &solPdaState_free);
+	p->f_sm = NULL;
+	p->f_cm = NULL;
+	p->f_sf = NULL;
+	p->f_cf = NULL;
+	solSet_set_free_func(p->cs, &solPdaState_free);
+	solHash_set_free_k_func(p->as, p->f_sm);
+	solHash_set_free_v_func(p->as, &solPdaState_free);
 	return p;
 }
 
@@ -77,7 +94,6 @@ void solPda_free(SolPda *p)
 
 int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 {
-	int rtn = 1;
 	SolPdaState *ps1 = NULL;
 	SolPdaState *ps2 = NULL;
 	ps1 = solHash_get(p->as, s1);
@@ -97,22 +113,32 @@ int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 	return solPdaState_add_rule(ps1, ps2, c);
 }
 
-void* solPda_next_states(SolPda *p, void* c)
+int solPda_step(SolPda *p, void* c)
 {
-	solPdaState *cs;
-	solSet *s = solSet_new();
-	solSet_rewind(p->cs);
-	while ((cs = solSet_get(p->cs))) {
-		if (c == NULL) {
-			solSet_merge(s, cs->f);
-		} else {
-			if (cs->n) {
-				cs = solHash_get(cs->n, c);
-				if (cs) {
-					solSet_add(s, cs);
-				}
-			}
-		}
+	if (p->cs == NULL) {
+		return 12;
 	}
-	return NULL;
+	SolSet *cs = solPdaState_next_states(p->cs, c);
+	solSet_free(p->cs);
+	if (solSet_is_empty(cs)) {
+		return 11;
+	} else {
+		solPda_set_current_states(p, cs);
+		return 0;
+	}
+}
+
+int solPda_add_current_state(solPda *p, void *s)
+{
+	if (!s) {
+		return 11;
+	}
+	if (!p->cs) {
+		return 12;
+	}
+	SolPdaState *cs = solHash_get(p->as, s);
+	if (cs) {
+		return solSet_add(p->cs, cs);
+	}
+	return 13;
 }

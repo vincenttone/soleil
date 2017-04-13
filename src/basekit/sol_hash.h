@@ -68,7 +68,8 @@ void solHashIter_next(SolHashIter*);
 #define solHash_set_hash_func1(h, f) h->f_hash1 = f
 #define solHash_set_hash_func2(h, f) h->f_hash2 = f
 #define solHash_set_equal_func(h, f) h->f_match = f
-#define solHash_set_free_func(h, fk, fv) h->f_free_k = fk; h->f_free_v = fv
+#define solHash_set_free_k_func(h, f) h->f_free_k = f
+#define solHash_set_free_v_func(h, f) h->f_free_v = f
 #define solHash_hash1(h, k) (*h->f_hash1)(k)
 #define solHash_hash2(h, k) (*h->f_hash2)(k)
 #define solHash_match(h, k1, k2) (*h->f_match)(k1, k2)
