@@ -24,13 +24,13 @@ SolPda* solPda_new();
 void solPda_free();
 int solPda_add_rule(SolPda*, void*, void*, void*);
 int solPda_step(SolPda *p, void* c);
-int solPda_add_current_state(solPda*, void*);
+int solPda_add_current_state(SolPda*, void*);
 #define solPda_set_current_states(p, s) p->cs = s
 
 SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);
-int solPdaState_add_rule(SolPdaState*, SolPdaState*, void*);
-SolSet* solPdaState_next_states(solPdaState *ps, void *c);
+inline int solPdaState_add_rule(SolPda*, SolPdaState*, SolPdaState*, void*);
+int solPdaState_next_states(SolSet *s, SolPdaState *ps, void *c);
 #define solPdaState_set_state(ps, s) ps->cs = s
 
 #endif
