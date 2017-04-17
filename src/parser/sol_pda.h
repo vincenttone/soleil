@@ -27,10 +27,17 @@ int solPda_step(SolPda *p, void* c);
 int solPda_add_current_state(SolPda*, void*);
 #define solPda_set_current_states(p, s) p->cs = s
 
+#define solPda_set_state_match_func(p, f) p->f_sm = f
+#define solPda_set_character_match_func(p, f) p->f_cm = f
+#define solPda_set_state_free_func(p, f) p->sf = f
+#define solPda_set_character_free_func(p, f) p->cf = f
+
 SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);
-inline int solPdaState_add_rule(SolPda*, SolPdaState*, SolPdaState*, void*);
+inline int solPdaState_add_rule(SolPdaState*, SolPdaState*, void*);
 int solPdaState_next_states(SolSet *s, SolPdaState *ps, void *c);
 #define solPdaState_set_state(ps, s) ps->cs = s
+
+void _solPdaState_free(void*);
 
 #endif
