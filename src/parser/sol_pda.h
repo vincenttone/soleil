@@ -2,6 +2,7 @@
 #define _SOL_PDA_H_ 1
 
 #include "sol_common.h"
+#include "sol_utils.h"
 #include "sol_hash.h"
 #include "sol_set.h"
 
@@ -29,8 +30,8 @@ int solPda_add_current_state(SolPda*, void*);
 
 #define solPda_set_state_match_func(p, f) p->f_sm = f
 #define solPda_set_character_match_func(p, f) p->f_cm = f
-#define solPda_set_state_free_func(p, f) p->sf = f
-#define solPda_set_character_free_func(p, f) p->cf = f
+#define solPda_set_state_free_func(p, f) p->f_sf = f
+#define solPda_set_character_free_func(p, f) p->f_cf = f
 
 SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);

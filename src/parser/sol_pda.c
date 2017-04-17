@@ -2,13 +2,11 @@
 
 SolPdaState* solPdaState_new(void *s)
 {
-	SolPdaState *ps = sol_alloc(sizeof(SolPdaState));
+	SolPdaState *ps = sol_calloc(1, sizeof(SolPdaState));
 	if (ps == NULL) {
 		return NULL;
 	}
 	ps->s = s;
-	ps->n = NULL;
-	ps->f = NULL;
 	return ps;
 }
 
@@ -67,7 +65,12 @@ SolPda* solPda_new()
 {
 	SolPda *p = sol_calloc(1, sizeof(SolPda));
 	p->cs = solSet_new();
+	solSet_set_hash_func1(p->cs, &sol_hash_func1);
+	solSet_set_hash_func2(p->cs, &sol_hash_func2);
 	p->as = solHash_new();
+	solHash_set_hash_func1(p->as, &sol_hash_func1);
+	solHash_set_hash_func2(p->as, &sol_hash_func2);
+	solHash_set_equal_func(p->as, p->f_sm);
 	solHash_set_free_k_func(p->as, p->f_sf);
 	solHash_set_free_v_func(p->as, &_solPdaState_free);
 	return p;
@@ -113,6 +116,8 @@ int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 			solSet_set_equal_func(ps1->f, p->f_sm);
 		} else {
 			ps1->n = solHash_new();
+			solHash_set_hash_func1(ps1->n, &sol_hash_func1);
+			solHash_set_hash_func2(ps1->n, &sol_hash_func2);
 			solHash_set_equal_func(ps1->n, p->f_cm);
 		}
 	}

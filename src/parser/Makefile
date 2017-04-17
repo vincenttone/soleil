@@ -4,9 +4,9 @@ VPATH :=../basekit:test
 
 all: sol_pda.o
 
-sol_pda.o: sol_pda.c sol_common.h sol_set.o sol_hash.o Hash_fnv.c Hash_murmur.c
+sol_pda.o: sol_pda.c sol_common.h sol_set.o sol_hash.o sol_utils.o Hash_fnv.c Hash_murmur.c
 
-test_pda: test_pda.c sol_pda.o sol_common.h sol_set.o sol_hash.o
+test_pda: test_pda.c sol_pda.o sol_common.h sol_set.o sol_hash.o sol_utils.o  Hash_fnv.c Hash_murmur.c
 	if [ ! -d output ]; then mkdir output; fi
 	$(CC) $(CFLAGS) -o output/$@ $^
 
