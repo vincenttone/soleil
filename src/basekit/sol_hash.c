@@ -67,7 +67,7 @@ void* solHash_find_value(SolHash *hash, void *k)
 	if (r == NULL) {
 		return NULL;
 	}
-	return r->k;
+	return r->v;
 }
 
 int solHash_has_key(SolHash *hash, void *k)
