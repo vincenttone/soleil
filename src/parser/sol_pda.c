@@ -25,9 +25,7 @@ void solPdaState_free(SolPdaState *ps)
 
 void _solPdaState_free(void *ps)
 {
-	if (ps) {
-		solPdaState_free((SolPdaState*)ps);
-	}
+	solPdaState_free((SolPdaState*)ps);
 }
 
 inline int solPdaState_add_rule(SolPdaState *ps, SolPdaState *ns, void *c)
@@ -70,8 +68,12 @@ SolPda* solPda_new()
 	p->as = solHash_new();
 	solHash_set_hash_func1(p->as, &sol_hash_func1);
 	solHash_set_hash_func2(p->as, &sol_hash_func2);
+	p->ac = solSet_new();
+	solSet_set_hash_func1(p->ac, &sol_hash_func1);
+	solSet_set_hash_func2(p->ac, &sol_hash_func2);
+	// all status match func
 	solHash_set_equal_func(p->as, p->f_sm);
-	solHash_set_free_k_func(p->as, p->f_sf);
+	// free funcs
 	solHash_set_free_v_func(p->as, &_solPdaState_free);
 	return p;
 }
@@ -79,12 +81,14 @@ SolPda* solPda_new()
 void solPda_free(SolPda *p)
 {
 	solHash_free(p->as);
+	solSet_free(p->ac);
 	solSet_free(p->cs);
 	sol_free(p);
 }
 
 int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 {
+	solSet_add(p->ac, c);
 	SolPdaState *ps1 = NULL;
 	SolPdaState *ps2 = NULL;
 	ps1 = solHash_get(p->as, s1);
@@ -107,19 +111,17 @@ int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 			return 11;
 		}
 	}
-	if (ps1->f == NULL) {
-		if (c == NULL) {
-			ps1->f = solSet_new();
-			if (ps1->f == NULL) {
-				return 12;
-			}
-			solSet_set_equal_func(ps1->f, p->f_sm);
-		} else {
-			ps1->n = solHash_new();
-			solHash_set_hash_func1(ps1->n, &sol_hash_func1);
-			solHash_set_hash_func2(ps1->n, &sol_hash_func2);
-			solHash_set_equal_func(ps1->n, p->f_cm);
+	if (c == NULL && ps1->f == NULL) {
+		ps1->f = solSet_new();
+		if (ps1->f == NULL) {
+			return 12;
 		}
+		solSet_set_equal_func(ps1->f, p->f_sm);
+	} else if (ps1->n == NULL) {
+		ps1->n = solHash_new();
+		solHash_set_hash_func1(ps1->n, &sol_hash_func1);
+		solHash_set_hash_func2(ps1->n, &sol_hash_func2);
+		solHash_set_equal_func(ps1->n, p->f_cm);
 	}
 	return solPdaState_add_rule(ps1, ps2, c);
 }

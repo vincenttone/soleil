@@ -15,6 +15,7 @@ typedef struct _SolPdaState {
 typedef struct _SolPda {
 	SolSet *cs; // current states
 	SolHash *as; // all states
+	SolSet *ac; // all characters
 	int (*f_sm)(void*, void*); // func state match
 	int (*f_cm)(void*, void*); // func character match
 	void (*f_sf)(void*); // func state free
@@ -28,10 +29,10 @@ int solPda_step(SolPda *p, void* c);
 int solPda_add_current_state(SolPda*, void*);
 #define solPda_set_current_states(p, s) p->cs = s
 
-#define solPda_set_state_match_func(p, f) p->f_sm = f
-#define solPda_set_character_match_func(p, f) p->f_cm = f
-#define solPda_set_state_free_func(p, f) p->f_sf = f
-#define solPda_set_character_free_func(p, f) p->f_cf = f
+#define solPda_set_state_match_func(p, f) p->f_sm = f; solSet_set_equal_func(p->cs, f); solHash_set_equal_func(p->as, f)
+#define solPda_set_character_match_func(p, f) p->f_cm = f; solSet_set_equal_func(p->ac, f)
+#define solPda_set_state_free_func(p, f) p->f_sf = f; solHash_set_free_k_func(p->as, f)
+#define solPda_set_character_free_func(p, f) p->f_cf = f; solSet_set_free_func(p->ac, f)
 
 SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);
