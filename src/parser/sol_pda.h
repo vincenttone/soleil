@@ -43,8 +43,8 @@ int solPda_add_current_state(SolPda*, void*);
 SolPdaState* solPdaState_new(void*);
 void solPdaState_free(SolPdaState*);
 inline int solPdaState_add_rule(SolPdaState*, SolPdaState*, void*);
-void* solPdaState_next_states(int, SolPdaState*, void*);
-void* solPdaState_free_moves(int, SolPdaState*);
+SolPdaState* solPdaState_next_states(SolPdaState*, void*);
+SolSet* solPdaState_free_moves(SolPdaState*);
 #define solPdaState_set_state(ps, s) ps->cs = s
 
 void _solPdaState_free(void *ps);
