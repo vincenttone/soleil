@@ -29,8 +29,6 @@ void x_free(void *s)
 
 int main()
 {
-	SolVal *s = sol_alloc(sizeof(SolVal));
-	solVal_int(s, 1);
 	SolVal *s1 = sol_alloc(sizeof(SolVal));
 	solVal_int(s1, 1);
 	SolVal *s2 = sol_alloc(sizeof(SolVal));
@@ -44,7 +42,7 @@ int main()
 	SolVal *c2 = sol_alloc(sizeof(SolVal));
 	solVal_char(c2, 'b');
 	SolVal *c3 = sol_alloc(sizeof(SolVal));
-	solVal_char(c1, 'c');
+	solVal_char(c3, 'c');
 	SolPda *p = solPda_new();
 	solPda_set_state_free_func(p, &x_free);
 	solPda_set_character_free_func(p, &x_free);
