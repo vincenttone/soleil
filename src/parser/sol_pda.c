@@ -43,20 +43,26 @@ inline int solPdaState_add_rule(SolPdaState *ps, SolPdaState *ns, void *c)
 	}
 }
 
-int solPdaState_next_states(SolSet *s, SolPdaState *ps, void *c)
+void* solPdaState_next_states(int t, SolPdaState *ps, void *c)
 {
-	SolPdaState *cs;
+	t = SOL_PDA_IS_STATE;
 	if (c == NULL && ps->f) {
-		solSet_merge(s, ps->f);
-		return 0;
-	} else if (ps->n) {
+		t = SOL_PDA_IS_STATES;
+		return ps->f;
+	} if (ps->n) {
+		SolPdaState *cs;
 		cs = solHash_get(ps->n, c);
 		if (cs) {
-			solSet_add(s, cs);
-			return 0;
+			t = SOL_PDA_IS_STATE;
+			return cs;
 		}
 	}
-	return 1;
+	return NULL;
+}
+
+void* solPdaState_free_moves(int t, SolPdaState *ps)
+{
+	return solPdaState_next_states(t, ps, NULL);
 }
 
 int solPdaState_is_same(SolPdaState *s1, SolPdaState *s2)
@@ -157,19 +163,50 @@ int solPda_step(SolPda *p, void* c)
 	if (p->cs == NULL) {
 		return 12;
 	}
+	int f = 0;
+	int find = 0;
+	void *ns;
 	SolSet *cs = solSet_new();
-	solSet_set_equal_func(cs, &p->f_sm);
+	solSet_set_hash_func1(cs, &solPdaState_hash_func1);
+	solSet_set_hash_func2(cs, &solPdaState_hash_func2);
+	solSet_set_equal_func(cs, &p->f_psm);
 	SolPdaState *s;
+	solSet_rewind(p->cs);
 	while ((s = solSet_get(p->cs))) {
-		solPdaState_next_states(cs, s, c);
+		ns = solPdaState_next_states(find, s, c);
+		if (find == SOL_PDA_IS_NONE) {
+			continue;
+		}
+		if (find == SOL_PDA_IS_STATE && ns) {
+			solSet_add(cs, (SolPdaState*)ns);
+		} else if (find == SOL_PDA_IS_STATES && ns) {
+			solSet_merge(cs, (SolSet*)ns);
+		}
+		f = 1;
 	}
-	solSet_free(p->cs);
-	if (solSet_is_empty(cs)) {
-		return 11;
-	} else {
+	/*
+	solSet_rewind(p->cs);
+	while ((s = solSet_get(p->cs))) {
+		ns = solPdaState_free_moves(find, s);
+		if (find == SOL_PDA_IS_NONE) {
+			continue;
+		}
+		if (find == SOL_PDA_IS_STATE && ns) {
+			solSet_add(cs, (SolPdaState*)ns);
+		} else if (find == SOL_PDA_IS_STATES && ns) {
+			solSet_merge(cs, (SolSet*)ns);
+		}
+		f = 1;
+	}
+	*/
+	if (f == 1) {
+		solSet_free(p->cs);
 		solPda_set_current_states(p, cs);
-		return 0;
+		if (solSet_is_empty(cs)) {
+			return 11;
+		}
 	}
+	return 0;
 }
 
 int solPda_add_current_state(SolPda *p, void *s)

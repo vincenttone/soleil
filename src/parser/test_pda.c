@@ -26,9 +26,26 @@ void x_free(void *s)
 		printf("empty data.\n");
 	}
 }
+void print_current_states(SolSet *ss);
+void print_current_states(SolSet *ss)
+{
+	SolPdaState *s;
+	printf("current states: (");
+	size_t c = solSet_count(ss);
+	solSet_rewind(ss);
+	while ((s = solSet_get(ss))) {
+		if (--c > 0) {
+			printf("%d\t", ((SolVal*)(s->s))->v.i);
+		} else {
+			printf("%d", ((SolVal*)(s->s))->v.i);
+		}
+	}
+	printf(")\n");
+}
 
 int main()
 {
+	int r = 0;
 	SolVal *s1 = sol_alloc(sizeof(SolVal));
 	solVal_int(s1, 1);
 	SolVal *s2 = sol_alloc(sizeof(SolVal));
@@ -55,9 +72,28 @@ int main()
 	solPda_add_rule(p, s1, s2, c1);
 	solPda_add_rule(p, s1, s3, c2);
 	solPda_add_rule(p, s3, s2, c2);
-	solPda_add_rule(p, s3, s4, c3);
-	solPda_add_rule(p, s4, s5, NULL);
+	solPda_add_rule(p, s2, s4, c3);
+	solPda_add_rule(p, s4, s3, c1);
+	solPda_add_rule(p, s3, s5, NULL);
 	solPda_add_rule(p, s5, s6, c3);
+	solPda_add_current_state(p, s1);
+	print_current_states(solPda_current_states(p));
+	r = solPda_step(p, c1);
+	if (r != 0) goto end;
+	print_current_states(solPda_current_states(p));
+	r = solPda_step(p, c2);
+	if (r != 0) goto end;
+	print_current_states(solPda_current_states(p));
+	r = solPda_step(p, c3);
+	if (r != 0) goto end;
+	print_current_states(solPda_current_states(p));
+	r = solPda_step(p, c3);
+	if (r != 0) goto end;
+	print_current_states(solPda_current_states(p));
+	r = solPda_step(p, c1);
+	if (r != 0) goto end;
+	print_current_states(solPda_current_states(p));
+ end:
 	solPda_free(p);
-	return 1;
+	return r;
 }
