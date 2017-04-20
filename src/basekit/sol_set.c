@@ -60,10 +60,12 @@ int solSet_equal(SolSet *s1, SolSet *s2)
 
 int solSet_merge(SolSet *s, SolSet *s1)
 {
+	int rtn = 0;
 	void *v;
 	while ((v = solSet_get(s1))) {
-		if (solSet_add(s, v) == 1) {
-			return 1;
+		rtn = solSet_add(s, v);
+		if (rtn != 0) {
+			return rtn;
 		}
 	}
 	return 0;

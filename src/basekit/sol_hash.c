@@ -41,7 +41,7 @@ int solHash_set_size(SolHash *hash, size_t size)
 {
 	hash->records = sol_calloc(size, sizeof(SolHashRecord));
 	if (hash->records == NULL) {
-		return 1;
+		return 8;
 	}
 	hash->size = size;
 	solHash_update_mask(hash);
@@ -139,10 +139,10 @@ int solHash_try_to_put(SolHash *hash, void *k, void *v)
 		solHash_record_switch(r, &rs);
 	}
 	if (hash->is_resizing == SOL_HASH_RESIZING_Y) {
-		return 1;
+		return 2;
 	}
 	if (solHash_grow(hash)) {
-		return 1;
+		return 3;
 	}
 	return solHash_put_key_and_val(hash, rs.k, rs.v);
 }
@@ -167,7 +167,7 @@ int solHash_resize(SolHash *hash, size_t size)
 			hash->records = records;
 			hash->size = old_size;
 			hash->is_resizing = SOL_HASH_RESIZING_N;
-			return 1;
+			return 6;
 		}
 		hash->count = 0;
 		if (solHash_add_records(hash, records, old_size) == 0) {
@@ -181,7 +181,7 @@ int solHash_resize(SolHash *hash, size_t size)
 		hash->records = records;
 		hash->size = old_size;
 		hash->is_resizing = SOL_HASH_RESIZING_N;
-		return 1;
+		return 7;
 	} else {
 		solHash_free_records(records, old_size, hash->f_free_k, hash->f_free_v);
 		return 0;
@@ -196,7 +196,7 @@ inline int solHash_add_records(SolHash *hash, SolHashRecord *records, size_t siz
 		r = solHash_record_at_offset(records, offset);
 		if (r->k) {
 			if (solHash_put_key_and_val(hash, r->k, r->v)) {
-				return 1;
+				return 5;
 			}
 		}
 		offset++;
