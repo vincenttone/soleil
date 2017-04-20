@@ -37,6 +37,10 @@ int main()
 	solVal_int(s3, 3);
 	SolVal *s4 = sol_alloc(sizeof(SolVal));
 	solVal_int(s4, 4);
+	SolVal *s5 = sol_alloc(sizeof(SolVal));
+	solVal_int(s5, 5);
+	SolVal *s6 = sol_alloc(sizeof(SolVal));
+	solVal_int(s6, 6);
 	SolVal *c1 = sol_alloc(sizeof(SolVal));
 	solVal_char(c1, 'a');
 	SolVal *c2 = sol_alloc(sizeof(SolVal));
@@ -52,6 +56,8 @@ int main()
 	solPda_add_rule(p, s1, s3, c2);
 	solPda_add_rule(p, s3, s2, c2);
 	solPda_add_rule(p, s3, s4, c3);
+	solPda_add_rule(p, s4, s5, NULL);
+	solPda_add_rule(p, s5, s6, c3);
 	solPda_free(p);
 	return 1;
 }
