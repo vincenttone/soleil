@@ -154,28 +154,31 @@ int solPda_add_rule(SolPda *p, void *s1, void *s2, void *c)
 	return solPdaState_add_rule(ps1, ps2, c);
 }
 
-int solPda_step(SolPda *p, void* c)
+int solPda_read_character(SolPda *p, void* c)
 {
 	if (p->cs == NULL) {
-		return 12;
+		return 21;
 	}
-	SolSet *nss = solSet_new();
-	if (nss == NULL) {
-		return 2;
-	}
-	solSet_set_hash_func1(nss, &solPdaState_hash_func1);
-	solSet_set_hash_func2(nss, &solPdaState_hash_func2);
-	solSet_set_equal_func(nss, &p->f_psm);
+	SolSet *nss = NULL;
 	SolPdaState *cs;
 	SolPdaState *ns;
 	SolSet *fss;
 	solSet_rewind(p->cs);
 	while ((cs = solSet_get(p->cs))) {
 		ns = solPdaState_next_states(cs, c);
-		if (0 && ns) {
+		if (ns) {
+			if (nss == NULL) {
+				nss = solSet_new();
+				if (nss == NULL) {
+					return 2;
+				}
+				solSet_set_hash_func1(nss, &solPdaState_hash_func1);
+				solSet_set_hash_func2(nss, &solPdaState_hash_func2);
+				solSet_set_equal_func(nss, &p->f_psm);
+			}
 			solSet_add(nss, ns);
 			fss = solPdaState_free_moves(ns);
-			if (solSet_is_not_empty(fss)) {
+			if (fss && solSet_is_not_empty(fss)) {
 				solSet_merge(nss, fss);
 			}
 		}
@@ -183,7 +186,7 @@ int solPda_step(SolPda *p, void* c)
 	if (nss) {
 		if (solSet_is_empty(nss)) {
 			solSet_free(nss);
-			return 11;
+			return 1;
 		}
 		solSet_free(p->cs);
 		solPda_set_current_states(p, nss);

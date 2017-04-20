@@ -35,7 +35,7 @@ void print_current_states(SolSet *ss)
 	solSet_rewind(ss);
 	while ((s = solSet_get(ss))) {
 		if (--c > 0) {
-			printf("%d\t", ((SolVal*)(s->s))->v.i);
+			printf("%d, ", ((SolVal*)(s->s))->v.i);
 		} else {
 			printf("%d", ((SolVal*)(s->s))->v.i);
 		}
@@ -78,22 +78,25 @@ int main()
 	solPda_add_rule(p, s5, s6, c3);
 	solPda_add_current_state(p, s1);
 	print_current_states(solPda_current_states(p));
-	r = solPda_step(p, c1);
-	if (r != 0) goto end;
+	r = solPda_read_character(p, c1);
+	if (r > 1) goto end;
 	print_current_states(solPda_current_states(p));
-	r = solPda_step(p, c2);
-	if (r != 0) goto end;
+	r = solPda_read_character(p, c2);
+	if (r > 1) goto end;
 	print_current_states(solPda_current_states(p));
-	r = solPda_step(p, c3);
-	if (r != 0) goto end;
+	r = solPda_read_character(p, c3);
+	if (r > 1) goto end;
 	print_current_states(solPda_current_states(p));
-	r = solPda_step(p, c3);
-	if (r != 0) goto end;
+	r = solPda_read_character(p, c3);
+	if (r > 1) goto end;
 	print_current_states(solPda_current_states(p));
-	r = solPda_step(p, c1);
-	if (r != 0) goto end;
+	r = solPda_read_character(p, c1);
+	if (r > 1) goto end;
 	print_current_states(solPda_current_states(p));
+	goto finish;
  end:
+	printf("something wrong\n");
+ finish:
 	solPda_free(p);
 	return r;
 }

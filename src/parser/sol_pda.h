@@ -30,7 +30,7 @@ typedef struct _SolPda {
 SolPda* solPda_new();
 void solPda_free();
 int solPda_add_rule(SolPda*, void*, void*, void*);
-int solPda_step(SolPda *p, void* c);
+int solPda_read_character(SolPda *p, void* c);
 int solPda_add_current_state(SolPda*, void*);
 #define solPda_set_current_states(p, s) p->cs = s
 #define solPda_current_states(p) p->cs
