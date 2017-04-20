@@ -8,6 +8,9 @@ size_t hash_func_murmur(void*);
 size_t hash_func_fnv32(void*);
 int equals(void *, void*);
 
+int (*f_equal_ptr)(void*, void*);
+void (*f_free_ptr)(void*);
+
 size_t hash_func_murmur(void *key)
 {
 	int len = strlen((char *)key);
@@ -32,14 +35,16 @@ void free_echo(void *v)
 
 int main()
 {
+	f_equal_ptr = &equals;
+	f_free_ptr = &free_echo;
 	SolHash *hash = solHash_new();
 	size_t (*f1)(void*) = &hash_func_murmur;
 	size_t (*f2)(void*) = &hash_func_fnv32;
 	solHash_set_hash_func1(hash, f1);
 	solHash_set_hash_func2(hash, f2);
-	solHash_set_equal_func(hash, &equals);
-	solHash_set_free_k_func(hash, &free_echo);
-	solHash_set_free_v_func(hash, &free_echo);
+	solHash_set_equal_func(hash, &f_equal_ptr);
+	solHash_set_free_k_func(hash, &f_free_ptr);
+	solHash_set_free_v_func(hash, &f_free_ptr);
 	solHash_put_key_and_val(hash, "key1", "value1");
 	solHash_put_key_and_val(hash, "key2", "value2");
 	solHash_put_key_and_val(hash, "key3", "value3");

@@ -13,28 +13,25 @@
 #define solHash_grow(h) solHash_resize(h, h->size * 2)
 #define solHash_record_extend(r) //
 
-typedef size_t (*SolHashFunc)(void*);
-typedef int (*SolHashEqualFunc)(void*, void*);
-
-typedef struct SolHashRecord {
+typedef struct _SolHashRecord {
 	void *k;
 	void *v;
 } SolHashRecord;
 
-typedef struct SolHash {
+typedef struct _SolHash {
 	size_t size;
 	size_t count;
 	size_t mask;
 	SolHashRecord *records;
 	size_t (*f_hash1)(void*);
 	size_t (*f_hash2)(void*);
-	int (*f_match)(void*, void*);
-	void (*f_free_k)(void*);
-	void (*f_free_v)(void*);
+	sol_f_match_ptr *f_match;
+	sol_f_free_ptr *f_free_k;
+	sol_f_free_ptr *f_free_v;
 	int is_resizing;
 } SolHash;
 
-typedef struct SolHashIter {
+typedef struct _SolHashIter {
 	SolHash *hash;
 	SolHashRecord *record;
 	size_t c;
@@ -72,9 +69,9 @@ void solHashIter_next(SolHashIter*);
 #define solHash_set_free_v_func(h, f) h->f_free_v = f
 #define solHash_hash1(h, k) (*h->f_hash1)(k)
 #define solHash_hash2(h, k) (*h->f_hash2)(k)
-#define solHash_match(h, k1, k2) (*h->f_match)(k1, k2)
+#define solHash_match(h, k1, k2) (**h->f_match)(k1, k2)
 
-inline void solHash_free_records(SolHashRecord*, size_t, void (*fk)(void*), void (*fv)(void*));
+inline void solHash_free_records(SolHashRecord*, size_t, sol_f_free_ptr *fk, sol_f_free_ptr *fv);
 inline SolHashRecord* solHash_record1_of_key(SolHash *hash, void *k);
 inline SolHashRecord* solHash_record2_of_key(SolHash *hash, void *k);
 inline void solHash_record_switch(SolHashRecord *r1, SolHashRecord *r2);
