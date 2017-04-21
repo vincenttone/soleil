@@ -26,11 +26,11 @@ void x_free(void *s)
 		printf("empty data.\n");
 	}
 }
-void print_current_states(SolSet *ss);
-void print_current_states(SolSet *ss)
+void print_pda_states(SolSet *ss);
+void print_pda_states(SolSet *ss)
 {
 	SolPdaState *s;
-	printf("current states: (");
+	printf("states: (");
 	size_t c = solSet_count(ss);
 	solSet_rewind(ss);
 	while ((s = solSet_get(ss))) {
@@ -77,26 +77,41 @@ int main()
 	solPda_add_rule(p, s3, s5, NULL);
 	solPda_add_rule(p, s5, s6, c3);
 	solPda_add_current_state(p, s1);
-	print_current_states(solPda_current_states(p));
+	solPda_add_accepting_state(p, s5);
+	printf("Accepting states:\n");
+	print_pda_states(solPda_accepting_states(p));
+	printf("Reading character:\n");
+	print_pda_states(solPda_current_states(p));
 	r = solPda_read_character(p, c1);
 	if (r > 1) goto end;
-	print_current_states(solPda_current_states(p));
+	print_pda_states(solPda_current_states(p));
+	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
+
 	r = solPda_read_character(p, c2);
 	if (r > 1) goto end;
-	print_current_states(solPda_current_states(p));
+	print_pda_states(solPda_current_states(p));
+	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
+
 	r = solPda_read_character(p, c3);
 	if (r > 1) goto end;
-	print_current_states(solPda_current_states(p));
+	print_pda_states(solPda_current_states(p));
+	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
+
 	r = solPda_read_character(p, c3);
 	if (r > 1) goto end;
-	print_current_states(solPda_current_states(p));
+	print_pda_states(solPda_current_states(p));
+	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
+
 	r = solPda_read_character(p, c1);
 	if (r > 1) goto end;
-	print_current_states(solPda_current_states(p));
+	print_pda_states(solPda_current_states(p));
+	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
 	goto finish;
  end:
 	printf("something wrong\n");
  finish:
+	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
+	else printf("not accepted!\n");
 	solPda_free(p);
 	return r;
 }

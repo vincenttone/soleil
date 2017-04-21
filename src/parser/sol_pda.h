@@ -18,8 +18,9 @@ typedef struct _SolPdaState {
 
 typedef struct _SolPda {
 	SolSet *cs; // current states
-	SolHash *as; // all states
-	SolSet *ac; // all characters
+	SolSet *as; // accepting states
+	SolHash *als; // all states
+	SolSet *alc; // all characters
 	sol_f_match_ptr f_sm; // func state match
 	sol_f_match_ptr f_cm; // func character match
 	sol_f_match_ptr f_psm; // func pda state match
@@ -32,8 +33,13 @@ void solPda_free();
 int solPda_add_rule(SolPda*, void*, void*, void*);
 int solPda_read_character(SolPda *p, void* c);
 int solPda_add_current_state(SolPda*, void*);
+int solPda_add_accepting_state(SolPda*, void*);
+int solPda_is_accepted(SolPda*);
+
 #define solPda_set_current_states(p, s) p->cs = s
 #define solPda_current_states(p) p->cs
+#define solPda_set_accepting_states(p, s) p->as = s
+#define solPda_accepting_states(p) p->as
 
 #define solPda_set_state_match_func(p, f) p->f_sm = f
 #define solPda_set_character_match_func(p, f) p->f_cm = f
