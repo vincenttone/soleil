@@ -39,15 +39,28 @@ void* solSet_get(SolSet *s)
 	return NULL;
 }
 
-int solSet_is_subset(SolSet *s, SolSet *s1)
+int solSet_is_subset(SolSet *s1, SolSet *s2)
 {
 	void *v;
-	while ((v = solSet_get(s1))) {
-		if (!solSet_in_set(s, v)) {
+	solSet_rewind(s2);
+	while ((v = solSet_get(s2))) {
+		if (solSet_in_set(s1, v) == 1) {
 			return 1;
 		}
 	}
 	return 0;
+}
+
+int solSet_has_intersection(SolSet *s1, SolSet *s2)
+{
+	void *v;
+	solSet_rewind(s1);
+	while ((v = solSet_get(s1))) {
+		if (solSet_in_set(s2, v) == 0) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
 int solSet_equal(SolSet *s1, SolSet *s2)

@@ -1,16 +1,41 @@
+set $po = 0
+define ppp
+  if $po == 1
+	ppp $arg0
+  else
+	pval $arg0
+  end
+end
+
 define pstring
   p (char*)$arg0
+end
+
+define pval
+  if $arg0
+    p *(SolVal*)$arg0
+  else
+	p 'null'
+  end
+end
+
+define pps
+  if $arg0
+	pval ((SolPdaState*)$arg0)->s
+  else
+	p 'null'
+  end
 end
 
 define precord
   p $arg0
   set $sv = 0
-  pstring $arg0->k
+  ppp $arg0->k
   if $argc > 1
 	set $sv = $arg1
   end
   if $sv == 0
-	pstring $arg0->v
+  	ppp $arg0->v
   end
 end
 
@@ -39,7 +64,7 @@ define precords
   end
 end
 
-define phashrecords
+define phash
   set $f = 1
   if $argc > 1
 	set $f = $arg1
@@ -47,7 +72,7 @@ define phashrecords
   precords $arg0->size $arg0->records $f
 end
 
-define psetrecords
+define pset
   set $f = 1
   if $argc > 1
 	set $f = $arg1

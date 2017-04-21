@@ -28,6 +28,7 @@ void solSet_free(SolSet*);
 
 void* solSet_get(SolSet*);
 int solSet_is_subset(SolSet*, SolSet*);
+int solSet_has_intersection(SolSet*, SolSet*);
 int solSet_equal(SolSet*, SolSet*);
 int solSet_merge(SolSet*, SolSet*);
 
