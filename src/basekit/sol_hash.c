@@ -72,7 +72,7 @@ void* solHash_find_value(SolHash *hash, void *k)
 
 int solHash_has_key(SolHash *hash, void *k)
 {
-	if (solHash_find_value(hash, k)) {
+	if (solHash_find_record_by_key(hash, k)) {
 		return 0;
 	}
 	return 1;
