@@ -114,7 +114,7 @@ SolPattern* solPattern_concatenate_new(SolPattern *p, SolVal *c1, SolVal *c2)
 	return nfa;
 }
 
-SolPattern* solPattern_choose_new()
+SolPattern* solPattern_choose_new(SolPattern *p, SolVal *c1, SolVal *c2)
 {
 	SolVal *s1 = solPatter_gen_state(p);
 	if (s1 == NULL) {
@@ -135,6 +135,23 @@ SolPattern* solPattern_choose_new()
 	solNfa_add_rule(nfa, s1, s2, c2);
 	solNfa_add_current_state(nfa, s1);
 	solNfa_add_accepting_state(nfa, s2);
+	return nfa;
+}
+
+SolNfa* solPattern_repeat_new(SolPattern *p, SolVal *c)
+{
+	SolVal *s = solPatter_gen_state(p);
+	if (s == NULL) {
+		return NULL;
+	}
+	SolNfa *nfa = solPattern_gen_nfa();
+	if (nfa == NULL) {
+		sol_free(s);
+		return NULL;
+	}
+	solNfa_add_rule(nfa, s, s, c);
+	solNfa_add_current_state(nfa, s);
+	solNfa_add_accepting_state(nfa, s);
 	return nfa;
 }
 

@@ -16,9 +16,10 @@ SolNfa* solPattern_gen_nfa();
 #define solPattern_add_nfa(p, n) solList_add(p->l, n)
 
 SolNfa* solPattern_empty_new(SolPattern*);
-SolNfa* solPattern_literal_new(SolPattern*);
-SolNfa* solPattern_concatenate_new(SolPattern*);
-SolNfa* solPattern_choose_new(SolPattern*);
+SolNfa* solPattern_literal_new(SolPattern*, SolVal*);
+SolNfa* solPattern_concatenate_new(SolPattern*, SolVal*, SolVal*);
+SolNfa* solPattern_choose_new(SolPattern*, SolVal*, SolVal*);
+SolNfa* solPattern_repeat_new(SolPattern*, SolVal*);
 
 int _solPattern_val_equal(void *k1, void *k2);
 
