@@ -1,7 +1,7 @@
 set $po = 0
 define ppp
   if $po == 1
-	ppp $arg0
+	pps $arg0
   else
 	pval $arg0
   end
