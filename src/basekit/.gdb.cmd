@@ -21,7 +21,7 @@ end
 
 define pps
   if $arg0
-	pval ((SolPdaState*)$arg0)->s
+	pval ((SolNfaState*)$arg0)->s
   else
 	p 'null'
   end
