@@ -31,6 +31,8 @@ int solNfa_read_character(SolNfa *p, void* c);
 int solNfa_add_current_state(SolNfa*, void*);
 int solNfa_add_accepting_state(SolNfa*, void*);
 int solNfa_is_accepted(SolNfa*);
+int _solNfa_states_free_moves(SolSet*, SolSet*);
+int solNfa_free_moves(SolNfa*);
 
 #define solNfa_set_current_states(p, s) p->cs = s
 #define solNfa_current_states(p) p->cs
@@ -46,7 +48,7 @@ SolNfaState* solNfaState_new(void*);
 void solNfaState_free(SolNfaState*);
 inline int solNfaState_add_rule(SolNfaState*, SolNfaState*, void*);
 SolNfaState* solNfaState_next_states(SolNfaState*, void*);
-SolSet* solNfaState_free_moves(SolNfaState*);
+#define solNfaState_free_moves(n) n->f
 #define solNfaState_set_state(ps, s) ps->cs = s
 
 void _solNfaState_free(void *ps);
@@ -57,5 +59,6 @@ int (*solNfaState_is_same_ptr)(void*, void*);
 
 size_t solNfaState_hash_func1(void*);
 size_t solNfaState_hash_func2(void*);
+inline SolSet* _solNfa_nfa_state_set_new(SolNfa*);
 
 #endif

@@ -70,7 +70,7 @@ int main()
 	solNfa_set_state_match_func(p, &equal);
 	solNfa_set_character_match_func(p, &equal);
 	solNfa_add_rule(p, s1, s2, c1);
-	solNfa_add_rule(p, s1, s3, c2);
+	solNfa_add_rule(p, s1, s3, c1);
 	solNfa_add_rule(p, s3, s2, c2);
 	solNfa_add_rule(p, s2, s4, c3);
 	solNfa_add_rule(p, s4, s3, c1);
@@ -78,32 +78,23 @@ int main()
 	solNfa_add_rule(p, s5, s6, c3);
 	solNfa_add_current_state(p, s1);
 	solNfa_add_accepting_state(p, s5);
+	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
 	printf("Accepting states:\n");
 	print_pda_states(solNfa_accepting_states(p));
 	printf("Reading character:\n");
 	print_pda_states(solNfa_current_states(p));
 	r = solNfa_read_character(p, c1);
-	if (r > 1) goto end;
+	if (r != 0) goto end;
 	print_pda_states(solNfa_current_states(p));
 	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
 
 	r = solNfa_read_character(p, c2);
-	if (r > 1) goto end;
+	if (r != 0) goto end;
 	print_pda_states(solNfa_current_states(p));
 	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
 
 	r = solNfa_read_character(p, c3);
-	if (r > 1) goto end;
-	print_pda_states(solNfa_current_states(p));
-	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
-
-	r = solNfa_read_character(p, c3);
-	if (r > 1) goto end;
-	print_pda_states(solNfa_current_states(p));
-	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
-
-	r = solNfa_read_character(p, c1);
-	if (r > 1) goto end;
+	if (r != 0) goto end;
 	print_pda_states(solNfa_current_states(p));
 	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
 	goto finish;
