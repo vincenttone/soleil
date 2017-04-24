@@ -110,8 +110,15 @@ int main()
  end:
 	printf("something wrong\n");
  finish:
-	if (solPda_is_accepted(p) == 0) printf("accepted!\n");
-	else printf("not accepted!\n");
+	if (solPda_is_accepted(p) == 0) {
+		solSet_rewind(p->cs);
+		SolSet* ass = solSet_get_intersection(p->cs, p->as);
+		printf("accepted states:\n");
+		print_pda_states(ass);
+		solSet_free(ass);
+	} else {
+		printf("not accepted!\n");
+	}
 	solPda_free(p);
 	return r;
 }
