@@ -11,7 +11,7 @@ size_t sol_hash_func1(void *d)
 	} else if (solVal_is_type_((SolVal*)d, SolValTypeStr)) {
 		v = solVal_str_val((SolVal*)d);
 	}
-	return MurmurHash2(v, ((SolVal*)d)->s, 0);
+	return MurmurHash2(v, solVal_get_size((SolVal*)d), 0);
 }
 
 size_t sol_hash_func2(void *d)
@@ -30,16 +30,16 @@ size_t sol_hash_func2(void *d)
 int solVal_equal(SolVal *v1, SolVal *v2)
 {
 	if (solVal_same_type(v1, v2)) {
-		if (solVal_same_size(v1, v2)) {
-			if (solVal_is_type_(v1, SolValTypeInt)) {
-				if (solVal_int_val(v1) == solVal_int_val(v2)) {
-					return 0;
-				}
-			} else if (solVal_is_type_(v1, SolValTypeChar)) {
-				if (solVal_char_val(v1) == solVal_char_val(v2)) {
-					return 0;
-				}
-			} else if (solVal_is_type_(v1, SolValTypeStr)) {
+		if (solVal_is_type_(v1, SolValTypeInt)) {
+			if (solVal_int_val(v1) == solVal_int_val(v2)) {
+				return 0;
+			}
+		} else if (solVal_is_type_(v1, SolValTypeChar)) {
+			if (solVal_char_val(v1) == solVal_char_val(v2)) {
+				return 0;
+			}
+		} else if (solVal_is_type_(v1, SolValTypeStr)) {
+			if (solVal_same_size(v1, v2)) {
 				return strcmp(v1->v.s, v2->v.s);
 			}
 		}
