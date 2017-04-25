@@ -30,14 +30,20 @@ int solNfa_add_rule(SolNfa*, void*, void*, void*);
 int solNfa_read_character(SolNfa *p, void* c);
 int solNfa_add_current_state(SolNfa*, void*);
 int solNfa_add_accepting_state(SolNfa*, void*);
+int solNfa_add_accepting_states(SolNfa*, SolSet*);
 int solNfa_is_accepted(SolNfa*);
 int _solNfa_states_free_moves(SolSet*, SolSet*);
 int solNfa_free_moves(SolNfa*);
 
 #define solNfa_set_current_states(p, s) p->cs = s
-#define solNfa_current_states(p) p->cs
 #define solNfa_set_accepting_states(p, s) p->as = s
+#define solNfa_set_all_states(p, ss) p->als = ss
+#define solNfa_set_all_characters(p, cs) p->alc = cs
+
+#define solNfa_current_states(p) p->cs
 #define solNfa_accepting_states(p) p->as
+#define solNfa_all_states(p) p->als;
+#define solNfa_all_character(p) p->alc;
 
 #define solNfa_set_state_match_func(p, f) p->f_sm = f
 #define solNfa_set_character_match_func(p, f) p->f_cm = f

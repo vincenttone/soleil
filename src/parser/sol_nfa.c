@@ -265,6 +265,18 @@ int solNfa_add_accepting_state(SolNfa *p, void *s)
 	return 13;
 }
 
+int solNfa_add_accepting_states(SolNfa *n, SolSet *ss)
+{
+	SolNfaState *s;
+	solSet_rewind(ss);
+	while ((s = solSet_get(ss))) {
+		if (solNfa_add_accepting_state(n, s) != 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
 size_t solNfaState_hash_func1(void *ps)
 {
 	void *s = ((SolNfaState*)ps)->s;
