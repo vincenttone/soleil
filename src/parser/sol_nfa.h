@@ -42,8 +42,8 @@ int solNfa_free_moves(SolNfa*);
 
 #define solNfa_current_states(p) p->cs
 #define solNfa_accepting_states(p) p->as
-#define solNfa_all_states(p) p->als;
-#define solNfa_all_character(p) p->alc;
+#define solNfa_all_states(p) p->als
+#define solNfa_all_characters(p) p->alc
 
 #define solNfa_set_state_match_func(p, f) p->f_sm = f
 #define solNfa_set_character_match_func(p, f) p->f_cm = f
