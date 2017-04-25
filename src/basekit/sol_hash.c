@@ -193,6 +193,13 @@ int solHash_resize(SolHash *hash, size_t size)
 
 int solHash_merge(SolHash *h1, SolHash *h2)
 {
+	if (h2 == NULL) {
+		return 0;
+	}
+	if (h1 == NULL) {
+		h1 = h2;
+		return 0;
+	}
 	return solHash_add_records(h1, h2->records, solHash_size(h2));
 }
 

@@ -103,6 +103,13 @@ int solSet_equal(SolSet *s1, SolSet *s2)
 
 int solSet_merge(SolSet *s, SolSet *s1)
 {
+	if (s1 == NULL) {
+		return 0;
+	}
+	if (s == NULL) {
+		s = s1;
+		return 0;
+	}
 	int rtn = 0;
 	void *v;
 	while ((v = solSet_get(s1))) {
