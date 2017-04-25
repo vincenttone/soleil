@@ -55,6 +55,7 @@ int solHash_put_key_and_val(SolHash*, void*, void*);
 void solHash_remove_by_key(SolHash*, void*);
 int solHash_has_key(SolHash*, void*);
 void* solHash_find_value(SolHash*, void *);
+int solHash_merge(SolHash*, SolHash*);
 
 SolHashIter* solHashIter_new(SolHash*);
 void solHashIter_free(SolHashIter*);

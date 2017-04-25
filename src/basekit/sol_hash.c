@@ -191,6 +191,11 @@ int solHash_resize(SolHash *hash, size_t size)
 	}
 }
 
+int solHash_merge(SolHash *h1, SolHash *h2)
+{
+	return solHash_add_records(h1, h2->records, solHash_size(h2));
+}
+
 inline int solHash_add_records(SolHash *hash, SolHashRecord *records, size_t size)
 {
 	SolHashRecord *r;
