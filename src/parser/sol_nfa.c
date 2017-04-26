@@ -45,6 +45,9 @@ inline int solNfaState_add_rule(SolNfaState *cs, void *ns, void *c)
 
 void* solNfaState_next_state(SolNfaState *cs, void *c)
 {
+	if (solNfaState_next_state_table(cs) == NULL) {
+		return NULL;
+	}
 	void *ns = solHash_get(solNfaState_next_state_table(cs), c);
 	return ns;
 }
@@ -84,6 +87,7 @@ int solNfa_free_moves(SolNfa *nfa)
 SolNfa* solNfa_new()
 {
 	SolNfa *nfa = sol_calloc(1, sizeof(SolNfa));
+	nfa->ss = solSet_new();
 	nfa->cs = solSet_new();
 	nfa->as = solSet_new();
 	nfa->als = solHash_new();
@@ -92,6 +96,10 @@ SolNfa* solNfa_new()
 
 void solNfa_init(SolNfa *nfa)
 {
+	solSet_set_hash_func1(solNfa_starting_states(nfa), solNfa_state_hash_func1(nfa));
+	solSet_set_hash_func2(solNfa_starting_states(nfa), solNfa_state_hash_func2(nfa));
+	solSet_set_equal_func(solNfa_starting_states(nfa), solNfa_state_match_func(nfa));
+
 	solSet_set_hash_func1(solNfa_current_states(nfa), solNfa_state_hash_func1(nfa));
 	solSet_set_hash_func2(solNfa_current_states(nfa), solNfa_state_hash_func2(nfa));
 	solSet_set_equal_func(solNfa_current_states(nfa), solNfa_state_match_func(nfa));
@@ -108,15 +116,39 @@ void solNfa_init(SolNfa *nfa)
 
 void solNfa_free(SolNfa *p)
 {
-	solHash_free(p->als);
-	solSet_free(p->cs);
-	solSet_free(p->as);
-	sol_free(p);
+	if (p->ss) {
+		solSet_free(p->ss);
+	}
+	if (p->als) {
+		solHash_free(p->als);
+	}
+	if (p->cs) {
+		solSet_free(p->cs);
+	}
+	if (p->as) {
+		solSet_free(p->as);
+	}
+	if (p) {
+		sol_free(p);
+	}
 }
 
 int solNfa_is_accepted(SolNfa *p)
 {
 	return solSet_has_intersection(p->cs, p->as);
+}
+
+SolNfaState* solNfa_register_state(SolNfa *nfa, void *s)
+{
+	SolNfaState *ns = solNfaState_new(s);
+	if (ns == NULL) {
+		return NULL;
+	}
+	if (solHash_put(nfa->als, s, ns) != 0) {
+		solNfaState_free(ns);
+		return NULL;
+	}
+	return ns;
 }
 
 int solNfa_add_rule(SolNfa *p, void *s1, void *s2, void *c)
@@ -126,21 +158,15 @@ int solNfa_add_rule(SolNfa *p, void *s1, void *s2, void *c)
 	ps1 = solNfa_conv_nfa_state(p, s1);
 	ps2 = solNfa_conv_nfa_state(p, s2);
 	if (ps1 == NULL) {
-		ps1 = solNfaState_new(s1);
+		ps1 = solNfa_register_state(p, s1);
 		if (ps1 == NULL) {
-			return 10;
-		}
-		if (solHash_put(p->als, s1, ps1) != 0) {
-			return 11;
+			return 1;
 		}
 	}
 	if (ps2 == NULL) {
-		ps2 = solNfaState_new(s2);
+		ps2 = solNfa_register_state(p, s2);
 		if (ps2 == NULL) {
-			return 10;
-		}
-		if (solHash_put(p->als, s2, ps2) != 0) {
-			return 11;
+			return 2;
 		}
 	}
 	if (c == NULL && ps1->f == NULL) {
@@ -171,11 +197,11 @@ inline SolSet* _solNfa_nfa_state_set_new(SolNfa *nfa)
 
 int solNfa_read_character(SolNfa *p, void* c)
 {
-	if (solSet_is_empty(p->cs)) {
-		return 0; // stucked
-	}
 	if (p->cs == NULL) {
 		return 21;
+	}
+	if (solSet_is_empty(p->cs)) {
+		return 1; // stucked
 	}
 	SolSet *nss = NULL;
 	void *cs;
@@ -217,18 +243,74 @@ int solNfa_read_character(SolNfa *p, void* c)
 	return 0;
 }
 
-int solNfa_add_current_state(SolNfa *p, void *s)
+int solNfa_reset(SolNfa *nfa)
+{
+	if (solNfa_starting_states(nfa) == NULL) {
+		return 1;
+	}
+	void *s;
+	if (solNfa_current_states(nfa)) {
+		if (solSet_is_not_empty(solNfa_current_states(nfa))) {
+			solSet_free(solNfa_current_states(nfa));
+		} else {
+			goto build_cs;
+		}
+	}
+	SolSet *nss = _solNfa_nfa_state_set_new(nfa);
+	if (nss == NULL) {
+		return 22;
+	}
+	solNfa_set_current_states(nfa, nss);
+ build_cs:
+	solSet_rewind(solNfa_starting_states(nfa));
+	while ((s = solSet_get(solNfa_starting_states(nfa)))) {
+		solSet_add(solNfa_current_states(nfa), s);
+	}
+	return 0;
+}
+
+int solNfa_add_starting_state(SolNfa *p, void *s)
 {
 	if (!s) {
-		return 11;
+		return 1;
 	}
 	if (!p->cs) {
-		return 12;
+		return 2;
 	}
-	if (solSet_add(p->cs, s) == 0) {
-		return solNfa_free_moves(p);
+	if (solHash_has_key(solNfa_all_states(p), s) != 0) {
+		if (solNfa_register_state(p, s) == NULL) {
+			return 3;
+		}
 	}
-	return 13;
+	if (solSet_add(solNfa_starting_states(p), s) == 0) {
+		if (solNfa_free_moves(p) == 0) {
+			return 0;
+		} else {
+			return 4;
+		}
+	}
+	return 5;
+}
+
+int solNfa_add_current_state(SolNfa *p, void *s)
+{
+	if (s == NULL) {
+		return 1;
+	}
+	if (solNfa_current_states(p) == NULL) {
+		return 2;
+	}
+	if (solHash_has_key(solNfa_all_states(p), s) != 0) {
+		return 3;
+	}
+	if (solSet_add(solNfa_current_states(p), s) == 0) {
+		if (solNfa_free_moves(p) == 0) {
+			return 0;
+		} else {
+			return 4;
+		}
+	}
+	return 5;
 }
 
 int solNfa_add_accepting_state(SolNfa *p, void *s)
@@ -238,6 +320,11 @@ int solNfa_add_accepting_state(SolNfa *p, void *s)
 	}
 	if (!p->as) {
 		return 12;
+	}
+	if (solHash_has_key(solNfa_all_states(p), s) != 0) {
+		if (solNfa_register_state(p, s) == NULL) {
+			return 13;
+		}
 	}
 	return solSet_add(p->as, s);
 }

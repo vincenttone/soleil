@@ -13,6 +13,7 @@ typedef struct _SolNfaState {
 } SolNfaState;
 
 typedef struct _SolNfa {
+	SolSet *ss; // starting states (S1, S2, S3, ...)
 	SolSet *cs; // current states (S1, S2, S3, ...)
 	SolSet *as; // accepting states (Sa, Sb, Sc, ...)
 	SolHash *als; // all states {S1: NfaS1, S2: NfaS2, ...}
@@ -27,19 +28,25 @@ typedef struct _SolNfa {
 SolNfa* solNfa_new();
 void solNfa_init(SolNfa*);
 void solNfa_free();
+int solNfa_reset(SolNfa*);
 int solNfa_add_rule(SolNfa*, void*, void*, void*);
 int solNfa_read_character(SolNfa *p, void* c);
+
+int solNfa_add_starting_state(SolNfa*, void*);
 int solNfa_add_current_state(SolNfa*, void*);
 int solNfa_add_accepting_state(SolNfa*, void*);
 int solNfa_add_accepting_states(SolNfa*, SolSet*);
 int solNfa_is_accepted(SolNfa*);
 int _solNfa_states_free_moves(SolNfa*, SolSet*, SolSet*);
 int solNfa_free_moves(SolNfa*);
+SolNfaState* solNfa_register_state(SolNfa*, void*);
 
+#define solSet_set_starting_states(p, s) p->ss = s
 #define solNfa_set_current_states(p, s) p->cs = s
 #define solNfa_set_accepting_states(p, s) p->as = s
 #define solNfa_set_all_states(p, ss) p->als = ss
 
+#define solNfa_starting_states(p) p->ss
 #define solNfa_current_states(p) p->cs
 #define solNfa_accepting_states(p) p->as
 #define solNfa_all_states(p) p->als

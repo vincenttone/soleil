@@ -52,10 +52,10 @@ int main()
 	SolNfa *p = solNfa_new();
 	solNfa_set_state_match_func(p, &equal);
 	solNfa_set_character_match_func(p, &equal);
-	solNfa_set_state_hash_func1(p, &sol_hash_func1);
-	solNfa_set_state_hash_func2(p, &sol_hash_func2);
-	solNfa_set_character_hash_func1(p, &sol_hash_func1);
-	solNfa_set_character_hash_func2(p, &sol_hash_func2);
+	solNfa_set_state_hash_func1(p, &solVal_hash_func1);
+	solNfa_set_state_hash_func2(p, &solVal_hash_func2);
+	solNfa_set_character_hash_func1(p, &solVal_hash_func1);
+	solNfa_set_character_hash_func2(p, &solVal_hash_func2);
 	solNfa_init(p);
 	solNfa_add_rule(p, s1, s2, c1);
 	solNfa_add_rule(p, s1, s3, c1);
@@ -64,8 +64,9 @@ int main()
 	solNfa_add_rule(p, s4, s3, c1);
 	solNfa_add_rule(p, s3, s5, NULL);
 	solNfa_add_rule(p, s5, s6, c3);
-	solNfa_add_current_state(p, s1);
+	solNfa_add_starting_state(p, s1);
 	solNfa_add_accepting_state(p, s5);
+	solNfa_reset(p);
 	if (solNfa_is_accepted(p) == 0) printf("accepted!\n");
 	printf("Accepting states:\n");
 	print_pda_states(solNfa_accepting_states(p));
