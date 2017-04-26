@@ -18,7 +18,7 @@ void solHash_free(SolHash *hash)
 	sol_free(hash);
 }
 
-inline void solHash_free_records(SolHashRecord *r, size_t s, sol_f_free_ptr *fk, sol_f_free_ptr *fv)
+inline void solHash_free_records(SolHashRecord *r, size_t s, sol_f_free_ptr fk, sol_f_free_ptr fv)
 {
 	SolHashRecord *cr;
 	if (fk || fv) {
@@ -26,10 +26,10 @@ inline void solHash_free_records(SolHashRecord *r, size_t s, sol_f_free_ptr *fk,
 		while(o < s) {
 			cr = solHash_record_at_offset(r, o);
 			if (fk && cr->k) {
-				(**fk)(cr->k);
+				(*fk)(cr->k);
 			}
 			if (fv && cr->v) {
-				(**fv)(cr->v);
+				(*fv)(cr->v);
 			}
 			o++;
 		}
