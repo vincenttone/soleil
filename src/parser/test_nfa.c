@@ -11,21 +11,6 @@ int equal(void *k1, void *k2)
 	return solVal_equal((SolVal*)k1, (SolVal*)k2);
 }
 
-void x_free(void*);
-void x_free(void *s)
-{
-	if (s) {
-		if (((SolVal*)s)->t == SolValTypeInt) {
-			printf("try free %d\n", (((SolVal*)s)->v.i));
-		}
-		if (((SolVal*)s)->t == SolValTypeChar) {
-			printf("try free %c\n", (((SolVal*)s)->v.c));
-		}
-		sol_free(s);
-	} else {
-		printf("empty data.\n");
-	}
-}
 void print_pda_states(SolSet *ss);
 void print_pda_states(SolSet *ss)
 {
@@ -35,9 +20,9 @@ void print_pda_states(SolSet *ss)
 	solSet_rewind(ss);
 	while ((s = solSet_get(ss))) {
 		if (--c > 0) {
-			printf("%d, ", ((SolVal*)(s->s))->v.i);
+			printf("%d, ", ((SolVal*)s)->v.i);
 		} else {
-			printf("%d", ((SolVal*)(s->s))->v.i);
+			printf("%d", ((SolVal*)s)->v.i);
 		}
 	}
 	printf(")\n");
@@ -65,10 +50,13 @@ int main()
 	SolVal *c3 = sol_alloc(sizeof(SolVal));
 	solVal_char(c3, 'c');
 	SolNfa *p = solNfa_new();
-	solNfa_set_state_free_func(p, &x_free);
-	solNfa_set_character_free_func(p, &x_free);
 	solNfa_set_state_match_func(p, &equal);
 	solNfa_set_character_match_func(p, &equal);
+	solNfa_set_state_hash_func1(p, &sol_hash_func1);
+	solNfa_set_state_hash_func2(p, &sol_hash_func2);
+	solNfa_set_character_hash_func1(p, &sol_hash_func1);
+	solNfa_set_character_hash_func2(p, &sol_hash_func2);
+	solNfa_init(p);
 	solNfa_add_rule(p, s1, s2, c1);
 	solNfa_add_rule(p, s1, s3, c1);
 	solNfa_add_rule(p, s3, s2, c2);
@@ -110,6 +98,15 @@ int main()
 	} else {
 		printf("not accepted!\n");
 	}
+	sol_free(s1);
+	sol_free(s2);
+	sol_free(s3);
+	sol_free(s4);
+	sol_free(s5);
+	sol_free(s6);
+	sol_free(c1);
+	sol_free(c2);
+	sol_free(c3);
 	solNfa_free(p);
 	return r;
 }
