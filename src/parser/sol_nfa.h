@@ -71,8 +71,13 @@ inline int solNfaState_add_rule(SolNfaState*, void*, void*);
 void* solNfaState_next_state(SolNfaState*, void*);
 
 #define solNfaState_set_next_state_table(ns, t) ns->n = t
+#define solNfaState_state(ns) ns->s
 #define solNfaState_next_state_table(ns) ns->n
-#define solNfaState_free_moves_set(n) n->f
+#define solNfaState_free_moves_set(ns) ns->f
+#define solNfaState_has_next_state(ns) solHash_is_not_empty(solNfaState_next_state_table(ns))
+#define solNfaState_has_free_moves(ns) solSet_is_not_empty(solNfaState_free_moves_set(ns))
+#define solNfaState_next_state_count(ns) solHash_count(solNfaState_next_state_table(ns))
+#define solNfaState_free_moves_count(ns) solSet_count(solNfaState_free_moves_set(ns))
 
 #define solNfaState_set_state(ps, s) ps->cs = s
 #define solNfa_conv_nfa_state(nfa, s) solHash_get(nfa->als, s)
