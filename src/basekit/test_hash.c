@@ -30,6 +30,12 @@ void free_echo(void *v)
 	printf("try to free %s\n", (char*)v);
 }
 
+void* test_dup(void *v)
+{
+	printf("try dup %s\n", (char*)v);
+	return v;
+}
+
 int main()
 {
 	SolHash *hash = solHash_new();
@@ -83,7 +89,47 @@ int main()
 		}
 		solHashIter_next(iter);
 	} while (++i < hash->size);
+	// test dup
+	SolHash *hash1 = solHash_new();
+	solHash_dup(hash1, hash);
+	SolHashIter *iter1 = solHashIter_new(hash);
+	i = 0;
+	do {
+		r = solHashIter_current_record(iter1);
+		if (r == NULL) {
+			printf("DUPED HASH ITER GOT(%d):\tNULL\n", (int)i);
+		} else if (r->k == NULL) {
+			printf("DUPED HASH ITER GOT(%d):\tempty data\n", (int)i);
+		} else {
+			printf("DUPED HASH ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
+		}
+		solHashIter_next(iter1);
+	} while (++i < hash->size);
+	solHash_set_dup_k_func(hash, &test_dup);
+	solHash_set_dup_k_func(hash, &test_dup);
+	// test dup
+	SolHash *hash2 = solHash_new();
+	solHash_dup(hash2, hash);
+	SolHashIter *iter2 = solHashIter_new(hash);
+	i = 0;
+	do {
+		r = solHashIter_current_record(iter2);
+		if (r == NULL) {
+			printf("DUPED 2 HASH ITER GOT(%d):\tNULL\n", (int)i);
+		} else if (r->k == NULL) {
+			printf("DUPED 2 HASH ITER GOT(%d):\tempty data\n", (int)i);
+		} else {
+			printf("DUPED 2 HASH ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
+		}
+		solHashIter_next(iter2);
+	} while (++i < hash->size);
+	
+
 	solHashIter_free(iter);
+	solHashIter_free(iter1);
+	solHashIter_free(iter2);
 	solHash_free(hash);
+	solHash_free(hash1);
+	solHash_free(hash2);
 	return 0;
 }

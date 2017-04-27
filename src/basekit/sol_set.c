@@ -120,3 +120,18 @@ int solSet_merge(SolSet *s, SolSet *s1)
 	}
 	return 0;
 }
+
+void solSet_wipe(SolSet *s)
+{
+	solHash_wipe(s->hash);
+	solHashIter_rewind(s->iter);
+}
+
+int solSet_dup(SolSet *s1, SolSet *s2)
+{
+	if (solHash_dup(s1->hash, s2->hash) != 0) {
+		return 1;
+	}
+	solHashIter_rewind(s1->iter);
+	return 0;
+}

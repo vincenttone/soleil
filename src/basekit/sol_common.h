@@ -13,6 +13,7 @@
 
 typedef int (*sol_f_match_ptr)(void*, void*);
 typedef void (*sol_f_free_ptr)(void*);
+typedef void* (*sol_f_dup_ptr)(void*);
 
 enum SolValType {
 	SolValTypeInt = 1,
