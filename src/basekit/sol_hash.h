@@ -48,6 +48,8 @@ SolHashRecord* solHash_find_record_by_key(SolHash*, void *);
 
 #define solHash_size(h) h->size
 #define solHash_count(h) h->count
+#define solHash_is_empty(h) solHash_count(h) == 0
+#define solHash_is_not_empty(h) solHash_count(h) != 0
 #define solHash_update_mask(h) h->mask = h->size - 1
 
 #define solHash_put(h, k, v) solHash_put_key_and_val(h, k, v)
@@ -64,6 +66,7 @@ void solHashIter_free(SolHashIter*);
 void solHashIter_rewind(SolHashIter*);
 SolHashRecord* solHashIter_current_record(SolHashIter *iter);
 void solHashIter_next(SolHashIter*);
+SolHashRecord* solHashIter_get(SolHashIter *iter);
 
 #define solHash_set_hash_func1(h, f) h->f_hash1 = f
 #define solHash_set_hash_func2(h, f) h->f_hash2 = f

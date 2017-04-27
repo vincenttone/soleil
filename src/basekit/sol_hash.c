@@ -276,3 +276,17 @@ void solHashIter_next(SolHashIter *iter)
 		iter->c++;
 	}
 }
+
+SolHashRecord* solHashIter_get(SolHashIter *iter)
+{
+	SolHashRecord *r;
+	do {
+		r = solHashIter_current_record(iter);
+		solHashIter_next(iter);
+		if (r) {
+			return r;
+		}
+	} while(iter->c < solHash_size(iter->hash));
+
+	return NULL;
+}
