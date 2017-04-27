@@ -109,17 +109,20 @@ SolPattern* solPattern_literal_new(SolPatternStateGen *gen, void *c)
 int solPattern_concatenate(SolPattern *p1, SolPattern *p2)
 {
 	if (solHash_merge(solNfa_all_states(p1->nfa), solNfa_all_states(p2->nfa)) != 0) {
+		solPattern_free(p2);
 		return 1;
 	}
 	SolPatternState *s1;
 	SolPatternState *s2;
+	solSet_rewind(solNfa_accepting_states(p1->nfa));
+	solSet_rewind(solNfa_starting_states(p2->nfa));
 	while ((s1 = solSet_get(solNfa_accepting_states(p1->nfa)))) {
-		while ((s2 = solSet_get(solNfa_accepting_states(p2->nfa)))) {
+		while ((s2 = solSet_get(solNfa_starting_states(p2->nfa)))) {
 			solNfa_add_rule(p1->nfa, s1, s2, NULL);
 		}
 	}
-	solNfa_set_accepting_states(p1->nfa, solNfa_accepting_states(p2->nfa));
-	solNfa_set_all_states(p2->nfa, NULL);
+	solNfa_dup_accepting_states(p1->nfa, p2->nfa);
+	solNfa_wipe_all_states(p2->nfa);
 	solPattern_free(p2);
 	return 0;
 }

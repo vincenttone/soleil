@@ -50,6 +50,10 @@ SolNfaState* solNfa_register_state(SolNfa*, void*);
 #define solNfa_current_states(p) p->cs
 #define solNfa_accepting_states(p) p->as
 #define solNfa_all_states(p) p->als
+// wipe, not free
+#define solNfa_dup_accepting_states(nfa1, nfa2)							\
+	solSet_dup(solNfa_accepting_states(nfa1), solNfa_accepting_states(nfa2))
+#define solNfa_wipe_all_states(nfa) solHash_wipe(solNfa_all_states(nfa))
 
 #define solNfa_set_state_hash_func1(p, f) p->f_s_hash1 = f
 #define solNfa_set_state_hash_func2(p, f) p->f_s_hash2 = f
