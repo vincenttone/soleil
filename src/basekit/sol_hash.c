@@ -51,7 +51,7 @@ int solHash_set_size(SolHash *hash, size_t size)
 
 void solHash_wipe(SolHash *hash)
 {
-	memset(hash->records, 0, sizeof(SolHashRecord) * hash->size);
+	memset(hash->records, 0x0, sizeof(SolHashRecord) * hash->size);
 	hash->count = 0;
 }
 
