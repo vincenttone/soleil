@@ -224,7 +224,7 @@ int solHash_resize(SolHash *hash, size_t size)
 			hash->is_resizing = SOL_HASH_RESIZING_N;
 		} else {
 			size = size * 2;
-			solHash_free_records(hash->records, hash->size, hash->f_free_k, hash->f_free_v);
+			solHash_free_records(hash->records, hash->size, NULL, NULL);
 		}
 	} while (loop_limit-- && hash->is_resizing == SOL_HASH_RESIZING_Y);
 	if (hash->is_resizing == SOL_HASH_RESIZING_Y) {
@@ -233,7 +233,7 @@ int solHash_resize(SolHash *hash, size_t size)
 		hash->is_resizing = SOL_HASH_RESIZING_N;
 		return 7;
 	} else {
-		solHash_free_records(records, old_size, hash->f_free_k, hash->f_free_v);
+		solHash_free_records(records, old_size, NULL, NULL);
 		return 0;
 	}
 }
