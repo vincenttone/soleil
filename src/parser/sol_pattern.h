@@ -29,11 +29,14 @@ inline SolNfa* solPattern_gen_nfa();
 
 SolPattern* solPattern_empty_new(SolPatternStateGen*);
 SolPattern* solPattern_literal_new(SolPatternStateGen*, void*);
-int solPattern_concatenate(SolPattern*, SolPattern*);
-int solPattern_choose(SolPattern*, SolPattern*);
-int solPattern_repeat(SolPattern*);
+
+SolPattern* solPattern_concatenate(SolPattern*, SolPattern*);
+SolPattern* solPattern_choose(SolPattern*, SolPattern*);
+SolPattern* solPattern_repeat(SolPattern*);
 
 int _solPattern_state_equal(void *k1, void *k2);
 int _solPattern_char_equal(void *c1, void *c2);
+
+void _solPattern_debug_relations(SolPattern *p);
 
 #endif
