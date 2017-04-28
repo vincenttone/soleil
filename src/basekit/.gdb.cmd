@@ -3,11 +3,27 @@ define ppp
   if $po == 1
 	pps $arg0
   else
-	pval $arg0
+	if $po == 2
+	  pval $arg0
+	else
+	  if $po == 3
+		ps $arg0
+	  else
+		if $po == 4
+		  piptr $arg0
+		else 
+		  p $arg0
+		end
+	  end
+	end
   end
 end
 
-define pstring
+define piptr
+  p *(int*)$arg0
+end
+
+define ps
   p (char*)$arg0
 end
 
