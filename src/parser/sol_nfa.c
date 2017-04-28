@@ -51,7 +51,11 @@ void* solNfaState_next_state(SolNfaState *cs, void *c)
 	void *ns = solHash_get(solNfaState_next_state_table(cs), c);
 	return ns;
 }
-
+/**
+ * @params nfa
+ * @params tss: target state set
+ * @params css: current state set( which need to free moves)
+ */
 int _solNfa_states_free_moves(SolNfa *nfa, SolSet *tss, SolSet *css)
 {
 	if (css == NULL) {
@@ -266,6 +270,7 @@ int solNfa_reset(SolNfa *nfa)
 	while ((s = solSet_get(solNfa_starting_states(nfa)))) {
 		solSet_add(solNfa_current_states(nfa), s);
 	}
+	solNfa_free_moves(nfa);
 	return 0;
 }
 
