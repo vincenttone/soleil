@@ -112,6 +112,7 @@ int solSet_merge(SolSet *s, SolSet *s1)
 	}
 	int rtn = 0;
 	void *v;
+	solSet_rewind(s1);
 	while ((v = solSet_get(s1))) {
 		rtn = solSet_add(s, v);
 		if (rtn != 0) {
