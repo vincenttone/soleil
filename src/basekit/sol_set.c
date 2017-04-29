@@ -28,15 +28,11 @@ inline void* solSet_current(SolSet *s)
 
 void* solSet_get(SolSet *s)
 {
-	void *v;
-	do {
-		v = solSet_current(s);
-		solSet_next(s);
-		if (v) {
-			return v;
-		}
-	} while (solSetIter_current_count(s) < solSet_size(s));
-	return NULL;
+	SolHashRecord *r = solHashIter_get(s->iter);
+	if (r == NULL) {
+		return NULL;
+	}
+	return r->k;
 }
 
 int solSet_is_subset(SolSet *s1, SolSet *s2)

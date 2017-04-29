@@ -321,19 +321,20 @@ void solHashIter_next(SolHashIter *iter)
 	if (iter->c < iter->hash->size) {
 		iter->record++;
 		iter->c++;
+	} else if (iter->c == iter->hash->size) {
+		iter->c++;
 	}
 }
 
 SolHashRecord* solHashIter_get(SolHashIter *iter)
 {
 	SolHashRecord *r;
-	do {
+	while (iter->c <= solHash_size(iter->hash)) {
 		r = solHashIter_current_record(iter);
 		solHashIter_next(iter);
-		if (r) {
+		if (r && r->k) {
 			return r;
 		}
-	} while(iter->c < solHash_size(iter->hash));
-
+	}
 	return NULL;
 }
