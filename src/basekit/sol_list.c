@@ -29,7 +29,7 @@ void solList_free(SolList *l)
 	sol_free(l);
 }
 
-SolList *solList_add(SolList *l, void *v, enum _SolListDir d)
+SolListNode *solList_add(SolList *l, void *v, enum _SolListDir d)
 {
 	SolListNode  *n = sol_alloc(sizeof(SolListNode));
 	if (n == NULL) {
@@ -55,7 +55,7 @@ SolList *solList_add(SolList *l, void *v, enum _SolListDir d)
 		}
 	}
 	l->len++;
-	return l;
+	return n;
 }
 
 void solList_del_node(SolList *l, SolListNode *n)

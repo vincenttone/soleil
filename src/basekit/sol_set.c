@@ -28,15 +28,11 @@ inline void* solSet_current(SolSet *s)
 
 void* solSet_get(SolSet *s)
 {
-	void *v;
-	do {
-		v = solSet_current(s);
-		solSet_next(s);
-		if (v) {
-			return v;
-		}
-	} while (solSetIter_current_count(s) < solSet_size(s));
-	return NULL;
+	SolHashRecord *r = solHashIter_get(s->iter);
+	if (r == NULL) {
+		return NULL;
+	}
+	return r->k;
 }
 
 int solSet_is_subset(SolSet *s1, SolSet *s2)
@@ -103,13 +99,36 @@ int solSet_equal(SolSet *s1, SolSet *s2)
 
 int solSet_merge(SolSet *s, SolSet *s1)
 {
+	if (s1 == NULL) {
+		return 0;
+	}
+	if (s == NULL) {
+		s = s1;
+		return 0;
+	}
 	int rtn = 0;
 	void *v;
+	solSet_rewind(s1);
 	while ((v = solSet_get(s1))) {
 		rtn = solSet_add(s, v);
 		if (rtn != 0) {
 			return rtn;
 		}
 	}
+	return 0;
+}
+
+void solSet_wipe(SolSet *s)
+{
+	solHash_wipe(s->hash);
+	solHashIter_rewind(s->iter);
+}
+
+int solSet_dup(SolSet *s1, SolSet *s2)
+{
+	if (solHash_dup(s1->hash, s2->hash) != 0) {
+		return 1;
+	}
+	solHashIter_rewind(s1->iter);
 	return 0;
 }

@@ -13,6 +13,7 @@
 
 typedef int (*sol_f_match_ptr)(void*, void*);
 typedef void (*sol_f_free_ptr)(void*);
+typedef void* (*sol_f_dup_ptr)(void*);
 
 enum SolValType {
 	SolValTypeInt = 1,
@@ -31,6 +32,7 @@ typedef struct _SolVal {
 } SolVal;
 
 #define solVal_is_type_(v, type) (v)->t == type
+#define solVal_is_str(v) solVal_is_type_(v, SolValTypeStr)
 #define solVal_same_type(v1, v2) (v1)->t == (v2)->t
 #define solVal_same_size(v1, v2) (v1)->s == (v2)->s
 #define solVal_get_size(v) (v)->s

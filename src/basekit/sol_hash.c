@@ -1,3 +1,4 @@
+#include <string.h>
 #include "sol_hash.h"
 
 SolHash* solHash_new()
@@ -18,7 +19,7 @@ void solHash_free(SolHash *hash)
 	sol_free(hash);
 }
 
-inline void solHash_free_records(SolHashRecord *r, size_t s, sol_f_free_ptr *fk, sol_f_free_ptr *fv)
+inline void solHash_free_records(SolHashRecord *r, size_t s, sol_f_free_ptr fk, sol_f_free_ptr fv)
 {
 	SolHashRecord *cr;
 	if (fk || fv) {
@@ -26,10 +27,10 @@ inline void solHash_free_records(SolHashRecord *r, size_t s, sol_f_free_ptr *fk,
 		while(o < s) {
 			cr = solHash_record_at_offset(r, o);
 			if (fk && cr->k) {
-				(**fk)(cr->k);
+				(*fk)(cr->k);
 			}
 			if (fv && cr->v) {
-				(**fv)(cr->v);
+				(*fv)(cr->v);
 			}
 			o++;
 		}
@@ -45,6 +46,52 @@ int solHash_set_size(SolHash *hash, size_t size)
 	}
 	hash->size = size;
 	solHash_update_mask(hash);
+	return 0;
+}
+
+void solHash_wipe(SolHash *hash)
+{
+	memset(hash->records, 0x0, sizeof(SolHashRecord) * hash->size);
+	hash->count = 0;
+}
+
+int solHash_dup(SolHash *h1, SolHash *h2)
+{
+	if (h1->size != h2->size) {
+		solHash_free_records(h1->records, h1->size, h1->f_free_k, h1->f_free_v);
+		if (solHash_set_size(h1, h2->size) != 0) {
+			return 1;
+		}
+	}
+	SolHashRecord *r = h1->records;
+	memcpy(h1, h2, sizeof(SolHash));
+	h1->records = r;
+	if (h1->f_dup_k || h1->f_dup_v) {
+		size_t offset = 0;
+		void *k;
+		void *v;
+		while(offset < h2->size) {
+			r = solHash_record_at_offset(h2->records, offset);
+			if (r->k) {
+				if (h1->f_dup_k) {
+					k = solHash_dup_k(h1, r->k);
+				} else {
+					k = r->k;
+				}
+				if (h1->f_dup_v) {
+					v = solHash_dup_v(h1, r->v);
+				} else {
+					v = r->v;
+				}
+				if (solHash_put_key_and_val(h1, k, v)) {
+					return 5;
+				}
+			}
+			offset++;
+		}
+	} else {
+		memcpy(h1->records, h2->records, sizeof(SolHashRecord) * h1->size);
+	}
 	return 0;
 }
 
@@ -177,7 +224,7 @@ int solHash_resize(SolHash *hash, size_t size)
 			hash->is_resizing = SOL_HASH_RESIZING_N;
 		} else {
 			size = size * 2;
-			solHash_free_records(hash->records, hash->size, hash->f_free_k, hash->f_free_v);
+			solHash_free_records(hash->records, hash->size, NULL, NULL);
 		}
 	} while (loop_limit-- && hash->is_resizing == SOL_HASH_RESIZING_Y);
 	if (hash->is_resizing == SOL_HASH_RESIZING_Y) {
@@ -186,9 +233,21 @@ int solHash_resize(SolHash *hash, size_t size)
 		hash->is_resizing = SOL_HASH_RESIZING_N;
 		return 7;
 	} else {
-		solHash_free_records(records, old_size, hash->f_free_k, hash->f_free_v);
+		solHash_free_records(records, old_size, NULL, NULL);
 		return 0;
 	}
+}
+
+int solHash_merge(SolHash *h1, SolHash *h2)
+{
+	if (h2 == NULL) {
+		return 0;
+	}
+	if (h1 == NULL) {
+		h1 = h2;
+		return 0;
+	}
+	return solHash_add_records(h1, h2->records, solHash_size(h2));
 }
 
 inline int solHash_add_records(SolHash *hash, SolHashRecord *records, size_t size)
@@ -254,7 +313,7 @@ SolHashRecord* solHashIter_current_record(SolHashIter *iter)
 void solHashIter_rewind(SolHashIter *iter)
 {
 	iter->record = iter->hash->records;
-	iter->c = 1;
+	solHashIter_reset_count(iter);
 }
 
 void solHashIter_next(SolHashIter *iter)
@@ -262,5 +321,20 @@ void solHashIter_next(SolHashIter *iter)
 	if (iter->c < iter->hash->size) {
 		iter->record++;
 		iter->c++;
+	} else if (iter->c == iter->hash->size) {
+		iter->c++;
 	}
+}
+
+SolHashRecord* solHashIter_get(SolHashIter *iter)
+{
+	SolHashRecord *r;
+	while (iter->c <= solHash_size(iter->hash)) {
+		r = solHashIter_current_record(iter);
+		solHashIter_next(iter);
+		if (r && r->k) {
+			return r;
+		}
+	}
+	return NULL;
 }

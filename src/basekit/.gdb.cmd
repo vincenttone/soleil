@@ -1,13 +1,31 @@
 set $po = 0
+set $pok = 0
+set $pov = 0
 define ppp
   if $po == 1
 	pps $arg0
   else
-	pval $arg0
+	if $po == 2
+	  pval $arg0
+	else
+	  if $po == 3
+		ps $arg0
+	  else
+		if $po == 4
+		  piptr $arg0
+		else 
+		  p $arg0
+		end
+	  end
+	end
   end
 end
 
-define pstring
+define piptr
+  p *(int*)$arg0
+end
+
+define ps
   p (char*)$arg0
 end
 
@@ -21,7 +39,7 @@ end
 
 define pps
   if $arg0
-	pval ((SolNfaState*)$arg0)->s
+	p *((SolNfaState*)$arg0)
   else
 	p 'null'
   end
@@ -29,14 +47,18 @@ end
 
 define precord
   p $arg0
+  set $pod = $po
   set $sv = 0
+  set $po = $pok
   ppp $arg0->k
   if $argc > 1
 	set $sv = $arg1
   end
   if $sv == 0
+	set $po = $pov
   	ppp $arg0->v
   end
+  set $po = $pod
 end
 
 define precords
@@ -69,7 +91,7 @@ define phash
   if $argc > 1
 	set $f = $arg1
   end
-  precords $arg0->size $arg0->records $f
+  precords ((SolHash*)$arg0)->size ((SolHash*)$arg0)->records $f
 end
 
 define pset
@@ -77,5 +99,5 @@ define pset
   if $argc > 1
 	set $f = $arg1
   end
-  precords $arg0->hash->size $arg0->hash->records $f 1
+  precords ((SolSet*)$arg0)->hash->size ((SolSet*)$arg0)->hash->records $f 1
 end

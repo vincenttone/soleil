@@ -41,8 +41,11 @@ void solList_free(SolList*);
 
 #define solListNodeVal_free(l, n) if (l->f_free) {(*l->f_free)(n->val);}
 
-SolList* solList_add(SolList*, void*, enum _SolListDir);
+SolListNode* solList_add(SolList*, void*, enum _SolListDir);
 void solList_del_node(SolList*, SolListNode*);
+
+#define solList_add_fwd(l, v) solList_add(l, v, _SolListDirFwd)
+#define solList_add_bak(l, v) solList_add(l, v, _SolListDirBak)
 
 SolListIter* solListIter_new(SolList*, enum _SolListDir);
 void solListIter_free(SolListIter*);
