@@ -185,27 +185,40 @@ int _solPattern_char_equal(void *c1, void *c2)
 
 void _solPattern_debug_relations(SolPattern *p)
 {
+	int *m;
+	solSet_rewind(solNfa_starting_states(p->nfa));
+	printf("Starting states:\n");
+	while ((m = solSet_get(solNfa_starting_states(p->nfa)))) {
+		printf("State: (%d):\n", *(int*)m);
+	}
+	solSet_rewind(solNfa_accepting_states(p->nfa));
+	printf("Accepting states:\n");
+	while ((m = solSet_get(solNfa_accepting_states(p->nfa)))) {
+		printf("State: (%d):\n", *(int*)m);
+	}
+	printf("All states:\n");
+	int *n;
 	SolHashIter *i = solHashIter_new(solNfa_all_states(p->nfa));
 	SolHashIter *j;
 	SolNfaState *s;
-	int *m;
 	SolHashRecord *r;
 	solHashIter_rewind(i);
 	while ((r = solHashIter_get(i))) {
-		printf("STATE: (%d):\n", *(int*)r->k);
+		// printf("STATE: (%d):\n", *(int*)r->k);
+		n = (int*)r->k;
 		s = r->v;
 		if (s->n) {
 			j = solHashIter_new(s->n);
 			solHashIter_rewind(j);
 			while ((r = solHashIter_get(j))) {
-				printf("rules: (%s) -> (%d)\n", (char*)r->k, *(int*)r->v);
+				printf("rules: (%d) -(%s)-> (%d)\n", *n, (char*)r->k, *(int*)r->v);
 			}
 			solHashIter_free(j);
 		}
 		if (s->f) {
 			solSet_rewind(s->f);
 			while ((m = solSet_get(s->f))) {
-				printf("free moves: (%d)\n", *(int*)m);
+				printf("free moves: (%d) -> (%d)\n", *n, *m);
 			}
 		}
 	}
