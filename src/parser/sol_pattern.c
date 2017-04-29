@@ -36,6 +36,9 @@ int solPattern_match(SolPattern *p, char *s, size_t size)
 	while (i < size) {
 		strncpy(st, (s+i), sizeof(char));
 		r = solNfa_read_character(p->nfa, (char*)st);
+#ifdef __DEBUG__
+		printf("Try match %s, result %d\n", st, r);
+#endif
 		if (r == 1) {
 			return 1;
 		} else if (r != 0){
