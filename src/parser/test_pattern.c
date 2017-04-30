@@ -63,17 +63,31 @@ int main()
 	// solPattern_literal_new(g, b);
 	// solPattern_literal_new(g, c);
 	
-	SolPattern *p6 = 
-		solPattern_choose(solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, a),
-																		solPattern_literal_new(g, b)),
-												 solPattern_literal_new(g, c)),
-						  solPattern_concatenate(solPattern_literal_new(g, a),
-												 solPattern_literal_new(g, c)));
-	_solPattern_debug_relations(p6);
+	SolPattern *p6;
+	p6 = solPattern_choose(solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, a),
+																		 solPattern_literal_new(g, b)),
+												  solPattern_literal_new(g, c)),
+						   solPattern_concatenate(solPattern_literal_new(g, a),
+												  solPattern_literal_new(g, c)));
+	//_solPattern_debug_relations(p6);
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", a, solPattern_match(p6, a, l1));
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", ab, solPattern_match(p6, ab, l2));	
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", ac, solPattern_match(p6, ac, l2));
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", abc, solPattern_match(p6, abc, l3));
+	solPattern_repeat(p6);
+	//_solPattern_debug_relations(p6);
+	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", ac, solPattern_match(p6, ac, l2));
+	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", abc, solPattern_match(p6, abc, l3));
+	char *abc_x3 = "abcabcabc";
+	char *abc_ac = "abcac";
+	char *abc_ac_r2 = "abcacacabc";
+	size_t l9 = strlen(abc_x3);
+	size_t l5 = strlen(abc_ac);
+	size_t l10 = strlen(abc_ac_r2);
+	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", abc, solPattern_match(p6, abc, l3));
+	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", abc_x3, solPattern_match(p6, abc_x3, l9));
+	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", abc_ac, solPattern_match(p6, abc_ac, l5));
+	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", abc_ac_r2, solPattern_match(p6, abc_ac_r2, l10));
 	solPattern_free(p6);
 	solPatternStateGen_free(g);
 	return 0;
