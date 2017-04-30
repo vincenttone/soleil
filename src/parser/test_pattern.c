@@ -69,12 +69,13 @@ int main()
 												  solPattern_literal_new(g, c)),
 						   solPattern_concatenate(solPattern_literal_new(g, a),
 												  solPattern_literal_new(g, c)));
-	_solPattern_debug_relations(p6);
+	//_solPattern_debug_relations(p6);
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", a, solPattern_match(p6, a, l1));
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", ab, solPattern_match(p6, ab, l2));	
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", ac, solPattern_match(p6, ac, l2));
 	printf("/(abc)|(ac)/\t[%s]?\t%d\n", abc, solPattern_match(p6, abc, l3));
 	solPattern_repeat(p6);
+	//_solPattern_debug_relations(p6);
 	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", ac, solPattern_match(p6, ac, l2));
 	printf("/((abc)|(ac))+/\t[%s]?\t%d\n", abc, solPattern_match(p6, abc, l3));
 	char *abc_x3 = "abcabcabc";

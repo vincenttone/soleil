@@ -36,9 +36,6 @@ int solPattern_match(SolPattern *p, char *s, size_t size)
 	while (i < size) {
 		strncpy(st, (s+i), sizeof(char));
 		r = solNfa_read_character(p->nfa, (char*)st);
-#ifdef __DEBUG__
-		printf("Try match %s, result %d\n", st, r);
-#endif
 		if (r == 1) {
 			return 1;
 		} else if (r != 0){
@@ -122,8 +119,8 @@ SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
 	SolPatternState *s1;
 	SolPatternState *s2;
 	solSet_rewind(solNfa_accepting_states(p1->nfa));
-	solSet_rewind(solNfa_starting_states(p2->nfa));
 	while ((s1 = solSet_get(solNfa_accepting_states(p1->nfa)))) {
+		solSet_rewind(solNfa_starting_states(p2->nfa));
 		while ((s2 = solSet_get(solNfa_starting_states(p2->nfa)))) {
 			solNfa_add_rule(p1->nfa, s1, s2, NULL);
 		}
@@ -144,8 +141,8 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
 	SolPatternState *s1;
 	SolPatternState *s2;
 	solSet_rewind(solNfa_starting_states(p1->nfa));
-	solSet_rewind(solNfa_starting_states(p2->nfa));
 	while ((s1 = solSet_get(solNfa_starting_states(p1->nfa)))) {
+		solSet_rewind(solNfa_starting_states(p2->nfa));
 		while ((s2 = solSet_get(solNfa_starting_states(p2->nfa)))) {
 			solNfa_add_rule(p1->nfa, s1, s2, NULL);
 		}
@@ -161,8 +158,8 @@ SolPattern* solPattern_repeat(SolPattern *p)
 	SolPatternState *cs;
 	SolPatternState *as;
 	solSet_rewind(solNfa_accepting_states(p->nfa));
-	solSet_rewind(solNfa_starting_states(p->nfa));
 	while ((as = solSet_get(solNfa_accepting_states(p->nfa)))) {
+		solSet_rewind(solNfa_starting_states(p->nfa));
 		while ((cs = solSet_get(solNfa_starting_states(p->nfa)))) {
 			solNfa_add_rule(p->nfa, as, cs, NULL);
 		}
