@@ -1,4 +1,5 @@
 #include <string.h>
+#include <assert.h>
 #include "sol_hash.h"
 
 SolHash* solHash_new()
@@ -97,6 +98,9 @@ int solHash_dup(SolHash *h1, SolHash *h2)
 
 SolHashRecord* solHash_find_record_by_key(SolHash *hash, void *k)
 {
+	assert(solHash_hash_func1(hash) && "no hash func (1)");
+	assert(solHash_hash_func2(hash) && "no hash func (2)");
+	assert(solHash_equal_func(hash) && "no match func");
 	SolHashRecord *r = solHash_record1_of_key(hash, k);
 	if (r->k != NULL && solHash_match(hash, k, r->k) == 0) {
 		return r;
@@ -127,6 +131,9 @@ int solHash_has_key(SolHash *hash, void *k)
 
 int solHash_put_key_and_val(SolHash *hash, void *k, void *v)
 {
+	assert(solHash_hash_func1(hash) && "no hash func (1)");
+	assert(solHash_hash_func2(hash) && "no hash func (2)");
+	assert(solHash_equal_func(hash) && "no match func");
 	SolHashRecord* r;
 	r = solHash_record1_of_key(hash, k);
 	if (r->k == NULL) {
