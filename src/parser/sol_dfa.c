@@ -137,26 +137,59 @@ int solDfa_read_character(SolDfa *d, void *c)
 
 int solDfaState_merge(SolDfa *d, SolDfaState *ds1, SolDfaState *ds2, SolHash *map)
 {
+	SolHashRecord *r;
+	SolDfaState *ds3;
+	if ((r = solHash_get(map, ds2->s))) { // merged to ds1 before, skip
+		ds3 = (SolDfaState*)(r->v);
+		if (solDfa_state_match(d, solDfaState_state(ds3), solDfaState_state(ds1)) == 0) {
+			return 0;
+		} else { // todo: merged to other place?
+		}
+	}
+	// merged to other state
+	// todo: is is late?
+	if ((r = solHash_get(map, ds1->s))) {
+		ds3 = (SolDfaState*)(r->v); // merged nfa state
+		return solDfaState_merge(d, ds3, ds2, map);
+	}
 	SolHashIter *i1 = solHashIter_new(solDfaState_rules(ds1));
 	SolHashIter *i2 = solHashIter_new(solDfaState_rules(ds2));
+	// SolHashIter *i3;
+	SolDfaState *ds4;
 	void *c;
-	SolDfaState *nds;
-	SolHashRecord *r;
 	solHashIter_rewind(i1);
 	while ((r = solHashIter_get(i1))) {
 		c = r->k;
-		nds = (SolDfaState*)(r->v);
+		ds3 = (SolDfaState*)(r->v);
 		solHashIter_rewind(i2);
 		while ((r = solHashIter_get(i2))) {
 			// merge 1,3
 			// 1--a-->2
-			// 3--a-->4
-			// 3--b-->5 | 3--c-->6
-			// result: 1--a-->2 | 1--b-->5 | 1--c-->6, merge 2,4
-			if (solDfa_character_match(d, c, r->k)) {
-				solDfaState_merge(d, nds, (SolDfaState*)(r->v), map);
+			// 3--a-->(4)
+			// 3--b-->(5) | 3--c-->6
+			// 6--d-->7
+			// 7--e-->3
+			// result: 1--a-->2 | 1--b-->5 | 1--c-->6
+			//         6--d-->7 | 7--e-->1 (todo)
+			//         merge 2,4
+			ds4 = (SolDfaState*)(r->v);
+			if (solDfa_character_match(d, c, r->k) == 0) {
+				solDfaState_merge(d, ds3, ds4, map);
 			} else {
-				solDfaState_add_rule(ds1, (SolDfaState*)(r->v), (void*)(r->v));
+				solDfaState_add_rule(ds1, ds4, (void*)(r->v));
+				/* todo
+				if (solDfaState_rules(ds4) == NULL) {
+					continue;
+				}
+				i3 = solHashIter_new(solDfaState_rules(ds4));
+				while ((r = solHashIter_get(i3))) {
+					if (solDfa_state_match(solDfaState_state((SolDfaState*)(r->v)),
+										   solDfaState_state(ds2)) != 0) {
+						continue;
+					}
+					solDfaState_add_rule(ds4, (SolDfaState*)(r->v), r->k);
+				}
+				*/
 			}
 		}
 	}
