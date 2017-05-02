@@ -77,6 +77,13 @@ void solDfa_free(SolDfa *d)
 	sol_free(d);
 }
 
+void solDfa_remove_dfa_state(SolDfa *d, void *s)
+{
+	if (solDfa_all_states(d)) {
+		solHash_remove_by_key(solDfa_all_states(d), s);
+	}
+}
+
 int solDfa_add_rule(SolDfa *d, void *s1, void *s2, void *c)
 {
 	SolDfaState *ds1 = solHash_get(solDfa_all_states(d), s1);
@@ -125,5 +132,36 @@ int solDfa_read_character(SolDfa *d, void *c)
 		return 3;
 	}
 	solDfa_set_current_state(d, solDfaState_state(ds));
+	return 0;
+}
+
+int solDfaState_merge(SolDfa *d, SolDfaState *ds1, SolDfaState *ds2, SolHash *map)
+{
+	SolHashIter *i1 = solHashIter_new(solDfaState_rules(ds1));
+	SolHashIter *i2 = solHashIter_new(solDfaState_rules(ds2));
+	void *c;
+	SolDfaState *nds;
+	SolHashRecord *r;
+	solHashIter_rewind(i1);
+	while ((r = solHashIter_get(i1))) {
+		c = r->k;
+		nds = (SolDfaState*)(r->v);
+		solHashIter_rewind(i2);
+		while ((r = solHashIter_get(i2))) {
+			// merge 1,3
+			// 1--a-->2
+			// 3--a-->4
+			// 3--b-->5 | 3--c-->6
+			// result: 1--a-->2 | 1--b-->5 | 1--c-->6, merge 2,4
+			if (solDfa_character_match(d, c, r->k)) {
+				solDfaState_merge(d, nds, (SolDfaState*)(r->v), map);
+			} else {
+				solDfaState_add_rule(ds1, (SolDfaState*)(r->v), (void*)(r->v));
+			}
+		}
+	}
+	solHash_put(map, ds2->s, ds1);
+	solDfa_remove_dfa_state(d, ds2->s);
+	solDfaState_free(ds2);
 	return 0;
 }
