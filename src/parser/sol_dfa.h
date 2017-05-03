@@ -72,4 +72,9 @@ void solDfa_free(SolDfa*);
 int solDfa_add_rule(SolDfa*, void*, void*, void*);
 int solDfa_read_character(SolDfa*, void*);
 
+int solDfaState_merge_forward(SolDfa*, SolDfaState*, SolDfaState*, SolHash*);
+int solDfaState_clear_up_merge_map(SolDfa*, SolDfaState*, SolHash*);
+int solDfaState_merge_backward(SolDfa*, SolDfaState*, SolHash*);
+int solDfaState_merge(SolDfa*, SolDfaState*, SolDfaState*);
+
 #endif
