@@ -155,6 +155,9 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
 
 SolPattern* solPattern_repeat(SolPattern *p)
 {
+	if (p == NULL) {
+		return NULL;
+	}
 	SolPatternState *cs;
 	SolPatternState *as;
 	solSet_rewind(solNfa_accepting_states(p->nfa));

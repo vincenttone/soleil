@@ -28,15 +28,15 @@ typedef struct _SolDfa {
 #define solDfaState_state(ds) (ds)->s
 #define solDfaState_rules(ds) (ds)->r
 
-#define solDfa_set_starting_state(d, s) (d)->ss = s; solDfa_set_current_state(d, s)
+#define _solDfa_set_starting_state(d, s) (d)->ss = s; 
 #define solDfa_set_current_state(d, s) (d)->cs = s
-#define solDfa_set_accepting_state(d, s) (d)->as = s
+#define _solDfa_set_accepting_state(d, s) (d)->as = s
 #define solDfa_set_all_states(d, ds) (d)->als = ds
 #define solDfa_reset_current_state(d) solDfa_set_current_state(d, d->ss)
 #define solDfa_register_state(d, s, ds) solHash_put(solDfa_all_states(d), s, ds)
 #define solDfa_conv_dfa_state(d, s) solHash_get(solDfa_all_states(d), s)
 
-#define solDfa_starting_state(d, s) (d)->ss
+#define solDfa_starting_state(d) (d)->ss
 #define solDfa_current_state(d) (d)->cs
 #define solDfa_accepting_state(d) (d)->as
 #define solDfa_all_states(d) (d)->als
@@ -69,12 +69,14 @@ SolDfaState* solDfaState_next(SolDfaState*, void*);
 SolDfa* solDfa_new(sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr,
 				   sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr);
 void solDfa_free(SolDfa*);
+int solDfa_set_starting_state(SolDfa*, void*);
+int solDfa_set_accepting_state(SolDfa*, void*);
 int solDfa_add_rule(SolDfa*, void*, void*, void*);
 int solDfa_read_character(SolDfa*, void*);
 
-int solDfaState_merge_forward(SolDfa*, SolDfaState*, SolDfaState*, SolHash*);
-int solDfaState_clear_up_merge_map(SolDfa*, SolDfaState*, SolHash*);
-int solDfaState_merge_backward(SolDfa*, SolDfaState*, SolHash*);
-int solDfaState_merge(SolDfa*, SolDfaState*, SolDfaState*);
+int solDfa_state_merge_forward(SolDfa*, SolDfaState*, SolDfaState*, SolHash*);
+int solDfa_state_clear_up_merge_map(SolHash*);
+int solDfas_state_merge_backward(SolDfa*, SolDfaState*, SolHash*);
+int solDfa_state_merge(SolDfa*, SolDfaState*, SolDfaState*);
 
 #endif
