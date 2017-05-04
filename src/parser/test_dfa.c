@@ -47,9 +47,11 @@ int main()
 	if (solDfa_add_rule(d, &i, &ii, &a) != 0) {
 		goto err;
 	}
+	_solDfa_debug_relations(d);
 	if (solDfa_add_rule(d, &i, &iii, &b) != 0) {
 		goto err;
 	}
+	_solDfa_debug_relations(d);
 	if (solDfa_add_rule(d, &ii, &iv, &c) != 0) {
 		goto err;
 	}

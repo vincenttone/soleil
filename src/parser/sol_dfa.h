@@ -57,7 +57,8 @@ typedef struct _SolDfa {
 #define solDfa_state_match_func(d) d->f_sm
 
 #define solDfa_character_match(d, c1, c2) (*d->f_cm)(c1, c2)
-#define solDfa_state_match(d, c1, c2) (*d->f_sm)(c1, c2)
+#define solDfa_state_match(d, s1, s2) (*d->f_sm)(s1, s2)
+#define solDfa_dfa_state_match(d, ds1, ds2) solDfa_state_match(d, solDfaState_state(ds1), solDfaState_state(ds2))
 
 SolDfaState* solDfaState_new(void*);
 void solDfaState_free(SolDfaState*);
@@ -74,9 +75,14 @@ int solDfa_set_accepting_state(SolDfa*, void*);
 int solDfa_add_rule(SolDfa*, void*, void*, void*);
 int solDfa_read_character(SolDfa*, void*);
 
+int solDfa_init_dfa_state_rule(SolDfa*, SolDfaState*);
+
 int solDfa_state_merge_forward(SolDfa*, SolDfaState*, SolDfaState*, SolHash*);
 int solDfa_state_clear_up_merge_map(SolHash*);
 int solDfas_state_merge_backward(SolDfa*, SolDfaState*, SolHash*);
-int solDfa_state_merge(SolDfa*, SolDfaState*, SolDfaState*);
+int _solDfa_state_merge(SolDfa*, SolDfaState*, SolDfaState*);
+int solDfa_state_merge(SolDfa*, SolDfa*, void*, void*);
+
+void _solDfa_debug_relations(SolDfa *d);
 
 #endif

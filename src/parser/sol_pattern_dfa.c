@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "sol_pattern_dfa.h"
 
 SolPattern* solPattern_new()
@@ -95,7 +94,7 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 	if (solDfa_is_accepting(solPattern_dfa(p))) {
 		return 0;
 	}
-	return -2;
+	return 2;
 }
 
 SolPattern* solPattern_empty_new(SolPatternStateGen *g)
@@ -136,6 +135,7 @@ SolPattern* solPattern_repeat(SolPattern *p)
 		return NULL;
 	}
 	if (solDfa_state_merge(solPattern_dfa(p),
+						   solPattern_dfa(p),
 						   solDfa_starting_state(solPattern_dfa(p)),
 						   solDfa_accepting_state(solPattern_dfa(p))) != 0) {
 		return NULL;
@@ -160,31 +160,4 @@ int _solPattern_char_equal(void *c1, void *c2)
 		return 0;
 	}
 	return 1;
-}
-
-void _solPattern_debug_relations(SolPattern *p)
-{
-	printf("Starting state: (%d):\n", *(int*)solDfa_starting_state(solPattern_dfa(p)));
-	printf("Accepting state: (%d):\n", *(int*)solDfa_accepting_state(solPattern_dfa(p)));
-	printf("All states:\n");
-	int *n;
-	SolHashIter *i = solHashIter_new(solDfa_all_states(solPattern_dfa(p)));
-	SolHashIter *j;
-	SolDfaState *s;
-	SolHashRecord *r;
-	solHashIter_rewind(i);
-	while ((r = solHashIter_get(i))) {
-		// printf("STATE: (%d):\n", *(int*)r->k);
-		n = (int*)r->k;
-		s = r->v;
-		if (solDfaState_rules(s)) {
-			j = solHashIter_new(solDfaState_rules(s));
-			solHashIter_rewind(j);
-			while ((r = solHashIter_get(j))) {
-				printf("rules: (%d) -(%s)-> (%d)\n", *n, (char*)r->k, *(int*)r->v);
-			}
-			solHashIter_free(j);
-		}
-	}
-	solHashIter_free(i);
 }

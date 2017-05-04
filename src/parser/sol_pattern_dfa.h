@@ -44,4 +44,6 @@ int _solPattern_char_equal(void *c1, void *c2);
 int _solPattern_state_equal(void *s1, void *s2);
 void _solPattern_debug_relations(SolPattern *p);
 
+#define _solPattern_debug_relations(p) 	_solDfa_debug_relations(solPattern_dfa(p))
+
 #endif
