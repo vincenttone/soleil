@@ -89,7 +89,7 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 		r = solDfa_read_character(solPattern_dfa(p), st);
 		if (r == 1) {
 			return 2;
-		} else if (r != 0){
+		} else if (r != 0) {
 			return -1;
 		}
 		i++;

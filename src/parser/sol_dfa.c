@@ -36,15 +36,6 @@ int solDfaState_add_rule(SolDfaState *ds1, SolDfaState *ds2, void *c)
 	return 2;
 }
 
-int solDfaState_remove_rule(SolDfaState *ds, void *c)
-{
-	if (solDfaState_rules(ds)) {
-		solHash_del(solDfaState_rules(ds), c);
-		return 0;
-	}
-	return 1;
-}
-
 SolDfaState* solDfaState_next(SolDfaState *ds, void *c)
 {
 	if (solDfaState_rules(ds)) {
@@ -114,13 +105,6 @@ int solDfa_set_accepting_state(SolDfa *d, void *s)
 	}
 	_solDfa_set_accepting_state(d, s);
 	return 0;
-}
-
-void solDfa_remove_dfa_state(SolDfa *d, void *s)
-{
-	if (solDfa_all_states(d)) {
-		solHash_remove_by_key(solDfa_all_states(d), s);
-	}
 }
 
 int solDfa_init_dfa_state_rule(SolDfa *d, SolDfaState *ds)
@@ -218,11 +202,11 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 		while ((r2 = solHashIter_get(i))) {
 			c2 = r2->k;
 			ds2n = (SolDfaState*)(r2->v);
-			r = solHash_get(solDfaState_rules(ds1), c2);
-			if (r) {
-				dsn = (SolDfaState*)(r->v);
-				if (solDfaState_state(ds1) != solDfaState_state(dsn)
-					&& solDfaState_state(ds2) != solDfaState_state(ds2n)) {
+			dsn = solDfaState_next(ds1, c2);
+			if (dsn) {
+				if (solDfa_dfa_state_match(d1, ds1, dsn) != 0
+					|| solDfa_dfa_state_match(d2, ds2, ds2n) != 0
+					) {
 					solDfa_state_merge(d1, NULL, solDfaState_state(dsn), solDfaState_state(ds2n));
 				}
 			} else {
@@ -254,9 +238,11 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 	if (d1 != d2) {
 		solHash_wipe(solDfa_all_states(d2));
 	}
-	if (solDfa_state_match(d1, s1, s2) != 0) {
-		solDfa_remove_dfa_state(d1, s2);
-		solDfaState_free(ds2);
+	if (solDfa_state_match(d1, s1, s2) != 0
+		&& solDfaState_rules(ds2)
+		) {
+		solHash_free(solDfaState_rules(ds2));
+		solDfaState_set_rules(ds2, NULL);
 	}
 	return 0;
 }

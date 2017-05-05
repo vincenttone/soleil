@@ -65,9 +65,7 @@ typedef struct _SolDfa {
 SolDfaState* solDfaState_new(void*);
 void solDfaState_free(SolDfaState*);
 void _solDfaState_free(void*);
-void solDfa_remove_dfa_state(SolDfa*, void*);
 int solDfaState_add_rule(SolDfaState*, SolDfaState*, void*);
-int solDfaState_remove_rule(SolDfaState*, void*);
 SolDfaState* solDfaState_next(SolDfaState*, void*);
 
 SolDfa* solDfa_new(sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr,
