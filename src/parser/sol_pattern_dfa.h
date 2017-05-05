@@ -39,11 +39,13 @@ int solPattern_is_match(SolPattern*, SolPatternCharacter*, size_t size);
 SolPattern* solPattern_empty_new(SolPatternStateGen*);
 SolPattern* solPattern_literal_new(SolPatternStateGen*, SolPatternCharacter*);
 SolPattern* solPattern_repeat(SolPattern *);
+SolPattern* solPattern_concatenate(SolPattern*, SolPattern*);
+SolPattern* solPattern_choose(SolPattern*, SolPattern*);
 
 int _solPattern_char_equal(void *c1, void *c2);
 int _solPattern_state_equal(void *s1, void *s2);
 void _solPattern_debug_relations(SolPattern *p);
 
-#define _solPattern_debug_relations(p) 	_solDfa_debug_relations(solPattern_dfa(p))
+#define _solPattern_debug_dfa_relations(p) 	_solDfa_debug_relations(solPattern_dfa(p))
 
 #endif

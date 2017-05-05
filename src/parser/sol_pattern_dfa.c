@@ -77,6 +77,9 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 	if (p == NULL) {
 		return -3;
 	}
+	if (solPattern_dfa(p) == NULL) {
+		return -4;
+	}
 	size_t i = 0;
 	int r;
 	SolPatternCharacter st[] = {'0'};
@@ -85,7 +88,7 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 		solPattern_character_at_offset(st, s, i);
 		r = solDfa_read_character(solPattern_dfa(p), st);
 		if (r == 1) {
-			return 1;
+			return 2;
 		} else if (r != 0){
 			return -1;
 		}
@@ -94,7 +97,7 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 	if (solDfa_is_accepting(solPattern_dfa(p))) {
 		return 0;
 	}
-	return 2;
+	return 1;
 }
 
 SolPattern* solPattern_empty_new(SolPatternStateGen *g)
@@ -137,13 +140,58 @@ SolPattern* solPattern_repeat(SolPattern *p)
 	if (solDfa_state_merge(solPattern_dfa(p),
 						   solPattern_dfa(p),
 						   solDfa_starting_state(solPattern_dfa(p)),
-						   solDfa_accepting_state(solPattern_dfa(p))) != 0) {
+						   solDfa_accepting_state(solPattern_dfa(p))
+						   ) != 0
+		) {
 		return NULL;
 	}
 	if (solDfa_set_accepting_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p))) != 0) {
 		return NULL;
 	}
 	return p;
+}
+
+SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
+{
+	if (p1 == NULL || p2 == NULL) {
+		return NULL;
+	}
+	void *sa2 = solDfa_accepting_state(solPattern_dfa(p2));
+	if (solDfa_state_merge(solPattern_dfa(p1),
+						   solPattern_dfa(p2),
+						   solDfa_accepting_state(solPattern_dfa(p1)),
+						   solDfa_starting_state(solPattern_dfa(p2))
+						   ) != 0
+		) {
+		return NULL;
+	}
+	if (solDfa_set_accepting_state(solPattern_dfa(p1), sa2) != 0) {
+		return NULL;
+	}
+	solPattern_free(p2);
+	return p1;
+}
+
+SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
+{
+	if (p1 == NULL || p2 == NULL) {
+		return NULL;
+	}
+	void *sa1 = solDfa_accepting_state(solPattern_dfa(p1));
+	void *sa2 = solDfa_accepting_state(solPattern_dfa(p2));
+	if (solDfa_state_merge(solPattern_dfa(p1),
+						   solPattern_dfa(p2),
+						   solDfa_starting_state(solPattern_dfa(p1)),
+						   solDfa_starting_state(solPattern_dfa(p2))
+						   ) != 0
+		) {
+		return NULL;
+	}
+	if (solDfa_state_merge(solPattern_dfa(p1), NULL, sa1, sa2) != 0) {
+		return NULL;
+	}
+	solPattern_free(p2);
+	return p1;
 }
 
 int _solPattern_state_equal(void *s1, void *s2)

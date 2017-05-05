@@ -13,7 +13,7 @@ int _state_equal(void *s1, void *s2)
 
 int _character_equal(void *s1, void *s2)
 {
-	if ((char*)s1 == (char*)s2) {
+	if (*(char*)s1 == *(char*)s2) {
 		return 0;
 	}
 	return 1;

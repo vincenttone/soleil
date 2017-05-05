@@ -36,6 +36,15 @@ int solDfaState_add_rule(SolDfaState *ds1, SolDfaState *ds2, void *c)
 	return 2;
 }
 
+int solDfaState_remove_rule(SolDfaState *ds, void *c)
+{
+	if (solDfaState_rules(ds)) {
+		solHash_del(solDfaState_rules(ds), c);
+		return 0;
+	}
+	return 1;
+}
+
 SolDfaState* solDfaState_next(SolDfaState *ds, void *c)
 {
 	if (solDfaState_rules(ds)) {
@@ -173,123 +182,6 @@ int solDfa_read_character(SolDfa *d, void *c)
 	return 0;
 }
 
-int solDfa_state_merge_forward(SolDfa *d, SolDfaState *ds1, SolDfaState *ds2, SolHash *map)
-{
-	SolHashRecord *r;
-	SolDfaState *ds3;
-	if (solDfa_state_match(d, solDfaState_state(ds1), solDfaState_state(ds2))) { // merge self
-		return 0;
-	}
-	if ((r = solHash_get(map, ds2->s))) { // merged to ds1 before, skip
-		ds3 = (SolDfaState*)(r->v);
-		if (solDfa_state_match(d, solDfaState_state(ds3), solDfaState_state(ds1)) == 0) {
-			return 0;
-		} else { // ds2 hash merged to ds3, merge state ds1 to ds3
-			return solDfa_state_merge_forward(d, ds3, ds1, map);
-		}
-	}
-	// merged to other state, redirect merge
-	if ((r = solHash_get(map, ds1->s))) {
-		ds3 = (SolDfaState*)(r->v);
-		return solDfa_state_merge_forward(d, ds3, ds2, map);
-	}
-	SolHashIter *i1 = solHashIter_new(solDfaState_rules(ds1));
-	SolHashIter *i2 = solHashIter_new(solDfaState_rules(ds2));
-	SolDfaState *ds4;
-	void *c;
-	solHashIter_rewind(i1);
-	while ((r = solHashIter_get(i1))) {
-		c = r->k;
-		ds3 = (SolDfaState*)(r->v);
-		solHashIter_rewind(i2);
-		while ((r = solHashIter_get(i2))) {
-			// merge 1,3
-			// 1--a-->(2)
-			// 3--a-->(4)
-			// 3--b-->(5) | 3--c-->6
-			// 6--d-->7
-			// 7--e-->3
-			// result: 1--a-->2 | 1--b-->5 | 1--c-->6
-			//         6--d-->7 | 7--e-->1 (todo)
-			//         merge 2,4
-			ds4 = (SolDfaState*)(r->v);
-			if (solDfa_character_match(d, c, r->k) == 0) {
-				solDfa_state_merge_forward(d, ds3, ds4, map);
-			} else {
-				// forward rules adjust
-				solDfaState_add_rule(ds1, ds4, (void*)(r->k));
-			}
-		}
-	}
-	solHash_put(map, ds2->s, ds1);	
-	solHashIter_free(i1);
-	solHashIter_free(i2);
-	return 0;
-}
-
-int solDfaState_clear_up_merge_map(SolHash *map)
-{
-	SolHashIter *i = solHashIter_new(map);
-	solHashIter_rewind(i);
-	void *s;
-	SolHashRecord *r;
-	SolDfaState *dsn;
-	while ((r = solHashIter_get(i))) {
-		s = r->k;
-		dsn = (SolDfaState*)(r->v);
-		while ((r = solHash_get(map, dsn->s))) {
-			dsn = (SolDfaState*)(r->v);
-			solHash_put(map, s, dsn);
-		}
-	}
-	return 0;
-}
-
-int solDfa_state_merge_backward(SolDfa *d, SolDfaState *ds, SolHash *map)
-{
-	if (solDfaState_rules(ds) == NULL) {
-		return 0;
-	}
-	SolHashRecord *r;
-	SolDfaState *dsn;
-	SolDfaState *dst = NULL;
-	void *c;
-	SolHashIter *i = solHashIter_new(solDfaState_rules(ds));
-	solHashIter_rewind(i);
-	while ((r = solHashIter_get(i))) {
-		c = r->k;
-		dsn = (SolDfaState*)(r->v);
-		dst = solHash_get(map, dsn->s);
-		if (dst) { // merged to other state
-			solDfaState_add_rule(ds, dst, c);
-		}
-		solDfa_state_merge_backward(d, dsn, map);
-	}
-	return 0;
-}
-
-int _solDfa_state_merge(SolDfa *d, SolDfaState *ds1, SolDfaState *ds2)
-{
-	SolHash *map = solHash_new();
-	solHash_set_hash_func1(solDfa_all_states(d), solDfa_state_hash_func1(d));
-	solHash_set_hash_func2(solDfa_all_states(d), solDfa_state_hash_func2(d));
-	solHash_set_equal_func(solDfa_all_states(d), solDfa_state_match_func(d));
-	solDfa_state_merge_forward(d, ds1, ds2, map);
-	// solDfaState_clear_up_merge_map(map);
-	solDfa_state_merge_backward(d, ds2, map);
-	SolDfaState *dsf;
-	SolHashRecord *r;
-	SolHashIter *i = solHashIter_new(map);
-	solHashIter_rewind(i);
-	while ((r = solHashIter_get(i))) {
-		dsf = solHash_get(solDfa_all_states(d), r->k);
-		solDfaState_free(dsf);
-	}
-	solHashIter_free(i);
-	solHash_free(map);
-	return 0;
-}
-
 int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 {
 	if (d1 == NULL || s1 == NULL || s2 == NULL) {
@@ -298,15 +190,16 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 	if (solDfa_state_match(d1, s1, s2) == 0) {
 		return 0;
 	}
-	int sflag = 0;
 	if (d2 == NULL) {
 		d2 = d1;
-		sflag = 1;
 	}
 	SolDfaState *ds1 = solHash_get(solDfa_all_states(d1), s1);
 	SolDfaState *ds2 = solHash_get(solDfa_all_states(d2), s2);
 	if (ds1 == NULL || ds2 == NULL) {
 		return -2;
+	}
+	if (ds1 != ds2) {
+		solHash_merge(solDfa_all_states(d1), solDfa_all_states(d2));
 	}
 	SolHashIter *i;
 	SolDfaState *dsn;
@@ -328,11 +221,11 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 			r = solHash_get(solDfaState_rules(ds1), c2);
 			if (r) {
 				dsn = (SolDfaState*)(r->v);
-				solDfa_state_merge(d1, d2, solDfaState_state(dsn), solDfaState_state(ds2n));
-			} else {
-				if (sflag == 0) {
-					solDfa_register_state(d1, solDfaState_state(ds2n), ds2n);
+				if (solDfaState_state(ds1) != solDfaState_state(dsn)
+					&& solDfaState_state(ds2) != solDfaState_state(ds2n)) {
+					solDfa_state_merge(d1, NULL, solDfaState_state(dsn), solDfaState_state(ds2n));
 				}
+			} else {
 				solDfaState_add_rule(ds1, ds2n, c2);
 			}
 		}
@@ -344,24 +237,27 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 	SolHashIter *in;
 	while ((r2 = solHashIter_get(i))) {
 		ds2n = (SolDfaState*)(r2->v);
-		if (sflag == 0) {
-			solDfa_register_state(d1, solDfaState_state(ds2n), ds2n);
-		}
 		if (solDfaState_rules(ds2n)) {
 			in = solHashIter_new(solDfaState_rules(ds2n));
 			solHashIter_rewind(in);
 			while ((r = solHashIter_get(in))) {
 				dsn = (SolDfaState*)(r->v);
-				if (solDfa_dfa_state_match(d2, ds2, dsn) != 0) {
-					continue;
+				// redirect ds2's parent relations to ds1
+				if (solDfa_dfa_state_match(d2, ds2, dsn) == 0) {
+					solDfaState_add_rule(ds2n, ds1, r->k);
 				}
-				solDfaState_add_rule(ds2n, ds1, r->k);
 			}
 			solHashIter_free(in);
 		}
-		
 	}
 	solHashIter_free(i);
+	if (d1 != d2) {
+		solHash_wipe(solDfa_all_states(d2));
+	}
+	if (solDfa_state_match(d1, s1, s2) != 0) {
+		solDfa_remove_dfa_state(d1, s2);
+		solDfaState_free(ds2);
+	}
 	return 0;
 }
 
@@ -377,14 +273,13 @@ void _solDfa_debug_relations(SolDfa *d)
 	SolHashRecord *r;
 	solHashIter_rewind(i);
 	while ((r = solHashIter_get(i))) {
-		// printf("STATE: (%d):\n", *(int*)r->k);
 		n = (int*)r->k;
 		s = r->v;
 		if (solDfaState_rules(s)) {
 			j = solHashIter_new(solDfaState_rules(s));
 			solHashIter_rewind(j);
 			while ((r = solHashIter_get(j))) {
-				printf("rules: (%d) -(%s)-> (%d)\n", *n, (char*)r->k, *(int*)(((SolDfaState*)r->v)->s));
+				printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(((SolDfaState*)r->v)->s));
 			}
 			solHashIter_free(j);
 		}
