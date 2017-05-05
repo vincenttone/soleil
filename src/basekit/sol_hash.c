@@ -204,15 +204,6 @@ int solHash_try_to_put(SolHash *hash, void *k, void *v)
 	return solHash_put_key_and_val(hash, rs.k, rs.v);
 }
 
-void solHash_remove_by_key(SolHash *hash, void *k)
-{
-	SolHashRecord *r = solHash_find_record_by_key(hash, k);
-	if (r && r->k != NULL) {
-		r->k = NULL;
-		r->v = NULL;
-	}
-}
-
 int solHash_resize(SolHash *hash, size_t size)
 {
 	SolHashRecord *records = hash->records;
