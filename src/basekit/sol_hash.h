@@ -58,6 +58,7 @@ SolHashRecord* solHash_find_record_by_key(SolHash*, void *);
 
 #define solHash_put(h, k, v) solHash_put_key_and_val(h, k, v)
 #define solHash_get(h, k) solHash_find_value(h, k)
+#define solHash_del(h, k) solHash_remove_by_key(h, k)
 
 int solHash_put_key_and_val(SolHash*, void*, void*);
 void solHash_remove_by_key(SolHash*, void*);
