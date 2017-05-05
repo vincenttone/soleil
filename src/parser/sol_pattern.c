@@ -1,4 +1,4 @@
-#include "sol_pattern_dfa.h"
+#include "sol_pattern.h"
 
 SolPattern* solPattern_new()
 {

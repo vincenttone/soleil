@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-#include "sol_pattern_dfa.h"
+#include "sol_pattern.h"
 
 int main()
 {
