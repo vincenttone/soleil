@@ -112,6 +112,32 @@ SolHashRecord* solHash_find_record_by_key(SolHash *hash, void *k)
 	return NULL;
 }
 
+void solHash_remove(SolHash *hash, void *k)
+{
+	assert(solHash_hash_func1(hash) && "no hash func (1)");
+	assert(solHash_hash_func2(hash) && "no hash func (2)");
+	assert(solHash_equal_func(hash) && "no match func");
+	SolHashRecord *r = solHash_record1_of_key(hash, k);
+	if (r->k != NULL && solHash_match(hash, k, r->k) == 0) {
+		goto remove_record;
+	}
+	r = solHash_record2_of_key(hash, k);
+	if (r->k != NULL && solHash_match(hash, k, r->k) == 0) {
+		goto remove_record;
+	}
+	goto finish;
+ remove_record:
+	if (solHash_free_k_func(hash)) {
+		solHash_free_k(hash, r->k);
+	}
+	if (solHash_free_v_func(hash)) {
+		solHash_free_v(hash, r->v);
+	}
+	memset(r, 0x0, sizeof(SolHashRecord));
+ finish:
+	return;
+}
+
 void* solHash_find_value(SolHash *hash, void *k)
 {
 	SolHashRecord *r = solHash_find_record_by_key(hash, k);
