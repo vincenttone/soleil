@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "sol_dfa.h"
 
 SolDfaState* solDfaState_new(void *s)
@@ -52,7 +51,8 @@ SolDfa* solDfa_new(sol_f_hash_ptr fsh1, sol_f_hash_ptr fsh2, sol_f_match_ptr fsm
 		return NULL;
 	}
 	solDfa_set_all_states(d, solHash_new());
-	if (solDfa_all_states(d) == NULL) {
+	solDfa_set_accepting_states(d, solSet_new());
+	if (solDfa_all_states(d) == NULL || solDfa_accepting_states(d) == NULL) {
 		solDfa_free(d);
 		return NULL;
 	}
@@ -67,6 +67,10 @@ SolDfa* solDfa_new(sol_f_hash_ptr fsh1, sol_f_hash_ptr fsh2, sol_f_match_ptr fsm
 	solHash_set_hash_func2(solDfa_all_states(d), solDfa_state_hash_func2(d));
 	solHash_set_equal_func(solDfa_all_states(d), solDfa_state_match_func(d));
 	solHash_set_free_v_func(solDfa_all_states(d), &_solDfaState_free);
+
+	solSet_set_hash_func1(solDfa_accepting_states(d), solDfa_state_hash_func1(d));
+	solSet_set_hash_func2(solDfa_accepting_states(d), solDfa_state_hash_func2(d));
+	solSet_set_equal_func(solDfa_accepting_states(d), solDfa_state_match_func(d));
 	return d;
 }
 
@@ -74,6 +78,9 @@ void solDfa_free(SolDfa *d)
 {
 	if (solDfa_all_states(d)) {
 		solHash_free(solDfa_all_states(d));
+	}
+	if (solDfa_accepting_states(d)) {
+		solSet_free(solDfa_accepting_states(d));
 	}
 	sol_free(d);
 }
@@ -93,7 +100,7 @@ int solDfa_set_starting_state(SolDfa *d, void *s)
 	return 0;
 }
 
-int solDfa_set_accepting_state(SolDfa *d, void *s)
+int solDfa_add_accepting_state(SolDfa *d, void *s)
 {
 	SolDfaState *ds = solHash_get(solDfa_all_states(d), s);
 	if (ds == NULL) {
@@ -103,7 +110,7 @@ int solDfa_set_accepting_state(SolDfa *d, void *s)
 		}
 		solDfa_register_state(d, s, ds);
 	}
-	_solDfa_set_accepting_state(d, s);
+	solSet_add(solDfa_accepting_states(d), s);
 	return 0;
 }
 
@@ -247,28 +254,16 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 	return 0;
 }
 
-void _solDfa_debug_relations(SolDfa *d)
+int solDfa_is_accepting(SolDfa *dfa)
 {
-	printf("Starting state: (%d):\n", *(int*)solDfa_starting_state(d));
-	printf("Accepting state: (%d):\n", *(int*)solDfa_accepting_state(d));
-	printf("All states:\n");
-	int *n;
-	SolHashIter *i = solHashIter_new(solDfa_all_states(d));
-	SolHashIter *j;
-	SolDfaState *s;
-	SolHashRecord *r;
-	solHashIter_rewind(i);
-	while ((r = solHashIter_get(i))) {
-		n = (int*)r->k;
-		s = r->v;
-		if (solDfaState_rules(s)) {
-			j = solHashIter_new(solDfaState_rules(s));
-			solHashIter_rewind(j);
-			while ((r = solHashIter_get(j))) {
-				printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(((SolDfaState*)r->v)->s));
-			}
-			solHashIter_free(j);
-		}
+	if (solDfa_accepting_states(dfa) == NULL) {
+		return -1;
 	}
-	solHashIter_free(i);
+	if (solDfa_current_state(dfa) == NULL) {
+		return 1;
+	}
+	if (solDfa_state_in_accepting_states(dfa, solDfa_current_state(dfa)) == 0) {
+		return 0;
+	}
+	return 2;
 }
