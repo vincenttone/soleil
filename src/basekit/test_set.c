@@ -42,11 +42,18 @@ int main()
 	solSet_add(s, "value4");
 	solSet_add(s, "value5");
 	solSet_add(s, "value5");
+	void *c;
+	solSet_rewind(s);
+	while ((c = solSet_get(s))) {
+		printf("Got:\t%s\n", (char *)c);
+		// printf("Set size: %d\t, iter num: %d\n", (int)solSet_size(s), (int)s->iter->num);
+	}
 	printf("set size: %d\n", (int)solSet_size(s));
 	printf("set length: %d\n", (int)solSet_count(s));
 	printf("value10 is in set?\t%d\n", solSet_in_set(s, "value10"));
 	printf("value3 is in set?\t%d\n", solSet_in_set(s, "value3"));
-	void *c;
+	solSet_del(s, "value3");
+	solSet_del(s, "value5");
 	solSet_rewind(s);
 	while ((c = solSet_get(s))) {
 		printf("Got:\t%s\n", (char *)c);

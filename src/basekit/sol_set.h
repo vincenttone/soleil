@@ -28,6 +28,7 @@ void solSet_free(SolSet*);
 #define solSet_in_set(s, v) solHash_has_key(s->hash, v)
 #define solSet_is_empty(s) (solSet_count(s) == 0)
 #define solSet_is_not_empty(s) (solSet_count(s) > 0)
+#define solSet_del(s, v) solHash_remove(s->hash, v);
 
 void* solSet_get(SolSet*);
 int solSet_is_subset(SolSet*, SolSet*);
