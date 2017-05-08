@@ -74,21 +74,6 @@ int main()
 		}
 		solHashIter_next(iter);
 	} while (++i < hash->size);
-	solHash_remove_by_key(hash, "key3");
-	printf("remove key key3\n");
-	solHashIter_rewind(iter);
-	i = 0;
-	do {
-		r = solHashIter_current_record(iter);
-		if (r == NULL) {
-			printf("ITER GOT(%d):\tNULL\n", (int)i);
-		} else if (r->k == NULL) {
-			printf("ITER GOT(%d):\tempty data\n", (int)i);
-		} else {
-			printf("ITER GOT(%d):\t%s --> %s\n", (int)i, (char*)r->k, (char*)r->v);
-		}
-		solHashIter_next(iter);
-	} while (++i < hash->size);
 	// test dup
 	SolHash *hash1 = solHash_new();
 	solHash_dup(hash1, hash);
