@@ -1,5 +1,3 @@
-// not support remove by key, case two hash func
-// [put remove put] may take two same key record
 #ifndef _SOL_HASH_H_
 #define _SOL_HASH_H_ 1
 #include <stddef.h>
@@ -63,8 +61,9 @@ SolHashRecord* solHash_find_record_by_key(SolHash*, void *);
 
 int solHash_put_key_and_val(SolHash*, void*, void*);
 int solHash_has_key(SolHash*, void*);
-void* solHash_find_value(SolHash*, void *);
+void* solHash_find_value(SolHash*, void*);
 int solHash_merge(SolHash*, SolHash*);
+void solHash_remove(SolHash*, void*);
 
 SolHashIter* solHashIter_new(SolHash*);
 void solHashIter_free(SolHashIter*);
@@ -93,6 +92,8 @@ SolHashRecord* solHashIter_get(SolHashIter *iter);
 #define solHash_match(h, k1, k2) (*h->f_match)(k1, k2)
 #define solHash_dup_k(h, k) (*h->f_dup_k)(k)
 #define solHash_dup_v(h, v) (*h->f_dup_v)(v)
+#define solHash_free_k(h, k) (*h->f_free_k)(k)
+#define solHash_free_v(h, v) (*h->f_free_v)(v)
 
 inline void solHash_free_records(SolHashRecord*, size_t, sol_f_free_ptr, sol_f_free_ptr);
 inline SolHashRecord* solHash_record1_of_key(SolHash*, void*);
