@@ -8,7 +8,6 @@
 #include "sol_dfa.h"
 
 #define SolPatternState unsigned int
-#define SolPatternCharacter char
 #define _SOL_PATTERN_STATE_MAX 65535
 
 typedef struct _SolPattern {
@@ -23,7 +22,6 @@ typedef struct _SolPatternStateGen {
 
 #define solPattern_dfa(p) p->dfa
 #define solPattern_state_stack(p) p->s
-#define solPattern_character_at_offset(s, d, o) strncpy(s, (d+o), sizeof(char))
 
 SolPattern* solPattern_new();
 void solPattern_free(SolPattern*);
@@ -34,10 +32,12 @@ SolPatternStateGen* solPatternStateGen_new();
 void solPatternStateGen_free(SolPatternStateGen*);
 SolPatternState* solPatternGen_gen_state(SolPatternStateGen*);
 
-int solPattern_is_match(SolPattern*, SolPatternCharacter*, size_t size);
+int solPattern_check_matching(SolPattern*);
+void solPattern_reset(SolPattern*);
+int solPattern_read_character(SolPattern*, void*);
 
 SolPattern* solPattern_empty_new(SolPatternStateGen*);
-SolPattern* solPattern_literal_new(SolPatternStateGen*, SolPatternCharacter*);
+SolPattern* solPattern_literal_new(SolPatternStateGen*, void*);
 SolPattern* solPattern_repeat(SolPattern *);
 SolPattern* solPattern_concatenate(SolPattern*, SolPattern*);
 SolPattern* solPattern_choose(SolPattern*, SolPattern*);
