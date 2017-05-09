@@ -72,32 +72,36 @@ SolPatternState* solPatternGen_gen_state(SolPatternStateGen *g)
 	return &(g->l[g->i]);
 }
 
-int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
+void solPattern_reset(SolPattern *p)
 {
-	if (p == NULL) {
-		return -3;
-	}
-	if (solPattern_dfa(p) == NULL) {
-		return -4;
-	}
-	size_t i = 0;
-	int r = 111;
-	SolPatternCharacter st[] = {'0'};
 	solDfa_reset_current_state(solPattern_dfa(p));
-	while (i < size) {
-		solPattern_character_at_offset(st, s, i);
-		r = solDfa_read_character(solPattern_dfa(p), st);
-		if (r == 1) {
-			return 2;
-		} else if (r != 0) {
-			return -1;
-		}
-		i++;
-	}
+}
+
+int solPattern_check_matching(SolPattern *p)
+{
 	if (solDfa_is_accepting(solPattern_dfa(p)) == 0) {
 		return 0;
 	}
 	return 1;
+}
+
+int solPattern_read_character(SolPattern *p, void *c)
+{
+	if (p == NULL) {
+		return -1;
+	}
+	if (solPattern_dfa(p) == NULL) {
+		return -2;
+	}
+	int r = solDfa_read_character(solPattern_dfa(p), c);
+	if (r == 1) {
+		return 2;
+	} else if (r < 0) {
+		return -3;
+	} else {
+		return 3;
+	}
+	return solPattern_check_matching(p);
 }
 
 SolPattern* solPattern_empty_new(SolPatternStateGen *g)
@@ -115,7 +119,7 @@ SolPattern* solPattern_empty_new(SolPatternStateGen *g)
 	return p;
 }
 
-SolPattern* solPattern_literal_new(SolPatternStateGen *g, SolPatternCharacter *c)
+SolPattern* solPattern_literal_new(SolPatternStateGen *g, void *c)
 {
 	SolPattern *p = solPattern_new();
 	SolPatternState *s1 = solPatternGen_gen_state(g);
