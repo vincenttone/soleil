@@ -79,6 +79,12 @@ void solPattern_reset(SolPattern *p)
 
 int solPattern_check_matching(SolPattern *p)
 {
+	if (p == NULL) {
+		return -1;
+	}
+	if (solPattern_dfa(p) == NULL) {
+		return -2;
+	}
 	if (solDfa_is_accepting(solPattern_dfa(p)) == 0) {
 		return 0;
 	}
@@ -94,14 +100,13 @@ int solPattern_read_character(SolPattern *p, void *c)
 		return -2;
 	}
 	int r = solDfa_read_character(solPattern_dfa(p), c);
-	if (r == 1) {
-		return 2;
-	} else if (r < 0) {
-		return -3;
+	if (r == 0) {
+		return 0;
+	} else if (r == 1) {
+		return 1;
 	} else {
-		return 3;
+		return -3;
 	}
-	return solPattern_check_matching(p);
 }
 
 SolPattern* solPattern_empty_new(SolPatternStateGen *g)

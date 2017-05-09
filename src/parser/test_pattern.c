@@ -7,9 +7,15 @@ int _solPattern_is_match(SolPattern *p, char *s, size_t size)
 	solPattern_reset(p);
 	char st[] = {'0'};
 	int i = 0;
+	int r;
 	while (i < size) {
 		strncpy(st, s + i, sizeof(char));
-		solPattern_read_character(p, st);
+		r = solPattern_read_character(p, st);
+		if (r == 1) {
+			return 100;
+		} else if (r != 0) {
+			return 101;
+		}
 		i++;
 	}
 	return solPattern_check_matching(p);
