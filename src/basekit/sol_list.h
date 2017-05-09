@@ -33,6 +33,8 @@ typedef struct _SolListIter {
 SolList* solList_new();
 void solList_free(SolList*);
 
+#define solList_head(l) l->head
+#define solList_tail(l) l->tail
 #define solList_len(l) l->len
 #define solList_set_free_func(l, f) l->free = f
 #define solList_set_dup_func(l, f) l->dup = f
