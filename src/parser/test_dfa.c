@@ -22,7 +22,7 @@ int _character_equal(void *s1, void *s2)
 void _solDfa_debug_relations(SolDfa *d)
 {
 	printf("Starting state: (%d):\n", *(int*)solDfa_starting_state(d));
-	printf("Accepting state:\n");
+	printf("Accepting states:\n");
 	void *acs;
 	while ((acs = solSet_get(solDfa_accepting_states(d)))) {
 		printf("state: %d\n", *(int*)acs);

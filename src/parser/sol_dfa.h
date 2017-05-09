@@ -41,8 +41,18 @@ typedef struct _SolDfa {
 #define solDfa_accepting_states(d) (d)->as
 #define solDfa_all_states(d) (d)->als
 
-#define solDfa_state_in_accepting_states(d, s) solSet_in_set(solDfa_accepting_states(d), \
-															 s)
+#define solDfa_free_all_states(d) solHash_free(solDfa_all_states(d))
+#define solDfa_wipe_all_states(d) solHash_wipe(solDfa_all_states(d))
+#define solDfa_merge_all_states(d1, d2) solHash_merge(solDfa_all_states(d1), \
+													  solDfa_all_states(d2))
+
+#define solDfa_state_in_accepting_states(d, s) solSet_in_set(solDfa_accepting_states(d), s)
+#define solDfa_accepting_states_rewind(d) solSet_rewind(solDfa_accepting_states(d))
+#define solDfa_accepting_states_get_one(d) solSet_get(solDfa_accepting_states(d))
+#define solDfa_wipe_accepting_states(d) solSet_wipe(solDfa_accepting_states(d))
+#define solDfa_merge_accepting_states(d1, d2) solSet_merge(solDfa_accepting_states(d1), \
+														   solDfa_accepting_states(d2))
+
 
 #define solDfa_set_character_hash_func1(d, f) d->f_c_hash1 = f
 #define solDfa_set_character_hash_func2(d, f) d->f_c_hash2 = f
@@ -63,9 +73,7 @@ typedef struct _SolDfa {
 #define solDfa_dfa_state_match(d, ds1, ds2) solDfa_state_match(d,		\
 															   solDfaState_state(ds1), \
 															   solDfaState_state(ds2))
-
-#define solDfa_merge_all_states(d1, d2) solHash_merge(solDfa_all_states(d1), \
-													  solDfa_all_states(d2))
+#define solDfa_state_is_starting_state(d, s) (solDfa_state_match(d, solDfa_starting_state(d), s) == 0)
 
 SolDfaState* solDfaState_new(void*);
 void solDfaState_free(SolDfaState*);

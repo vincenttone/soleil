@@ -77,7 +77,7 @@ SolDfa* solDfa_new(sol_f_hash_ptr fsh1, sol_f_hash_ptr fsh2, sol_f_match_ptr fsm
 void solDfa_free(SolDfa *d)
 {
 	if (solDfa_all_states(d)) {
-		solHash_free(solDfa_all_states(d));
+		solDfa_free_all_states(d);
 	}
 	if (solDfa_accepting_states(d)) {
 		solSet_free(solDfa_accepting_states(d));
@@ -189,15 +189,12 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 	if (ds1 == NULL || ds2 == NULL) {
 		return -2;
 	}
-	if (ds1 != ds2) {
-		solHash_merge(solDfa_all_states(d1), solDfa_all_states(d2));
-	}
 	SolHashIter *i;
 	SolDfaState *dsn;
 	SolDfaState *ds2n;
 	SolHashRecord *r = NULL;
 	SolHashRecord *r2 = NULL;
-	// lookup forward
+	// downstream
 	if (solDfaState_rules(ds2)) {
 		if (solDfaState_rules(ds1) == NULL
 			&& solDfa_init_dfa_state_rule(d1, ds1) != 0) {
@@ -222,7 +219,7 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 		}
 		solHashIter_free(i);
 	}
-	// lookup backward
+	// upstream
 	i = solHashIter_new(solDfa_all_states(d2));
 	solHashIter_rewind(i);
 	SolHashIter *in;
@@ -242,14 +239,14 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 		}
 	}
 	solHashIter_free(i);
-	if (d1 != d2) {
-		solHash_wipe(solDfa_all_states(d2));
-	}
-	if (solDfa_state_match(d1, s1, s2) != 0
-		&& solDfaState_rules(ds2)
-		) {
-		solHash_free(solDfaState_rules(ds2));
-		solDfaState_set_rules(ds2, NULL);
+	if (solDfa_state_match(d1, s1, s2) != 0) {
+		if (solDfa_state_in_accepting_states(d2, s2) == 0) {
+			solDfa_add_accepting_state(d2, s1);
+		}
+		if (solDfa_state_is_starting_state(d2, s2)) {
+			solDfa_set_starting_state(d2, s1);
+		}
+		solHash_remove(solDfa_all_states(d2), s2);
 	}
 	return 0;
 }

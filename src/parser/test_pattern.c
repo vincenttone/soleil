@@ -2,6 +2,38 @@
 #include <stdio.h>
 #include "sol_pattern.h"
 
+void _solPattern_debug_dfa_relations(SolPattern *p)
+{
+	SolDfa *d = solPattern_dfa(p);
+	printf("Starting state: (%d):\n", *(int*)solDfa_starting_state(d));
+	printf("Current state: (%d):\n", *(int*)solDfa_current_state(d));
+	printf("Accepting states:\n");
+	void *acs;
+	while ((acs = solSet_get(solDfa_accepting_states(d)))) {
+		printf("state: %d\n", *(int*)acs);
+	}
+	printf("All states:\n");
+	int *n;
+	SolHashIter *i = solHashIter_new(solDfa_all_states(d));
+	SolHashIter *j;
+	SolDfaState *s;
+	SolHashRecord *r;
+	solHashIter_rewind(i);
+	while ((r = solHashIter_get(i))) {
+		n = (int*)r->k;
+		s = r->v;
+		if (solDfaState_rules(s)) {
+			j = solHashIter_new(solDfaState_rules(s));
+			solHashIter_rewind(j);
+			while ((r = solHashIter_get(j))) {
+				printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(((SolDfaState*)r->v)->s));
+			}
+			solHashIter_free(j);
+		}
+	}
+	solHashIter_free(i);
+}
+
 int main()
 {
 	char *s0 = "";
@@ -42,13 +74,14 @@ int main()
 	printf("/ab/\t\"%s\"\tmatch? %d\n", sab, solPattern_is_match(pab, 	sab, l2));
 	printf("/ab/\t\"%s\"\tmatch? %d\n", saaa, solPattern_is_match(pab, 	saaa, l3));
 	printf("/ab/\t\"%s\"\tmatch? %d\n", sabc, solPattern_is_match(pab, 	sabc, l3));
-	SolPattern *pabc = solPattern_concatenate(pab, solPattern_literal_new(g, sc));
+	solPattern_concatenate(pab, solPattern_literal_new(g, sc));
+	//_solPattern_debug_dfa_relations(pab);
 	printf("/abc/\t\"%s\"\tmatch? %d\n", s0, solPattern_is_match(pab, 	s0, l0));
 	printf("/abc/\t\"%s\"\tmatch? %d\n", sa, solPattern_is_match(pab, 	sa, l1));
 	printf("/abc/\t\"%s\"\tmatch? %d\n", sab, solPattern_is_match(pab, 	sab, l2));
 	printf("/abc/\t\"%s\"\tmatch? %d\n", saaa, solPattern_is_match(pab, 	saaa, l3));
 	printf("/abc/\t\"%s\"\tmatch? %d\n", sabc, solPattern_is_match(pab, 	sabc, l3));
-	SolPattern *prptabc = solPattern_repeat(pabc);
+	solPattern_repeat(pab);
 	printf("/abc*/\t\"%s\"\tmatch? %d\n", s0, solPattern_is_match(pab, 	s0, l0));
 	printf("/abc*/\t\"%s\"\tmatch? %d\n", sa, solPattern_is_match(pab, 	sa, l1));
 	printf("/abc*/\t\"%s\"\tmatch? %d\n", sab, solPattern_is_match(pab, 	sab, l2));
@@ -56,7 +89,7 @@ int main()
 	printf("/abc*/\t\"%s\"\tmatch? %d\n", sabc, solPattern_is_match(pab, 	sabc, l3));
 	printf("/abc*/\t\"%s\"\tmatch? %d\n", sabacabac, solPattern_is_match(pab, 	sabacabac, l8));
 	printf("/abc*/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_is_match(pab, 	sabcabcabc, l9));
-	solPattern_free(prptabc);
+	solPattern_free(pab);
 	SolPattern *pa_b = solPattern_choose(solPattern_literal_new(g, sa), solPattern_literal_new(g, sb));
 	printf("/a|b/\t\"%s\"\tmatch? %d\n", s0, solPattern_is_match(pa_b, 	s0, l0));
 	printf("/a|b/\t\"%s\"\tmatch? %d\n", sa, solPattern_is_match(pa_b, 	sa, l1));
@@ -74,6 +107,22 @@ int main()
 	printf("/((ab)|(ac))*/\t\"%s\"\tmatch? %d\n", sabacabac, solPattern_is_match(prabac, sabacabac, l8));
 	printf("/((ab)|(ac))*/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_is_match(prabac, sabcabcabc, l9));
 	solPattern_free(prabac);
+	SolPattern *pE_a = solPattern_choose(solPattern_empty_new(g), solPattern_literal_new(g, sa));
+	printf("/a?/\t\"%s\"\tmatch? %d\n", s0, solPattern_is_match(pE_a, s0, l0));
+	printf("/a?/\t\"%s\"\tmatch? %d\n", sa, solPattern_is_match(pE_a, sa, l1));
+	printf("/a?/\t\"%s\"\tmatch? %d\n", sb, solPattern_is_match(pE_a, sb, l1));
+	printf("/a?/\t\"%s\"\tmatch? %d\n", saaa, solPattern_is_match(pE_a, saaa, l3));
+	solPattern_free(pE_a);
+	SolPattern *pE_abc = solPattern_choose(solPattern_empty_new(g),
+										   solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, sa),
+																						 solPattern_literal_new(g, sb)),
+																  solPattern_literal_new(g, sc)));
+	printf("/(abc)?/\t\"%s\"\tmatch? %d\n", s0, solPattern_is_match(pE_abc, s0, l0));
+	printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sa, solPattern_is_match(pE_abc, sa, l1));
+	printf("/(abc)?/\t\"%s\"\tmatch? %d\n", saaa, solPattern_is_match(pE_abc, saaa, l3));
+	printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sabc, solPattern_is_match(pE_abc, sabc, l3));
+	printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_is_match(pE_abc, sabcabcabc, l9));
+	solPattern_free(pE_abc);
 	solPatternStateGen_free(g);
 	return 0;
 }

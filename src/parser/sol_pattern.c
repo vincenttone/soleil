@@ -81,7 +81,7 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 		return -4;
 	}
 	size_t i = 0;
-	int r;
+	int r = 111;
 	SolPatternCharacter st[] = {'0'};
 	solDfa_reset_current_state(solPattern_dfa(p));
 	while (i < size) {
@@ -94,7 +94,7 @@ int solPattern_is_match(SolPattern *p, SolPatternCharacter *s, size_t size)
 		}
 		i++;
 	}
-	if (solDfa_is_accepting(solPattern_dfa(p))) {
+	if (solDfa_is_accepting(solPattern_dfa(p)) == 0) {
 		return 0;
 	}
 	return 1;
@@ -108,7 +108,7 @@ SolPattern* solPattern_empty_new(SolPatternStateGen *g)
 		solPattern_free(p);
 		return NULL;
 	}
-	if (solDfa_set_accepting_state(solPattern_dfa(p), s) != 0) {
+	if (solDfa_add_accepting_state(solPattern_dfa(p), s) != 0) {
 		solPattern_free(p);
 		return NULL;
 	}
@@ -124,7 +124,7 @@ SolPattern* solPattern_literal_new(SolPatternStateGen *g, SolPatternCharacter *c
 		solPattern_free(p);
 		return NULL;
 	}
-	if (solDfa_set_accepting_state(solPattern_dfa(p), s2) != 0) {
+	if (solDfa_add_accepting_state(solPattern_dfa(p), s2) != 0) {
 		solPattern_free(p);
 		return NULL;
 	}
@@ -137,15 +137,20 @@ SolPattern* solPattern_repeat(SolPattern *p)
 	if (p == NULL) {
 		return NULL;
 	}
-	if (solDfa_state_merge(solPattern_dfa(p),
-						   solPattern_dfa(p),
-						   solDfa_starting_state(solPattern_dfa(p)),
-						   solDfa_accepting_state(solPattern_dfa(p))
-						   ) != 0
-		) {
-		return NULL;
+	void *s;
+	solDfa_accepting_states_rewind(solPattern_dfa(p));
+	while ((s = (solDfa_accepting_states_get_one(solPattern_dfa(p))))) {
+		if (solDfa_state_merge(solPattern_dfa(p),
+							   solPattern_dfa(p),
+							   solDfa_starting_state(solPattern_dfa(p)),
+							   s
+							   ) != 0
+			) {
+			return NULL;
+		}
 	}
-	if (solDfa_set_accepting_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p))) != 0) {
+	solDfa_wipe_accepting_states(solPattern_dfa(p));
+	if (solDfa_add_accepting_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p))) != 0) {
 		return NULL;
 	}
 	return p;
@@ -156,18 +161,28 @@ SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
 	if (p1 == NULL || p2 == NULL) {
 		return NULL;
 	}
-	void *sa2 = solDfa_accepting_state(solPattern_dfa(p2));
-	if (solDfa_state_merge(solPattern_dfa(p1),
-						   solPattern_dfa(p2),
-						   solDfa_accepting_state(solPattern_dfa(p1)),
-						   solDfa_starting_state(solPattern_dfa(p2))
-						   ) != 0
-		) {
-		return NULL;
+	SolPattern ptmp;
+	ptmp = *p2;
+	*p2 = *p1;
+	*p1 = ptmp;
+	solDfa_merge_all_states(solPattern_dfa(p1), solPattern_dfa(p2));
+	solDfa_wipe_all_states(solPattern_dfa(p2));
+	solDfa_free_all_states(solPattern_dfa(p2));
+	solDfa_set_all_states(solPattern_dfa(p2), solDfa_all_states(solPattern_dfa(p1)));
+	void *s;
+	solDfa_accepting_states_rewind(solPattern_dfa(p2));
+	while ((s = (solDfa_accepting_states_get_one(solPattern_dfa(p2))))) {
+		if (solDfa_state_merge(solPattern_dfa(p1),
+							   solPattern_dfa(p2),
+							   solDfa_starting_state(solPattern_dfa(p1)),
+							   s
+							   ) != 0
+			) {
+			return NULL;
+		}
 	}
-	if (solDfa_set_accepting_state(solPattern_dfa(p1), sa2) != 0) {
-		return NULL;
-	}
+	solDfa_set_starting_state(solPattern_dfa(p1), solDfa_starting_state(solPattern_dfa(p2)));
+	solDfa_set_all_states(solPattern_dfa(p2), NULL);
 	solPattern_free(p2);
 	return p1;
 }
@@ -177,8 +192,10 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
 	if (p1 == NULL || p2 == NULL) {
 		return NULL;
 	}
-	void *sa1 = solDfa_accepting_state(solPattern_dfa(p1));
-	void *sa2 = solDfa_accepting_state(solPattern_dfa(p2));
+	solDfa_merge_all_states(solPattern_dfa(p1), solPattern_dfa(p2));
+	solDfa_wipe_all_states(solPattern_dfa(p2));
+	solDfa_free_all_states(solPattern_dfa(p2));
+	solDfa_set_all_states(solPattern_dfa(p2), solDfa_all_states(solPattern_dfa(p1)));
 	if (solDfa_state_merge(solPattern_dfa(p1),
 						   solPattern_dfa(p2),
 						   solDfa_starting_state(solPattern_dfa(p1)),
@@ -187,9 +204,8 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
 		) {
 		return NULL;
 	}
-	if (solDfa_state_merge(solPattern_dfa(p1), NULL, sa1, sa2) != 0) {
-		return NULL;
-	}
+	solDfa_merge_accepting_states(solPattern_dfa(p1), solPattern_dfa(p2));
+	solDfa_set_all_states(solPattern_dfa(p2), NULL);
 	solPattern_free(p2);
 	return p1;
 }
