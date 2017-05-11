@@ -5,13 +5,13 @@
 #include "sol_pattern.h"
 
 typedef enum _SolRegexEncoding {
-	SolRegexEncode_ascii = 1,
-	SolRegexEncode_utf8 = 2,
+    SolRegexEncode_ascii = 1,
+    SolRegexEncode_utf8 = 2,
 } SolRegexEncoding;
 
 typedef struct _SolRegexEngine {
-	SolPatternStateGen *g;
-	SolRegexEncoding ec;
+    SolPatternStateGen *g;
+    SolRegexEncoding ec;
 } SolRegexEngine;
 
 SolRegexEngine* solRegexEngine_new(SolRegexEncoding);

@@ -16,19 +16,19 @@ typedef void (*sol_f_free_ptr)(void*);
 typedef void* (*sol_f_dup_ptr)(void*);
 
 enum SolValType {
-	SolValTypeInt = 1,
-	SolValTypeChar = 2,
-	SolValTypeStr = 3,
+    SolValTypeInt = 1,
+    SolValTypeChar = 2,
+    SolValTypeStr = 3,
 };
 
 typedef struct _SolVal {
-	size_t s; // size
-	union _v {
-		int i;
-		char c;
-		char *s;
-	} v; // val
-	enum SolValType t; // type
+    size_t s; // size
+    union _v {
+        int i;
+        char c;
+        char *s;
+    } v; // val
+    enum SolValType t; // type
 } SolVal;
 
 #define solVal_is_type_(v, type) (v)->t == type

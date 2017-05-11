@@ -34,7 +34,7 @@
  ***
  *
  * NOTE: The FNV-0 historic hash is not recommended.  One should use
- *	 the FNV-1 hash instead.
+ *     the FNV-1 hash instead.
  *
  * To use the 32 bit FNV-0 historic hash, pass FNV0_32_INIT as the
  * Fnv32_t hashval argument to fnv_32_buf() or fnv_32_str().
@@ -67,10 +67,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  * By:
- *	chongo <Landon Curt Noll> /\oo/\
+ *    chongo <Landon Curt Noll> /\oo/\
  *      http://www.isthe.com/chongo/
  *
- * Share and Enjoy!	:-)
+ * Share and Enjoy!    :-)
  */
 
 #if !defined(__FNV_H__)

@@ -6,8 +6,8 @@
 #include "sol_hash.h"
 
 typedef struct SolSet {
-	SolHash *hash;
-	SolHashIter *iter;
+    SolHash *hash;
+    SolHashIter *iter;
 } SolSet;
 
 SolSet* solSet_new();

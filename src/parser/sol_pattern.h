@@ -11,26 +11,26 @@
 #define _SOL_PATTERN_STATE_MAX 65535
 
 typedef struct _SolPattern {
-	SolDfa *dfa;
-	SolStack *s; // state stack
-	SolList *m; // match result
-	size_t (*r)(void*); // read literal
+    SolDfa *dfa;
+    SolStack *s; // state stack
+    SolList *m; // match result
+    size_t (*r)(void*); // read literal
 } SolPattern;
 
 typedef struct _SolPatternHistory {
-	size_t *i; // index
-	SolDfaState *s; // state
+    size_t *i; // index
+    SolDfaState *s; // state
 } SolPatternHistory;
 
 typedef struct _SolPatternResult {
-	int flag; // match flag
-	size_t *s; // starting index
-	size_t  *e; // end index
+    int flag; // match flag
+    size_t *s; // starting index
+    size_t  *e; // end index
 } SolPatternResult;
 
 typedef struct _SolPatternStateGen {
-	SolPatternState i;
-	SolPatternState l[_SOL_PATTERN_STATE_MAX];
+    SolPatternState i;
+    SolPatternState l[_SOL_PATTERN_STATE_MAX];
 } SolPatternStateGen;
 
 #define solPattern_dfa(p) (p)->dfa
