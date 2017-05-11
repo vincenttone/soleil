@@ -194,19 +194,19 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 	SolDfaState *ds2n;
 	SolHashRecord *r = NULL;
 	SolHashRecord *r2 = NULL;
+	void *c;
 	// downstream
 	if (solDfaState_rules(ds2)) {
 		if (solDfaState_rules(ds1) == NULL
 			&& solDfa_init_dfa_state_rule(d1, ds1) != 0) {
 			return -3;
 		}
-		void *c2;
 		i = solHashIter_new(solDfaState_rules(ds2));
 		solHashIter_rewind(i);
 		while ((r2 = solHashIter_get(i))) {
-			c2 = r2->k;
+			c = r2->k;
 			ds2n = (SolDfaState*)(r2->v);
-			dsn = solDfaState_next(ds1, c2);
+			dsn = solDfaState_next(ds1, c);
 			if (dsn) {
 				if (solDfa_dfa_state_match(d1, ds1, dsn) != 0
 					|| solDfa_dfa_state_match(d2, ds2, ds2n) != 0
@@ -214,7 +214,7 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 					solDfa_state_merge(d1, NULL, solDfaState_state(dsn), solDfaState_state(ds2n));
 				}
 			} else {
-				solDfaState_add_rule(ds1, ds2n, c2);
+				solDfaState_add_rule(ds1, ds2n, c);
 			}
 		}
 		solHashIter_free(i);
@@ -231,6 +231,7 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 			while ((r = solHashIter_get(in))) {
 				dsn = (SolDfaState*)(r->v);
 				// redirect ds2's parent relations to ds1
+				// dsn --c--> ds2
 				if (solDfa_dfa_state_match(d2, ds2, dsn) == 0) {
 					solDfaState_add_rule(ds2n, ds1, r->k);
 				}
@@ -238,6 +239,7 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 			solHashIter_free(in);
 		}
 	}
+	// TODO: upstream merge
 	solHashIter_free(i);
 	if (solDfa_state_match(d1, s1, s2) != 0) {
 		if (solDfa_state_in_accepting_states(d2, s2) == 0) {

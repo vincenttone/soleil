@@ -1,3 +1,4 @@
+#include <string.h>
 #include "sol_pattern.h"
 
 SolPattern* solPattern_new()
@@ -22,8 +23,11 @@ void solPattern_free(SolPattern *p)
 	if (p->dfa) {
 		solDfa_free(p->dfa);
 	}
-	if (p->s) {
-		solStack_free(p->s);
+	if (solPattern_state_stack(p)) {
+		solStack_free(solPattern_state_stack(p));
+	}
+	if (solPattern_match_list(p)) {
+		solList_free(solPattern_match_list(p));
 	}
 	if (p) {
 		sol_free(p);
@@ -233,4 +237,36 @@ int _solPattern_char_equal(void *c1, void *c2)
 		return 0;
 	}
 	return 1;
+}
+
+int solPattern_match(SolPattern *p, void *str, size_t size)
+{
+	if (p == NULL) {
+		return -1;
+	}
+	if (solPattern_dfa(p) == NULL) {
+		return -2;
+	}
+	if (solPattern_read_literal_func(p) == NULL) {
+		return -3;
+	}
+	void *sptr = str;
+	void *c;
+	int r, o;
+	size_t os;
+	solDfa_reset_current_state(solPattern_dfa(p));
+	while ((o = solPattern_read_literal(p, sptr))) {
+		os = sizeof(unsigned char) * o;
+		c = sol_alloc(os);
+		strncpy(c, sptr, os);
+		r = solDfa_read_character(solPattern_dfa(p), c);
+		sol_free(c);
+		if (r == 1) {
+			return 1;
+		} else if (r != 0) {
+			return 2;
+		}
+		sptr = sptr + os;
+	}
+	return 0;
 }
