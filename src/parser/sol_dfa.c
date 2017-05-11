@@ -239,7 +239,6 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
 			solHashIter_free(in);
 		}
 	}
-	// TODO: upstream merge
 	solHashIter_free(i);
 	if (solDfa_state_match(d1, s1, s2) != 0) {
 		if (solDfa_state_in_accepting_states(d2, s2) == 0) {
