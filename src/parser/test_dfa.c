@@ -3,6 +3,10 @@
 #include "sol_utils.h"
 #include "sol_dfa.h"
 
+struct Mark {
+    int m;
+};
+
 int _state_equal(void *s1, void *s2)
 {
     if ((int*)s1 == (int*)s2) {
@@ -32,7 +36,9 @@ void _solDfa_debug_relations(SolDfa *d)
     SolHashIter *i = solHashIter_new(solDfa_all_states(d));
     SolHashIter *j;
     SolDfaState *s;
+    SolDfaState *s1;
     SolHashRecord *r;
+    SolDfaStateMark *m;
     solHashIter_rewind(i);
     while ((r = solHashIter_get(i))) {
         n = (int*)r->k;
@@ -41,7 +47,17 @@ void _solDfa_debug_relations(SolDfa *d)
             j = solHashIter_new(solDfaState_rules(s));
             solHashIter_rewind(j);
             while ((r = solHashIter_get(j))) {
-                printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(((SolDfaState*)r->v)->s));
+                s1 = ((SolDfaState*)r->v);
+                printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(s1->s));
+                if (solDfaState_mark(s1)) {
+                    m = solDfaState_mark(s1);
+                    do {
+                        printf("state [%d] has mark value %d\n",
+                               *(int*)(s1->s), 
+                               ((struct Mark*)(solDfaStateMark_mark(m)))->m
+                            );
+                    } while ((m = solDfaStateMark_next(m)));
+                }
             }
             solHashIter_free(j);
         }
@@ -86,6 +102,15 @@ int main()
     if (solDfa_add_rule(d, &iii, &iv, &c) != 0) {
         goto err;
     }
+    SolDfaState *ds = solDfa_conv_dfa_state(d, &ii);
+    struct Mark mark1, mark2, mark3;
+    mark1.m = 23456;
+    mark2.m = 45678;
+    mark3.m = 11111;
+    solDfaState_add_mark(ds, &mark1);
+    solDfaState_add_mark(ds, &mark2);
+    ds = solDfa_conv_dfa_state(d, &iv);
+    solDfaState_add_mark(ds, &mark3);
     _solDfa_debug_relations(d);
     printf("read %c\n", a);
     solDfa_read_character(d, &a);

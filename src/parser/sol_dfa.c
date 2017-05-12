@@ -1,5 +1,27 @@
 #include "sol_dfa.h"
 
+SolDfaStateMark* solDfaStateMark_new()
+{
+    SolDfaStateMark *m = sol_calloc(1, sizeof(SolDfaStateMark));
+    if (m) {
+        return m;
+    }
+    return NULL;
+}
+
+void solDfaStateMark_free(SolDfaStateMark *m)
+{
+    if (m == NULL) {
+        return;
+    }
+    SolDfaStateMark *n;
+    do {
+        n = solDfaStateMark_next(m);
+        sol_free(m);
+        m = n;
+    } while (m);
+}
+
 SolDfaState* solDfaState_new(void *s)
 {
     SolDfaState *ds = sol_calloc(1, sizeof(SolDfaState));
@@ -15,6 +37,7 @@ void solDfaState_free(SolDfaState *ds)
     if (solDfaState_rules(ds)) {
         solHash_free(solDfaState_rules(ds));
     }
+    solDfaStateMark_free(solDfaState_mark(ds));
     sol_free(ds);
 }
 
@@ -33,6 +56,42 @@ int solDfaState_add_rule(SolDfaState *ds1, SolDfaState *ds2, void *c)
         }
     }
     return 2;
+}
+
+int solDfaState_add_mark(SolDfaState *ds, void *m)
+{
+    SolDfaStateMark *mark;
+    if (solDfaState_mark(ds) == NULL) {
+        solDfaState_set_mark(ds, solDfaStateMark_new());
+        if (solDfaState_mark(ds) == NULL) {
+            return -1;
+        }
+        mark = solDfaState_mark(ds);
+    } else {
+        mark = solDfaState_mark(ds);
+        while (solDfaStateMark_next(mark))  {
+            mark = solDfaStateMark_next(mark);
+        }
+        solDfaStateMark_set_next_mark(mark, solDfaStateMark_new());
+        mark = solDfaStateMark_next(mark);
+    }
+    solDfaStateMark_set_mark(mark, m);
+    return 0;
+}
+
+void solDfaState_merge_mark(SolDfaState *s1, SolDfaState *s2)
+{
+    if (solDfaState_mark(s1) == NULL) {
+        if (solDfaState_mark(s2) == NULL) {
+            return;
+        }
+        solDfaState_set_mark(s1, solDfaState_mark(s2));
+        return;
+    }
+    SolDfaStateMark *m;
+    while ((m = solDfaStateMark_next(solDfaState_mark(s1)))) {
+    }
+    solDfaStateMark_set_next_mark(m, solDfaState_mark(s2));
 }
 
 SolDfaState* solDfaState_next(SolDfaState *ds, void *c)
@@ -240,6 +299,7 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
         }
     }
     solHashIter_free(i);
+    solDfaState_merge_mark(ds1, ds2);
     if (solDfa_state_match(d1, s1, s2) != 0) {
         if (solDfa_state_in_accepting_states(d2, s2) == 0) {
             solDfa_add_accepting_state(d2, s1);

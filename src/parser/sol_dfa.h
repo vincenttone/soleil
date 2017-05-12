@@ -5,9 +5,15 @@
 #include "sol_hash.h"
 #include "sol_set.h"
 
+typedef struct _SolDfaStateMark {
+    void *m; // mark
+    struct _SolDfaStateMark *n; // next mark
+} SolDfaStateMark;
+
 typedef struct _SolDfaState {
     void *s; // state
     SolHash *r; // rules {character: dfa_state, ...}
+    SolDfaStateMark *m;
 } SolDfaState;
 
 typedef struct _SolDfa {
@@ -27,6 +33,13 @@ typedef struct _SolDfa {
 #define solDfaState_set_rules(ds, h) (ds)->r = h
 #define solDfaState_state(ds) (ds)->s
 #define solDfaState_rules(ds) (ds)->r
+#define solDfaState_mark(ds) (ds)->m
+#define solDfaStateMark_mark(mark) (mark)->m
+#define solDfaStateMark_next(mark) (mark)->n
+
+#define solDfaState_set_mark(ds, mark) (ds)->m = mark
+#define solDfaStateMark_set_mark(mark, sm) (mark)->m = sm
+#define solDfaStateMark_set_next_mark(m, nm) (m)->n = nm
 
 #define _solDfa_set_starting_state(d, s) (d)->ss = s; 
 #define solDfa_set_current_state(d, s) (d)->cs = s
@@ -80,6 +93,11 @@ void solDfaState_free(SolDfaState*);
 void _solDfaState_free(void*);
 int solDfaState_add_rule(SolDfaState*, SolDfaState*, void*);
 SolDfaState* solDfaState_next(SolDfaState*, void*);
+int solDfaState_add_mark(SolDfaState*, void*);
+void solDfaState_merge_mark(SolDfaState*, SolDfaState*);
+
+SolDfaStateMark* solDfaStateMark_new();
+void solDfaStateMark_free(SolDfaStateMark*);
 
 SolDfa* solDfa_new(sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr,
                    sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr);
