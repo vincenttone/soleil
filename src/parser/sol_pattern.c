@@ -26,8 +26,8 @@ void solPattern_free(SolPattern *p)
     if (solPattern_state_stack(p)) {
         solStack_free(solPattern_state_stack(p));
     }
-    if (solPattern_match_list(p)) {
-        solList_free(solPattern_match_list(p));
+    if (solPattern_capture_list(p)) {
+        solList_free(solPattern_capture_list(p));
     }
     if (p) {
         sol_free(p);
@@ -221,6 +221,44 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
     solDfa_set_all_states(solPattern_dfa(p2), NULL);
     solPattern_free(p2);
     return p1;
+}
+
+SolPattern* solPattern_capture(SolPattern *p, enum SolPatternCaptureMarkFlag f, void *t)
+{
+    if (p == NULL) {
+        return NULL;
+    }
+    if (solPattern_dfa(p) == NULL
+        || solDfa_starting_state(solPattern_dfa(p)) == NULL
+        || solDfa_accepting_states(solPattern_dfa(p)) == NULL) {
+        solPattern_free(p);
+        return NULL;
+    }
+    if (solPattern_capture_list(p) == NULL) {
+        solPattern_set_capture_list(p, solList_new());
+        if (solPattern_capture_list(p) == NULL) {
+            solPattern_free(p);
+            return NULL;
+        }
+        solList_set_free_func(solPattern_capture_list(p), &sol_free);
+    }
+    SolPatternCaptureMark* cm = sol_calloc(1, sizeof(SolPatternCaptureMark));
+    if (cm == NULL) {
+        solPattern_free(p);
+        return NULL;
+    }
+    solPatternCaptureMark_set_flag(cm, f);
+    solPatternCaptureMark_set_tag(cm, t);
+    solList_add_fwd(solPattern_capture_list(p), cm);
+    SolDfaState *ds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p)));
+    solDfaState_add_mark(ds, cm);
+    solSet_rewind(solDfa_accepting_states(solPattern_dfa(p)));
+    void *s;
+    while ((s = solSet_get(solDfa_accepting_states(solPattern_dfa(p))))) {
+        ds = solDfa_conv_dfa_state(solPattern_dfa(p), s);
+        solDfaState_add_mark(ds, cm);
+    }
+    return p;
 }
 
 int _solPattern_state_equal(void *s1, void *s2)
