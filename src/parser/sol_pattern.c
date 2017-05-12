@@ -292,6 +292,7 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
     void *c;
     int r, o;
     size_t os;
+    SolDfaState *cds;
     solDfa_reset_current_state(solPattern_dfa(p));
     while ((o = solPattern_read_literal(p, sptr))) {
         os = sizeof(unsigned char) * o;
@@ -304,7 +305,21 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
         } else if (r != 0) {
             return 2;
         }
+        cds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_current_state(solPattern_dfa(p)));
+        if (solDfaState_mark(cds)) {
+            solPatternCaptureMark_mark((SolPatternCaptureMark*)(solDfaStateMark_mark(solDfaState_mark(cds))),
+                                       sptr);
+        }
         sptr = sptr + os;
     }
     return 0;
+}
+
+inline void solPatternCaptureMark_mark(SolPatternCaptureMark *m, void *i)
+{
+    if (solPatternCaptureMark_starting_index(m)) {
+        solPatternCaptureMark_set_end_index(m, i);
+    } else {
+        solPatternCaptureMark_set_starting_index(m, i);
+    }
 }
