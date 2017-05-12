@@ -36,10 +36,10 @@ void solList_free(SolList*);
 #define solList_head(l) l->head
 #define solList_tail(l) l->tail
 #define solList_len(l) l->len
-#define solList_set_free_func(l, f) l->free = f
-#define solList_set_dup_func(l, f) l->dup = f
-#define solList_set_match_func(l, f) l->match = f
-#define solList_set_match_and_up_func(l, f) l->fnu = f
+#define solList_set_free_func(l, f) l->f_free = f
+#define solList_set_dup_func(l, f) l->f_dup = f
+#define solList_set_match_func(l, f) l->f_match = f
+#define solList_set_match_and_up_func(l, f) l->f_mnu = f
 
 #define solListNodeVal_free(l, n) if (l->f_free) {(*l->f_free)(n->val);}
 
