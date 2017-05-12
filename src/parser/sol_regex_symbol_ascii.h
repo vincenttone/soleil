@@ -1,6 +1,8 @@
 #ifndef _SOL_REGEX_SYMBOL_ASCII_H_
 #define _SOL_REGEX_SYMBOL_ASCII_H_ 1
 
+#include "sol_pattern.h"
+
 #define SOL_REGEX_SYMBOL_ASCII_NUL 0 // \0
 
 #define SOL_REGEX_SYMBOL_ASCII_HT 9 // \t
@@ -40,6 +42,7 @@
 #define SOL_REGEX_SYMBOL_ASCII_L_a 97
 #define SOL_REGEX_SYMBOL_ASCII_L_z 122
 
+SolPattern* solRegexSymbolAscii_pattern();
 int solRegexSymbolAscii_match(void*, void*);
 
 #define solRegexSymbolAscii_char(s) (*(char*)s)
