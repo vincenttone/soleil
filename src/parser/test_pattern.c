@@ -33,21 +33,40 @@ void _solPattern_debug_dfa_relations(SolPattern *p)
     }
     printf("All states:\n");
     int *n;
-    SolHashIter *i = solHashIter_new(solDfa_all_states(d));
+    char *sf;
     SolHashIter *j;
     SolDfaState *s;
     SolHashRecord *r;
+    SolDfaState *s1;
+    SolDfaStateMark *m;
+    SolHashIter *i = solHashIter_new(solDfa_all_states(d));
     solHashIter_rewind(i);
     while ((r = solHashIter_get(i))) {
         n = (int*)r->k;
-        s = r->v;
+        s = (SolDfaState*)(r->v);
         if (solDfaState_rules(s)) {
             j = solHashIter_new(solDfaState_rules(s));
             solHashIter_rewind(j);
             while ((r = solHashIter_get(j))) {
-                printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(((SolDfaState*)r->v)->s));
+                s1 = ((SolDfaState*)r->v);
+                printf("rules: (%d) -(%c)-> (%d)\n", *n, *((char*)r->k), *(int*)(s1->s));
             }
             solHashIter_free(j);
+        }
+        if (solDfaState_mark(s)) {
+            m = solDfaState_mark(s);
+            do {
+                if (solDfaStateMark_flag(m) & SolPatternDfaStateFlag_End) {
+                    sf = "END";
+                } else {
+                    sf = "BEGIN";
+                }
+                printf("state [%d] has %s mark %s\n",
+                       *(int*)(s->s),
+                       sf,
+                       (char*)(((SolPatternCaptureMark*)(solDfaStateMark_mark(m)))->tag)
+                    );
+            } while ((m = solDfaStateMark_next(m)));
         }
     }
     solHashIter_free(i);
@@ -56,6 +75,31 @@ void _solPattern_debug_dfa_relations(SolPattern *p)
 size_t read_char(void* s)
 {
     return sizeof(char);
+}
+
+void print_match_result(SolPattern *p, char* s)
+{
+    char *ms = sol_calloc(10, sizeof(char));
+    SolListIter *li;
+    SolPatternCaptureMark *cm;
+    SolListNode *ln;
+    if (solPattern_capture_list(p)) {
+        li = solListIter_new(solPattern_capture_list(p), _SolListDirFwd);
+        solListIter_rewind(li);
+        while ((ln = solListIter_next(li))) {
+            cm = solListNode_val(ln);
+            strncpy(ms, s + solPatternCaptureMark_starting_index(cm), solPatternCaptureMark_len(cm));
+            printf("Match mark of [%s] str: [%s], result [%s] (%zu:%zu)\n",
+                   (char*)(solPatternCaptureMark_tag(cm)),
+                   s,
+                   ms,
+                   solPatternCaptureMark_starting_index(cm),
+                   solPatternCaptureMark_len(cm)
+                );
+        }
+        solListIter_free(li);
+    }
+    sol_free(ms);
 }
 
 int main()
@@ -120,11 +164,12 @@ int main()
     printf("/a|b/\t\"%s\"\tmatch? %d\n", sab, _solPattern_is_match(pa_b, sab, l2));
     printf("/a|b/\t\"%s\"\tmatch? %d\n", saaa, _solPattern_is_match(pa_b, saaa, l3));
     solPattern_free(pa_b);
-    SolPattern *prabac = solPattern_choose(solPattern_concatenate(solPattern_literal_new(g, sa),
-                                                                  solPattern_literal_new(g, sb)),
-                                           solPattern_concatenate(solPattern_literal_new(g, sa),
-                                                                  solPattern_literal_new(g, sc))
-                                           );
+    SolPattern *prabac = solPattern_choose(
+        solPattern_concatenate(solPattern_literal_new(g, sa),
+                               solPattern_literal_new(g, sb)),
+        solPattern_concatenate(solPattern_literal_new(g, sa),
+                               solPattern_literal_new(g, sc))
+        );
     solPattern_repeat(prabac);
     printf("/((ab)|(ac))*/\t\"%s\"\tmatch? %d\n", s0, _solPattern_is_match(prabac, s0, l0));
     printf("/((ab)|(ac))*/\t\"%s\"\tmatch? %d\n", sa, _solPattern_is_match(prabac, sa, l1));
@@ -137,39 +182,45 @@ int main()
     printf("/a?/\t\"%s\"\tmatch? %d\n", sb, _solPattern_is_match(pE_a, sb, l1));
     printf("/a?/\t\"%s\"\tmatch? %d\n", saaa, _solPattern_is_match(pE_a, saaa, l3));
     solPattern_free(pE_a);
-    SolPattern *pE_abc = solPattern_choose(solPattern_empty_new(g),
-                                           solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, sa),
-                                                                                         solPattern_literal_new(g, sb)),
-                                                                  solPattern_literal_new(g, sc)));
+    SolPattern *pE_abc = solPattern_choose(
+        solPattern_empty_new(g),
+        solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, sa),
+                                                      solPattern_literal_new(g, sb)),
+                               solPattern_literal_new(g, sc)));
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", s0, _solPattern_is_match(pE_abc, s0, l0));
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sa, _solPattern_is_match(pE_abc, sa, l1));
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", saaa, _solPattern_is_match(pE_abc, saaa, l3));
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sabc, _solPattern_is_match(pE_abc, sabc, l3));
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sabcabcabc, _solPattern_is_match(pE_abc, sabcabcabc, l9));
     solPattern_free(pE_abc);
-    SolPattern *pM_abc = solPattern_capture(solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, sa),
-                                                                                          solPattern_literal_new(g, sb)),
-                                                                   solPattern_literal_new(g, sc)),
-                                            SolPatternCaptureMarkFlag_Literal,
-                                            NULL
-        );
-    solPattern_set_literal_func(pM_abc, &read_char);
-    printf("/(M:abc)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
-    if (solPattern_capture_list(pM_abc)) {
-        SolListIter *li = solListIter_new(solPattern_capture_list(pM_abc), _SolListDirFwd);
-        SolPatternCaptureMark *cm;
-        SolListNode *ln;
-        solListIter_rewind(li);
-        while ((ln = solListIter_next(li))) {
-            cm = solListNode_val(ln);
-            printf("Math str: %s %zu - %zu\n",
-                   sabc,
-                   solPatternCaptureMark_starting_index(cm),
-                   solPatternCaptureMark_end_index(cm)
-                );
-        }
-    }
+
+    printf("\n------------ test capture-----------------\n");
+    SolPattern *pM_abc = solPattern_capture(
+        solPattern_concatenate(solPattern_literal_new(g, sa),
+                               solPattern_literal_new(g, sb)),
+        SolPatternCaptureMarkFlag_None,
+        "M1");
+    _solPattern_debug_dfa_relations(pM_abc);
+    solPattern_set_reading_literal_func(pM_abc, &read_char);
+    printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
+    print_match_result(pM_abc, sabc);
+    solPattern_concatenate(pM_abc, solPattern_literal_new(g, sc));
+    //_solPattern_debug_dfa_relations(pM_abc);
+    printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
+    print_match_result(pM_abc, sabc);
     solPattern_free(pM_abc);
+    SolPattern *pM_R_abc = solPattern_concatenate(
+        solPattern_capture(solPattern_concatenate(solPattern_literal_new(g, sa),
+                                                  solPattern_literal_new(g, sb)),
+                           SolPatternCaptureMarkFlag_None,
+                           "M1"),
+        solPattern_literal_new(g, sc));
+    solPattern_repeat(pM_R_abc);
+    solPattern_set_reading_literal_func(pM_R_abc, &read_char);
+    _solPattern_debug_dfa_relations(pM_R_abc);
+    printf("/((M1:ab)c)*/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_R_abc, sabc, l3));
+    print_match_result(pM_R_abc, sabc);
+    solPattern_free(pM_R_abc);
     solPatternStateGen_free(g);
     return 0;
 }
