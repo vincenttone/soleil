@@ -58,7 +58,7 @@ int solDfaState_add_rule(SolDfaState *ds1, SolDfaState *ds2, void *c)
     return 2;
 }
 
-int solDfaState_add_mark(SolDfaState *ds, void *m)
+int solDfaState_add_mark(SolDfaState *ds, void *m, int f)
 {
     SolDfaStateMark *mark;
     if (solDfaState_mark(ds) == NULL) {
@@ -76,6 +76,7 @@ int solDfaState_add_mark(SolDfaState *ds, void *m)
         mark = solDfaStateMark_next(mark);
     }
     solDfaStateMark_set_mark(mark, m);
+    solDfaStateMark_set_flag(mark, f);
     return 0;
 }
 
@@ -88,8 +89,9 @@ void solDfaState_merge_mark(SolDfaState *s1, SolDfaState *s2)
         solDfaState_set_mark(s1, solDfaState_mark(s2));
         return;
     }
-    SolDfaStateMark *m;
-    while ((m = solDfaStateMark_next(solDfaState_mark(s1)))) {
+    SolDfaStateMark *m = solDfaState_mark(s1);
+    while (solDfaStateMark_next(m)) {
+        m = solDfaStateMark_next(m);
     }
     solDfaStateMark_set_next_mark(m, solDfaState_mark(s2));
 }
@@ -301,6 +303,9 @@ int solDfa_state_merge(SolDfa *d1, SolDfa *d2, void *s1, void *s2)
     solHashIter_free(i);
     if (solDfa_state_match(d1, s1, s2) != 0) {
         solDfaState_merge_mark(ds1, ds2);
+        if (solDfaState_mark(ds2)) {
+            solDfaState_set_mark(ds2, NULL);
+        }
         if (solDfa_state_in_accepting_states(d2, s2) == 0) {
             solDfa_add_accepting_state(d2, s1);
         }

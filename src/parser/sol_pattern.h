@@ -13,7 +13,7 @@
 typedef struct _SolPattern {
     SolDfa *dfa;
     SolStack *s; // state stack
-    SolList *cl; // capture
+    SolList *cl; // capture list
     size_t (*r)(void*); // read literal
 } SolPattern;
 
@@ -23,37 +23,43 @@ typedef struct _SolPatternStateGen {
 } SolPatternStateGen;
 
 enum SolPatternCaptureMarkFlag {
-    SolPatternCaptureMarkFlag_Literal = 0,
-    SolPatternCaptureMarkFlag_Repeatable = 1,
-    SolPatternCaptureMarkFlag_Greed = 2,
+    SolPatternCaptureMarkFlag_None = 0x0,
+    SolPatternCaptureMarkFlag_Greed = 0x2,
+    SolPatternCaptureMarkFlag_Expect_end = 0x4, // 0: expect begin 1: expect end
+};
+
+enum SolPatternDfaStateFlag {
+    SolPatternDfaStateFlag_None = 0x0,
+    SolPatternDfaStateFlag_Begin = 0x2,
+    SolPatternDfaStateFlag_End = 0x4,
 };
 
 typedef struct _SolPatternCaptureMark {
     size_t is; // starting index
-    size_t ie; // end index
-    int flag;
+    size_t len; // match length
+    int flag; // flag
     void *tag;
 } SolPatternCaptureMark;
 
 #define solPattern_dfa(p) (p)->dfa
 #define solPattern_state_stack(p) (p)->s
 #define solPattern_capture_list(p) (p)->cl
-#define solPattern_read_literal_func(p) (p)->r
+#define solPattern_reading_literal_func(p) (p)->r
 
 #define solPattern_set_capture_list(p, l) (p)->cl = l
-#define solPattern_set_literal_func(p, f) (p)->r = f
+#define solPattern_set_reading_literal_func(p, f) (p)->r = f
 
 #define solPattern_read_literal(p, s) (*p->r)(s)
 
 #define solPatternCaptureMark_starting_index(cm) (cm)->is
-#define solPatternCaptureMark_end_index(cm) (cm)->ie
-#define solPatternCaptureMark_flag(cm) (cm)->flag
+#define solPatternCaptureMark_len(cm) (cm)->len
 #define solPatternCaptureMark_tag(cm) (cm)->tag
+#define solPatternCaptureMark_flag(cm) (cm)->flag
 
 #define solPatternCaptureMark_set_tag(cm, t) (cm)->tag = t
-#define solPatternCaptureMark_set_flag(cm, f) (cm)->flag = f
 #define solPatternCaptureMark_set_starting_index(cm, i) (cm)->is = i
-#define solPatternCaptureMark_set_end_index(cm, i) (cm)->ie = i
+#define solPatternCaptureMark_set_len(cm, l) (cm)->len = l
+#define solPatternCaptureMark_set_flag(cm, f) (cm)->flag = f
 
 SolPattern* solPattern_new();
 void solPattern_free(SolPattern*);
@@ -80,6 +86,6 @@ int _solPattern_char_equal(void *c1, void *c2);
 int _solPattern_state_equal(void *s1, void *s2);
 void _solPattern_debug_relations(SolPattern *p);
 
-inline void solPatternCaptureMark_mark(SolPatternCaptureMark*, size_t);
+inline void solPatternCapture_update_mark(SolDfaStateMark*, size_t);
 
 #endif

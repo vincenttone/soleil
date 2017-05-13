@@ -6,6 +6,7 @@
 #include "sol_set.h"
 
 typedef struct _SolDfaStateMark {
+    int f; // flag
     void *m; // mark
     struct _SolDfaStateMark *n; // next mark
 } SolDfaStateMark;
@@ -35,10 +36,12 @@ typedef struct _SolDfa {
 #define solDfaState_rules(ds) (ds)->r
 #define solDfaState_mark(ds) (ds)->m
 #define solDfaStateMark_mark(mark) (mark)->m
+#define solDfaStateMark_flag(mark) (mark)->f
 #define solDfaStateMark_next(mark) (mark)->n
 
 #define solDfaState_set_mark(ds, mark) (ds)->m = mark
 #define solDfaStateMark_set_mark(mark, sm) (mark)->m = sm
+#define solDfaStateMark_set_flag(mark, flag) (mark)->f = flag
 #define solDfaStateMark_set_next_mark(m, nm) (m)->n = nm
 
 #define _solDfa_set_starting_state(d, s) (d)->ss = s; 
@@ -93,7 +96,7 @@ void solDfaState_free(SolDfaState*);
 void _solDfaState_free(void*);
 int solDfaState_add_rule(SolDfaState*, SolDfaState*, void*);
 SolDfaState* solDfaState_next(SolDfaState*, void*);
-int solDfaState_add_mark(SolDfaState*, void*);
+int solDfaState_add_mark(SolDfaState*, void*, int);
 void solDfaState_merge_mark(SolDfaState*, SolDfaState*);
 
 SolDfaStateMark* solDfaStateMark_new();
