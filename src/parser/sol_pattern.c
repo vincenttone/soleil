@@ -293,6 +293,7 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
     int r, o;
     size_t os;
     SolDfaState *cds;
+    SolDfaStateMark *m;
     solDfa_reset_current_state(solPattern_dfa(p));
     while ((o = solPattern_read_literal(p, sptr))) {
         os = sizeof(unsigned char) * o;
@@ -306,20 +307,26 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
             return 2;
         }
         cds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_current_state(solPattern_dfa(p)));
-        if (solDfaState_mark(cds)) {
-            solPatternCaptureMark_mark((SolPatternCaptureMark*)(solDfaStateMark_mark(solDfaState_mark(cds))),
-                                       sptr);
+        m = solDfaState_mark(cds);
+        if (m) {
+            do {
+                solPatternCaptureMark_mark((SolPatternCaptureMark*)(solDfaStateMark_mark(m)), os);
+            } while ((m = solDfaStateMark_next(m)));
         }
         sptr = sptr + os;
     }
     return 0;
 }
 
-inline void solPatternCaptureMark_mark(SolPatternCaptureMark *m, void *i)
+inline void solPatternCaptureMark_mark(SolPatternCaptureMark *m, size_t o)
 {
     if (solPatternCaptureMark_starting_index(m)) {
-        solPatternCaptureMark_set_end_index(m, i);
+        if (solPatternCaptureMark_end_index(m)) {
+            if (solPatternCaptureMark_flag(m) != SolPatternCaptureMarkFlag_Literal) {
+                solPatternCaptureMark_set_end_index(m, o);
+            }
+        }
     } else {
-        solPatternCaptureMark_set_starting_index(m, i);
+        solPatternCaptureMark_set_starting_index(m, o);
     }
 }

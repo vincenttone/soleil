@@ -29,10 +29,10 @@ enum SolPatternCaptureMarkFlag {
 };
 
 typedef struct _SolPatternCaptureMark {
-    void *is; // starting index
-    void *ie; // end index
+    size_t is; // starting index
+    size_t ie; // end index
     int flag;
-    void *tag; // tag
+    void *tag;
 } SolPatternCaptureMark;
 
 #define solPattern_dfa(p) (p)->dfa
@@ -41,10 +41,14 @@ typedef struct _SolPatternCaptureMark {
 #define solPattern_read_literal_func(p) (p)->r
 
 #define solPattern_set_capture_list(p, l) (p)->cl = l
+#define solPattern_set_literal_func(p, f) (p)->r = f
+
 #define solPattern_read_literal(p, s) (*p->r)(s)
 
 #define solPatternCaptureMark_starting_index(cm) (cm)->is
 #define solPatternCaptureMark_end_index(cm) (cm)->ie
+#define solPatternCaptureMark_flag(cm) (cm)->flag
+#define solPatternCaptureMark_tag(cm) (cm)->tag
 
 #define solPatternCaptureMark_set_tag(cm, t) (cm)->tag = t
 #define solPatternCaptureMark_set_flag(cm, f) (cm)->flag = f
@@ -63,6 +67,7 @@ SolPatternState* solPatternGen_gen_state(SolPatternStateGen*);
 int solPattern_check_matching(SolPattern*);
 void solPattern_reset(SolPattern*);
 int solPattern_read_character(SolPattern*, void*);
+int solPattern_match(SolPattern*, void*, size_t);
 
 SolPattern* solPattern_empty_new(SolPatternStateGen*);
 SolPattern* solPattern_literal_new(SolPatternStateGen*, void*);
@@ -75,6 +80,6 @@ int _solPattern_char_equal(void *c1, void *c2);
 int _solPattern_state_equal(void *s1, void *s2);
 void _solPattern_debug_relations(SolPattern *p);
 
-inline void solPatternCaptureMark_mark(SolPatternCaptureMark*, void*);
+inline void solPatternCaptureMark_mark(SolPatternCaptureMark*, size_t);
 
 #endif

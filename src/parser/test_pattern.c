@@ -53,6 +53,11 @@ void _solPattern_debug_dfa_relations(SolPattern *p)
     solHashIter_free(i);
 }
 
+size_t read_char(void* s)
+{
+    return sizeof(char);
+}
+
 int main()
 {
     char *s0 = "";
@@ -142,6 +147,29 @@ int main()
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sabc, _solPattern_is_match(pE_abc, sabc, l3));
     printf("/(abc)?/\t\"%s\"\tmatch? %d\n", sabcabcabc, _solPattern_is_match(pE_abc, sabcabcabc, l9));
     solPattern_free(pE_abc);
+    SolPattern *pM_abc = solPattern_capture(solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, sa),
+                                                                                          solPattern_literal_new(g, sb)),
+                                                                   solPattern_literal_new(g, sc)),
+                                            SolPatternCaptureMarkFlag_Literal,
+                                            NULL
+        );
+    solPattern_set_literal_func(pM_abc, &read_char);
+    printf("/(M:abc)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
+    if (solPattern_capture_list(pM_abc)) {
+        SolListIter *li = solListIter_new(solPattern_capture_list(pM_abc), _SolListDirFwd);
+        SolPatternCaptureMark *cm;
+        SolListNode *ln;
+        solListIter_rewind(li);
+        while ((ln = solListIter_next(li))) {
+            cm = solListNode_val(ln);
+            printf("Math str: %s %zu - %zu\n",
+                   sabc,
+                   solPatternCaptureMark_starting_index(cm),
+                   solPatternCaptureMark_end_index(cm)
+                );
+        }
+    }
+    solPattern_free(pM_abc);
     solPatternStateGen_free(g);
     return 0;
 }
