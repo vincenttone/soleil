@@ -200,7 +200,7 @@ int main()
                                solPattern_literal_new(g, sb)),
         SolPatternCaptureMarkFlag_None,
         "M1");
-    _solPattern_debug_dfa_relations(pM_abc);
+    //_solPattern_debug_dfa_relations(pM_abc);
     solPattern_set_reading_literal_func(pM_abc, &read_char);
     printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
     print_match_result(pM_abc, sabc);
@@ -209,18 +209,39 @@ int main()
     printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
     print_match_result(pM_abc, sabc);
     solPattern_free(pM_abc);
-    SolPattern *pM_R_abc = solPattern_concatenate(
+    SolPattern *pMab_R_abc = solPattern_concatenate(
         solPattern_capture(solPattern_concatenate(solPattern_literal_new(g, sa),
                                                   solPattern_literal_new(g, sb)),
                            SolPatternCaptureMarkFlag_None,
                            "M1"),
         solPattern_literal_new(g, sc));
-    solPattern_repeat(pM_R_abc);
-    solPattern_set_reading_literal_func(pM_R_abc, &read_char);
-    _solPattern_debug_dfa_relations(pM_R_abc);
-    printf("/((M1:ab)c)*/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_R_abc, sabc, l3));
-    print_match_result(pM_R_abc, sabc);
-    solPattern_free(pM_R_abc);
+    solPattern_repeat(pMab_R_abc);
+    solPattern_set_reading_literal_func(pMab_R_abc, &read_char);
+    //_solPattern_debug_dfa_relations(pMab_R_abc);
+    printf("/((M1:ab)c)*/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pMab_R_abc, sabc, l3));
+    print_match_result(pMab_R_abc, sabc);
+    printf("/((M1:ab)c)*/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_match(pMab_R_abc, sabcabcabc, l9));
+    print_match_result(pMab_R_abc, sabcabcabc);
+    printf("/((M1:ab)c)*/\t\"%s\"\tmatch? %d\n", sabacabac, solPattern_match(pMab_R_abc, sabacabac, l8));
+    print_match_result(pMab_R_abc, sabacabac);
+    solPattern_free(pMab_R_abc);
+    SolPattern *pMGabc_R_abc = solPattern_capture(
+        solPattern_repeat(
+            solPattern_concatenate(solPattern_concatenate(solPattern_literal_new(g, sa),
+                                                          solPattern_literal_new(g, sb)),
+                                   solPattern_literal_new(g, sc)
+                )
+            ),
+        SolPatternCaptureMarkFlag_Greed,
+        "M1");
+    solPattern_set_reading_literal_func(pMGabc_R_abc, &read_char);
+    printf("/(M1:(abc)*)/\t\"%s\"\tmatch? %d\n", s0, solPattern_match(pMGabc_R_abc, s0, l0));
+        print_match_result(pMGabc_R_abc, s0);
+    printf("/(M1:(abc)*)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pMGabc_R_abc, sabc, l3));
+    print_match_result(pMGabc_R_abc, sabc);
+    printf("/(M1:(abc)*)/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_match(pMGabc_R_abc, sabcabcabc, l9));
+    print_match_result(pMGabc_R_abc, sabcabcabc);
+    solPattern_free(pMGabc_R_abc);
     solPatternStateGen_free(g);
     return 0;
 }

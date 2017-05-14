@@ -315,8 +315,7 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
             solPatternCapture_update_mark(m, fos);
         } while ((m = solDfaStateMark_next(m)));
     }
-    do {
-        
+    while (size > fos) {
         o = solPattern_read_literal(p, sptr);
         c = sol_alloc(o);
         strncpy(c, sptr, o);
@@ -335,7 +334,7 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
             } while ((m = solDfaStateMark_next(m)));
         }
         sptr = sptr + o;
-    } while (size > fos);
+    }
     return 0;
 }
 
