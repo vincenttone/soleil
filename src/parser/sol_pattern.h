@@ -26,7 +26,10 @@ enum SolPatternCaptureMarkFlag {
     SolPatternCaptureMarkFlag_None = 0x0,
     SolPatternCaptureMarkFlag_Greed = 0x2,
     SolPatternCaptureMarkFlag_Expect_end = 0x4, // 0: expect begin 1: expect end
+    SolPatternCaptureMarkFlag_Matched = 0x8,
 };
+#define _solPatternCaptureMark_flush_expect_end(f) (f) & 0xfb
+#define _solPatternCaptureMark_flush_matched(f) (f) & 0xf7
 
 enum SolPatternDfaStateFlag {
     SolPatternDfaStateFlag_None = 0x0,
@@ -101,5 +104,7 @@ int _solPattern_state_equal(void *s1, void *s2);
 void _solPattern_debug_relations(SolPattern *p);
 
 inline void solPatternCapture_update_mark(SolDfaStateMark*, size_t);
+inline void solPattern_reset_capture_mark(SolPattern*);
+inline void solPattern_reset_unmatched_capture_mark(SolPattern*);
 
 #endif

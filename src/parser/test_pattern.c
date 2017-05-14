@@ -97,12 +97,13 @@ void print_match_result(SolPattern *p, char* s)
         while ((ln = solListIter_next(li))) {
             cm = solListNode_val(ln);
             strncpy(ms, s + solPatternCaptureMark_starting_index(cm), solPatternCaptureMark_len(cm));
-            printf("Match mark of [%s] str: [%s], result [%s] (%zu:%zu)\n",
+            printf("---- match mark of [%s] str: [%s], result [%s] (%zu:%zu), match? %d ----\n",
                    (char*)(solPatternCaptureMark_tag(cm)),
                    s,
                    ms,
                    solPatternCaptureMark_starting_index(cm),
-                   solPatternCaptureMark_len(cm)
+                   solPatternCaptureMark_len(cm),
+                   (solPatternCaptureMark_flag(cm) & SolPatternCaptureMarkFlag_Matched)
                 );
         }
         solListIter_free(li);
@@ -214,6 +215,8 @@ int main()
     solPattern_set_reading_literal_func(pM_abc, &read_char);
     printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
     print_match_result(pM_abc, sabc);
+    printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sacabcababcac, solPattern_match(pM_abc, sacabcababcac, l12));
+    print_match_result(pM_abc, sacabcababcac);
     solPattern_concatenate(pM_abc, solPattern_literal_new(g, sc));
     //_solPattern_debug_dfa_relations(pM_abc);
     printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
@@ -260,7 +263,7 @@ int main()
             )
         );
     solPattern_set_reading_literal_func(pIF_abc, &read_char);
-    _solPattern_debug_dfa_relations(pIF_abc);
+    //_solPattern_debug_dfa_relations(pIF_abc);
     printf("/(M1:^(abc))/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_match(pIF_abc, sabcabcabc, l9));
     printf("/(M1:^(abc))/\t\"%s\"\tmatch? %d\n", sacabcababcac, solPattern_match(pIF_abc, sacabcababcac, l12));
     solPattern_free(pIF_abc);
