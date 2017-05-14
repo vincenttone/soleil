@@ -16,29 +16,29 @@
 typedef size_t (*sol_f_hash_ptr)(void*);
 
 typedef struct _SolHashRecord {
-	void *k;
-	void *v;
+    void *k;
+    void *v;
 } SolHashRecord;
 
 typedef struct _SolHash {
-	size_t size;
-	size_t count;
-	size_t mask;
-	SolHashRecord *records;
-	sol_f_hash_ptr f_hash1;
-	sol_f_hash_ptr f_hash2;
-	sol_f_match_ptr f_match;
-	sol_f_dup_ptr f_dup_k;
-	sol_f_dup_ptr f_dup_v;
-	sol_f_free_ptr f_free_k;
-	sol_f_free_ptr f_free_v;
-	int is_resizing;
+    size_t size;
+    size_t count;
+    size_t mask;
+    SolHashRecord *records;
+    sol_f_hash_ptr f_hash1;
+    sol_f_hash_ptr f_hash2;
+    sol_f_match_ptr f_match;
+    sol_f_dup_ptr f_dup_k;
+    sol_f_dup_ptr f_dup_v;
+    sol_f_free_ptr f_free_k;
+    sol_f_free_ptr f_free_v;
+    int is_resizing;
 } SolHash;
 
 typedef struct _SolHashIter {
-	SolHash *hash;
-	SolHashRecord *record;
-	size_t c;
+    SolHash *hash;
+    SolHashRecord *record;
+    size_t c;
 } SolHashIter;
 
 SolHash* solHash_new();
