@@ -30,8 +30,11 @@ enum SolPatternCaptureMarkFlag {
 
 enum SolPatternDfaStateFlag {
     SolPatternDfaStateFlag_None = 0x0,
-    SolPatternDfaStateFlag_Begin = 0x2,
-    SolPatternDfaStateFlag_End = 0x4,
+    SolPatternDfaStateFlag_Begin = 0x2, // begin flag of capture
+    SolPatternDfaStateFlag_End = 0x4, // end flag of capture
+    SolPatternDfaStateFlag_Is_initial = 0x8, // begining of string
+    SolPatternDfaStateFlag_Is_final = 0x10, // ending of string
+    SolPatternDfaStateFlag_Is_cm = 0x20, // is capture mark
 };
 
 typedef struct _SolPatternCaptureMark {
@@ -40,6 +43,12 @@ typedef struct _SolPatternCaptureMark {
     int flag; // flag
     void *tag;
 } SolPatternCaptureMark;
+
+enum _SolPatternReadStrStatus {
+    _SolPatternReadStrStatus_Normal = 1,
+    _SolPatternReadStrStatus_Begining = 2,
+    _SolPatternReadStrStatus_Ending = 3,
+};
 
 #define solPattern_dfa(p) (p)->dfa
 #define solPattern_state_stack(p) (p)->s
@@ -61,6 +70,9 @@ typedef struct _SolPatternCaptureMark {
 #define solPatternCaptureMark_set_len(cm, l) (cm)->len = l
 #define solPatternCaptureMark_set_flag(cm, f) (cm)->flag = f
 
+#define solPattern_state_marked_inital(dsm) (solDfaStateMark_flag(dsm) & SolPatternDfaStateFlag_Is_initial)
+#define solPattern_state_marked_final(dsm) (solDfaStateMark_flag(dsm) & SolPatternDfaStateFlag_Is_final)
+
 SolPattern* solPattern_new();
 void solPattern_free(SolPattern*);
 int solPattern_push_state(SolPattern*, SolPatternState*);
@@ -81,6 +93,8 @@ SolPattern* solPattern_repeat(SolPattern *);
 SolPattern* solPattern_concatenate(SolPattern*, SolPattern*);
 SolPattern* solPattern_choose(SolPattern*, SolPattern*);
 SolPattern* solPattern_capture(SolPattern*, enum SolPatternCaptureMarkFlag, void*);
+SolPattern* solPattern_begin_with(SolPattern*);
+SolPattern* solPattern_end_with(SolPattern*);
 
 int _solPattern_char_equal(void *c1, void *c2);
 int _solPattern_state_equal(void *s1, void *s2);
