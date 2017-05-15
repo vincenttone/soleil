@@ -351,6 +351,9 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
     if (solPattern_reading_literal_func(p) == NULL) {
         return -3;
     }
+#ifdef __SOL_DEBUG__
+    size_t _oi = 0;
+#endif
     void *sptr = str;
     void *c;
     int r;
@@ -371,7 +374,11 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
         c = sol_alloc(o);
         strncpy(c, sptr, o);
 #ifdef __SOL_DEBUG__
-        printf("READ character: [%s], len: %zu\n", (char*)c, o);
+        printf("READ character [");
+        for (_oi = 0; _oi < o; _oi++) {
+            printf("%c", *((char*)(c+_oi)));
+        }
+        printf("] len: %zu\n", o);
 #endif
         r = solDfa_read_character(solPattern_dfa(p), c);
         sol_free(c);
