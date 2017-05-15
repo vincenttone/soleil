@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include "sol_pattern.h"
 
@@ -78,6 +79,7 @@ SolPatternState* solPatternGen_gen_state(SolPatternStateGen *g)
 
 void solPattern_reset(SolPattern *p)
 {
+    solPattern_reset_capture_mark(p);
     solDfa_reset_current_state(solPattern_dfa(p));
 }
 
@@ -264,13 +266,60 @@ SolPattern* solPattern_capture(SolPattern *p, enum SolPatternCaptureMarkFlag f, 
     solPatternCaptureMark_set_flag(cm, f);
     solList_add_fwd(solPattern_capture_list(p), cm);
     SolDfaState *ds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p)));
-    solDfaState_add_mark(ds, cm, SolPatternDfaStateFlag_Begin);
+    SolDfaStateMark *dsm = solDfaState_mark(ds);
+    int flag = SolPatternDfaStateFlag_Begin | SolPatternDfaStateFlag_Is_cm;
+    if (dsm) {
+        flag |= solDfaStateMark_flag(dsm);
+    }
+    solDfaState_add_mark(ds, cm, flag);
     solSet_rewind(solDfa_accepting_states(solPattern_dfa(p)));
     void *s;
     while ((s = solSet_get(solDfa_accepting_states(solPattern_dfa(p))))) {
         ds = solDfa_conv_dfa_state(solPattern_dfa(p), s);
+        dsm = solDfaState_mark(ds);
         solPatternCaptureMark_set_flag(cm, f);
-        solDfaState_add_mark(ds, cm, SolPatternDfaStateFlag_End);
+        flag = SolPatternDfaStateFlag_End | SolPatternDfaStateFlag_Is_cm;
+        if (dsm) {
+            flag |= solDfaStateMark_flag(dsm);
+        }
+        solDfaState_add_mark(ds, cm, flag);
+    }
+    return p;
+}
+
+SolPattern* solPattern_begin_with(SolPattern *p)
+{
+    if (p == NULL) {
+        return NULL;
+    }
+    if (solPattern_dfa(p) == NULL
+        || solDfa_starting_state(solPattern_dfa(p)) == NULL
+        || solDfa_accepting_states(solPattern_dfa(p)) == NULL) {
+        solPattern_free(p);
+        return NULL;
+    }
+    SolDfaState *ds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p)));
+    solDfaState_add_mark(ds, NULL, SolPatternDfaStateFlag_Is_initial);
+    return p;
+}
+
+SolPattern* solPattern_end_with(SolPattern *p)
+{
+    if (p == NULL) {
+        return NULL;
+    }
+    if (solPattern_dfa(p) == NULL
+        || solDfa_starting_state(solPattern_dfa(p)) == NULL
+        || solDfa_accepting_states(solPattern_dfa(p)) == NULL) {
+        solPattern_free(p);
+        return NULL;
+    }
+    SolDfaState *ds;
+    void *s;
+    solSet_rewind(solDfa_accepting_states(solPattern_dfa(p)));
+    while ((s = solSet_get(solDfa_accepting_states(solPattern_dfa(p))))) {
+        ds = solDfa_conv_dfa_state(solPattern_dfa(p), s);
+        solDfaState_add_mark(ds, NULL, SolPatternDfaStateFlag_Is_final);
     }
     return p;
 }
@@ -302,13 +351,17 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
     if (solPattern_reading_literal_func(p) == NULL) {
         return -3;
     }
+#ifdef __SOL_DEBUG__
+    size_t _oi = 0;
+#endif
     void *sptr = str;
     void *c;
-    int r, o;
+    int r;
+    size_t o;
     size_t fos = 0;
     SolDfaState *cds;
     SolDfaStateMark *m;
-    solDfa_reset_current_state(solPattern_dfa(p));
+    solPattern_reset(p);
     cds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_current_state(solPattern_dfa(p)));
     if ((m = solDfaState_mark(cds))) {
         do {
@@ -317,16 +370,29 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
     }
     while (size > fos) {
         o = solPattern_read_literal(p, sptr);
+        fos = fos + o;
         c = sol_alloc(o);
         strncpy(c, sptr, o);
+#ifdef __SOL_DEBUG__
+        printf("READ character [");
+        for (_oi = 0; _oi < o; _oi++) {
+            printf("%c", *((char*)(c+_oi)));
+        }
+        printf("] len: %zu\n", o);
+#endif
         r = solDfa_read_character(solPattern_dfa(p), c);
         sol_free(c);
         if (r == 1) {
+            if (1) {
+                solPattern_reset_unmatched_capture_mark(p);
+                solDfa_reset_current_state(solPattern_dfa(p));
+                goto next_char;
+            }
             return 1;
         } else if (r != 0) {
             return 2;
         }
-        fos = fos + o;
+    next_char:
         cds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_current_state(solPattern_dfa(p)));
         if ((m = solDfaState_mark(cds))) {
             do {
@@ -341,15 +407,34 @@ int solPattern_match(SolPattern *p, void *str, size_t size)
 inline void solPatternCapture_update_mark(SolDfaStateMark *dsm, size_t o)
 {
     int dsf = solDfaStateMark_flag(dsm);
+    if ((dsf & SolPatternDfaStateFlag_Is_cm) == 0) {
+        return;
+    }
     SolPatternCaptureMark* m = (SolPatternCaptureMark*)(solDfaStateMark_mark(dsm));
     int f = solPatternCaptureMark_flag(m);
     if (dsf & SolPatternDfaStateFlag_End) {
         if (f & SolPatternCaptureMarkFlag_Expect_end) {
             if (f & SolPatternCaptureMarkFlag_Greed) {
-                solPatternCaptureMark_set_len(m, o);
+                solPatternCaptureMark_set_end_index(m, o);
+                solPatternCaptureMark_set_flag(m, f | SolPatternCaptureMarkFlag_Matched);
+#ifdef __SOL_DEBUG__
+                printf("GREED set finish flag to %d, starting: %zu, end: %zu\n",
+                       solPatternCaptureMark_flag(m),
+                       solPatternCaptureMark_starting_index(m),
+                       solPatternCaptureMark_end_index(m)
+                    );
+#endif
             } else {
-                if (solPatternCaptureMark_len(m) == 0) {
-                    solPatternCaptureMark_set_len(m, o);
+                if (solPatternCaptureMark_end_index(m) == 0) {
+                    solPatternCaptureMark_set_end_index(m, o);
+                    solPatternCaptureMark_set_flag(m, f | SolPatternCaptureMarkFlag_Matched);
+#ifdef __SOL_DEBUG__
+                    printf("FIRST set finishing flag %d, starting: %zu, end: %zu\n",
+                           solPatternCaptureMark_flag(m),
+                           solPatternCaptureMark_starting_index(m),
+                           solPatternCaptureMark_end_index(m)
+                        );
+#endif
                 }
             }
         }
@@ -358,5 +443,80 @@ inline void solPatternCapture_update_mark(SolDfaStateMark *dsm, size_t o)
         ) {
         solPatternCaptureMark_set_starting_index(m, o);
         solPatternCaptureMark_set_flag(m, f | SolPatternCaptureMarkFlag_Expect_end);
+#ifdef __SOL_DEBUG__
+        printf("SET starting flag %d, starting %zu!!!!!!\n",
+               solPatternCaptureMark_flag(m),
+               solPatternCaptureMark_starting_index(m)
+            );
+#endif
+    } else {
+#ifdef __SOL_DEBUG__
+        printf("SKIP flag %d, starting %zu!!!!!!\n",
+               solPatternCaptureMark_flag(m),
+               solPatternCaptureMark_starting_index(m)
+            );
+#endif
     }
+}
+
+inline void solPattern_reset_unmatched_capture_mark(SolPattern *p)
+{
+#ifdef __SOL_DEBUG__
+    printf("try reset unmatched capture mark!!!!!!\n");
+#endif
+    if (solPattern_capture_list(p) == NULL) {
+        return;
+    }
+    SolPatternCaptureMark *m;
+    SolListIter *li = solListIter_new(solPattern_capture_list(p), _SolListDirFwd);
+    solListIter_rewind(li);
+    SolListNode *n;
+    int f;
+    while ((n = solListIter_next(li))) {
+        m = (SolPatternCaptureMark*)(solListNode_val(n));
+        if (m == NULL) {
+            continue;
+        }
+        f = solPatternCaptureMark_flag(m);
+        if ((f & SolPatternCaptureMarkFlag_Expect_end)
+            && (f & SolPatternCaptureMarkFlag_Matched) == 0
+            ) {
+            solPatternCaptureMark_set_starting_index(m, 0);
+            solPatternCaptureMark_set_end_index(m, 0);
+            solPatternCaptureMark_set_flag(m, _solPatternCaptureMark_flush_expect_end(f));
+#ifdef __SOL_DEBUG__
+            printf("FLUSH flag to %d!!!!!!\n", solPatternCaptureMark_flag(m));
+#endif
+        }
+    }
+    solListIter_free(li);
+}
+
+inline void solPattern_reset_capture_mark(SolPattern *p)
+{
+    if (solPattern_capture_list(p) == NULL) {
+        return;
+    }
+    SolPatternCaptureMark *m;
+    SolListIter *li = solListIter_new(solPattern_capture_list(p), _SolListDirFwd);
+    solListIter_rewind(li);
+    SolListNode *n;
+    int f;
+    while ((n = solListIter_next(li))) {
+        m = solListNode_val(n);
+        if (m == NULL) {
+            continue;
+        }
+        f = solPatternCaptureMark_flag(m);
+#ifdef __SOL_DEBUG__
+        printf("RESET flag from %d!!!!!!\n", f);
+#endif
+        solPatternCaptureMark_set_starting_index(m, 0);
+        solPatternCaptureMark_set_end_index(m, 0);
+        solPatternCaptureMark_set_flag(m, _solPatternCaptureMark_flush_expect_end(_solPatternCaptureMark_flush_matched(f)));
+#ifdef __SOL_DEBUG__
+        printf("RESET flag to %d!!!!!!\n", solPatternCaptureMark_flag(m));
+#endif
+    }
+    solListIter_free(li);
 }

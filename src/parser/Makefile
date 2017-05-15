@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Wall -g -D__DEBUG__ -I ../basekit
+CFLAGS = -Wall -g -D_SOL_DEBUG__ -I ../basekit
 VPATH :=../basekit:test
 
 all: sol_dfa.o sol_pattern.o

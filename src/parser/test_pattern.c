@@ -56,6 +56,14 @@ void _solPattern_debug_dfa_relations(SolPattern *p)
         if (solDfaState_mark(s)) {
             m = solDfaState_mark(s);
             do {
+                if (solPattern_state_marked_inital(m)) {
+                    printf("state [%d] must be inital\n", *(int*)(s->s));
+                } else if (solPattern_state_marked_final(m)) {
+                    printf("state [%d] must be final\n", *(int*)(s->s));
+                }
+                if (solDfaStateMark_mark(m) == NULL) {
+                    continue;
+                }
                 if (solDfaStateMark_flag(m) & SolPatternDfaStateFlag_End) {
                     sf = "END";
                 } else {
@@ -88,13 +96,17 @@ void print_match_result(SolPattern *p, char* s)
         solListIter_rewind(li);
         while ((ln = solListIter_next(li))) {
             cm = solListNode_val(ln);
-            strncpy(ms, s + solPatternCaptureMark_starting_index(cm), solPatternCaptureMark_len(cm));
-            printf("Match mark of [%s] str: [%s], result [%s] (%zu:%zu)\n",
+            strncpy(ms,
+                    s + solPatternCaptureMark_starting_index(cm),
+                    solPatternCaptureMark_end_index(cm) - solPatternCaptureMark_starting_index(cm)
+                );
+            printf("---- match mark of [%s] str: [%s], result [%s] (%zu:%zu), match? %d ----\n",
                    (char*)(solPatternCaptureMark_tag(cm)),
                    s,
                    ms,
                    solPatternCaptureMark_starting_index(cm),
-                   solPatternCaptureMark_len(cm)
+                   solPatternCaptureMark_end_index(cm),
+                   (solPatternCaptureMark_flag(cm) & SolPatternCaptureMarkFlag_Matched)
                 );
         }
         solListIter_free(li);
@@ -113,12 +125,14 @@ int main()
     char *sabc = "abc";
     char *sabcabcabc = "abcabcabc";
     char *sabacabac = "abacabac";
+    char *sacabcababcac = "acabcababcac";
     size_t l0 = strlen(s0);
     size_t l1 = strlen(sa);
     size_t l2 = strlen(sab);
     size_t l3 = strlen(saaa);
     size_t l8 = strlen(sabacabac);
     size_t l9 = strlen(sabcabcabc);
+    size_t l12 = strlen(sacabcababcac);
     SolPatternStateGen *g = solPatternStateGen_new();
     SolPattern *empty = solPattern_empty_new(g);
     printf("//\t\"%s\"\tmatch? %d\n", s0, _solPattern_is_match(empty, s0, l0));
@@ -200,10 +214,12 @@ int main()
                                solPattern_literal_new(g, sb)),
         SolPatternCaptureMarkFlag_None,
         "M1");
-    //_solPattern_debug_dfa_relations(pM_abc);
+    // _solPattern_debug_dfa_relations(pM_abc);
     solPattern_set_reading_literal_func(pM_abc, &read_char);
     printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
     print_match_result(pM_abc, sabc);
+    printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sacabcababcac, solPattern_match(pM_abc, sacabcababcac, l12));
+    print_match_result(pM_abc, sacabcababcac);
     solPattern_concatenate(pM_abc, solPattern_literal_new(g, sc));
     //_solPattern_debug_dfa_relations(pM_abc);
     printf("/(M1:ab)/\t\"%s\"\tmatch? %d\n", sabc, solPattern_match(pM_abc, sabc, l3));
@@ -242,6 +258,18 @@ int main()
     printf("/(M1:(abc)*)/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_match(pMGabc_R_abc, sabcabcabc, l9));
     print_match_result(pMGabc_R_abc, sabcabcabc);
     solPattern_free(pMGabc_R_abc);
+    SolPattern *pIF_abc = solPattern_begin_with(
+        solPattern_concatenate(
+            solPattern_concatenate(solPattern_literal_new(g, sa),
+                                   solPattern_literal_new(g, sb)),
+            solPattern_literal_new(g, sc)
+            )
+        );
+    solPattern_set_reading_literal_func(pIF_abc, &read_char);
+    //_solPattern_debug_dfa_relations(pIF_abc);
+    printf("/(M1:^(abc))/\t\"%s\"\tmatch? %d\n", sabcabcabc, solPattern_match(pIF_abc, sabcabcabc, l9));
+    printf("/(M1:^(abc))/\t\"%s\"\tmatch? %d\n", sacabcababcac, solPattern_match(pIF_abc, sacabcababcac, l12));
+    solPattern_free(pIF_abc);
     solPatternStateGen_free(g);
     return 0;
 }

@@ -40,13 +40,22 @@ SolPattern* solRegexSymbolAscii_pattern()
 	SolPattern *eol = solPattern_concatenate(solPattern_literal_new("\\"), solPattern_literal_new("n"));
 	SolPattern *ht = solPattern_concatenate(solPattern_literal_new("\\"), solPattern_literal_new("t"));
 	SolPattern *number = solPattern_concatenate(solPattern_literal_new("\\"), solPattern_literal_new("r"));
-	solPattern *first = solPattern_concatenate(solPattern_literal_new("^"),
-											   solPattern_repeat(solPattern_literal_new(".")));
-	solPattern *end = solPattern_concatenate(solPattern_repeat(solPattern_literal_new(".")),
-											 solPattern_literal_new("$"));
-	SolPattern *cr = solPattern_concatenate(solPattern_concatenate(solPattern_literal_new("["),
-																   solPattern_repeat(solPattern_literal_new("."))),
-											solPattern_concatenate(solPattern_literal_new("]")));
+	solPattern *first = solPattern_concatenate(
+        solPattern_literal_new("^"),
+        solPattern_repeat(
+            solPattern_concatenate(
+                solPattern_concatenate(solPattern_literal_new("\\"), solPattern_literal_new("s")),
+                solPattern_concatenate(solPattern_literal_new("\\"), solPattern_literal_new("S")))
+            )
+        );
+	solPattern *end = solPattern_concatenate(
+        solPattern_repeat(solPattern_literal_new(".")),
+        solPattern_literal_new("$")
+        );
+	SolPattern *cr = solPattern_concatenate(
+        solPattern_concatenate(solPattern_literal_new("["),
+                               solPattern_repeat(solPattern_literal_new("."))),
+        solPattern_concatenate(solPattern_literal_new("]")));
 	SolPattern *br = solPattern_concatenate(solPattern_concatenate(solPattern_literal_new("("),
 																   solPattern_repeat(solPattern_literal_new("."))),
 											solPattern_concatenate(solPattern_literal_new(")")));
