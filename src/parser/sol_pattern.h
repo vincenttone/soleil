@@ -42,7 +42,7 @@ enum SolPatternDfaStateFlag {
 
 typedef struct _SolPatternCaptureMark {
     size_t is; // starting index
-    size_t len; // match length
+    size_t ie; // end index
     int flag; // flag
     void *tag;
 } SolPatternCaptureMark;
@@ -64,13 +64,13 @@ enum _SolPatternReadStrStatus {
 #define solPattern_read_literal(p, s) (*p->r)(s)
 
 #define solPatternCaptureMark_starting_index(cm) (cm)->is
-#define solPatternCaptureMark_len(cm) (cm)->len
+#define solPatternCaptureMark_end_index(cm) (cm)->ie
 #define solPatternCaptureMark_tag(cm) (cm)->tag
 #define solPatternCaptureMark_flag(cm) (cm)->flag
 
 #define solPatternCaptureMark_set_tag(cm, t) (cm)->tag = t
 #define solPatternCaptureMark_set_starting_index(cm, i) (cm)->is = i
-#define solPatternCaptureMark_set_len(cm, l) (cm)->len = l
+#define solPatternCaptureMark_set_end_index(cm, l) (cm)->ie = l
 #define solPatternCaptureMark_set_flag(cm, f) (cm)->flag = f
 
 #define solPattern_state_marked_inital(dsm) (solDfaStateMark_flag(dsm) & SolPatternDfaStateFlag_Is_initial)

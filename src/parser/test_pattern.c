@@ -96,13 +96,16 @@ void print_match_result(SolPattern *p, char* s)
         solListIter_rewind(li);
         while ((ln = solListIter_next(li))) {
             cm = solListNode_val(ln);
-            strncpy(ms, s + solPatternCaptureMark_starting_index(cm), solPatternCaptureMark_len(cm));
+            strncpy(ms,
+                    s + solPatternCaptureMark_starting_index(cm),
+                    solPatternCaptureMark_end_index(cm) - solPatternCaptureMark_starting_index(cm)
+                );
             printf("---- match mark of [%s] str: [%s], result [%s] (%zu:%zu), match? %d ----\n",
                    (char*)(solPatternCaptureMark_tag(cm)),
                    s,
                    ms,
                    solPatternCaptureMark_starting_index(cm),
-                   solPatternCaptureMark_len(cm),
+                   solPatternCaptureMark_end_index(cm),
                    (solPatternCaptureMark_flag(cm) & SolPatternCaptureMarkFlag_Matched)
                 );
         }
