@@ -3,6 +3,7 @@
 
 #include "sol_common.h"
 #include "sol_pattern.h"
+#include "sol_regex_symbol_ascii.h"
 
 typedef enum _SolRegexEncoding {
     SolRegexEncode_ascii = 1,
@@ -17,6 +18,6 @@ typedef struct _SolRegexEngine {
 SolRegexEngine* solRegexEngine_new(SolRegexEncoding);
 void solRegexEngine_free(SolRegexEngine*);
 
-SolPattern* solRegexEngine_conv_pattern(SolRegexEngine*, char*);
+SolPattern* solRegexEngine_conv_pattern(SolRegexEngine*, void*);
 
 #endif
