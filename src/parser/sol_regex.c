@@ -25,80 +25,113 @@ void solRegexEngine_free(SolRegexEngine *re)
     }
 }
 
-SolPattern* solRegexEngine_character()
+SolPattern* solRegexEngine_regex_pattern()
 {
     return NULL;
 }
 
-SolPattern* solRegexEngine_characters()
+SolPattern* solRegexEngine_letter_pattern()
 {
-    return solPattern_repeat(solRegexEngine_character());
+    return NULL;
 }
 
-SolPattern* solRegexEngine_list()
+SolPattern* solRegexEngine_number_pattern()
 {
-    SolPattern *l = solPattern_concatenate(
+    return NULL;
+}
+
+SolPattern* solRegexEngine_character_pattern()
+{
+    return solPattern_choose(
+        solRegexEngine_letter_pattern(),
+        solRegexEngine_number_pattern()
+        );
+}
+
+SolPattern* solRegexEngine_list_pattern()
+{
+    return solPattern_concatenate(
         solPattern_concatenate(
             solPattern_literal_new(SOL_REGEX_SYMBOL_LSB),
-            solRegexEngine_characters()
+            solPattern_repeat(
+                solPattern_choose(
+                    solPattern_choose(
+                        solRegexEngine_character_pattern(),
+                        solRegexEngine_numbers_abbr_pattern()
+                        ),
+                    solRegexEngine_letters_abbr_pattern()
+                    )
+                )
             ),
         solPattern_literal_new(SOL_REGEX_SYMBOL_RSB)
         );
-    return l;
 }
 
-SolPattern* solRegexEngine_capture()
+SolPattern* solRegexEngine_capture_pattern()
 {
-    SolPattern *c = solPattern_concatenate(
+    return solPattern_concatenate(
         solPattern_concatenate(
             solPattern_literal_new(SOL_REGEX_SYMBOL_LBR),
-            solRegexEngine_regex()
+            solRegexEngine_regex_pattern()
             ),
         solPattern_literal_new(SOL_REGEX_SYMBOL_RBR)
         );
 }
 
-SolPattern* solRegexEngine_number()
+SolPattern* solRegexEngine_range_pattern()
 {
-    return NULL;
-}
-
-SolPattern* solRegexEngine_range()
-{
-    SolPattern *c = solPattern_concatenate(
+    return solPattern_concatenate(
         solPattern_concatenate(
             solPattern_concatenate(
                 solPattern_literal_new(SOL_REGEX_SYMBOL_LBRACE),
-                solRegexEngine_number()
+                solRegexEngine_number_pattern()
                 ),
             solPattern_choose(
                 solPattern_empty_new(),
                 solPattern_concatenate(
                     solPattern_literal_new(SOL_REGEX_SYMBOL_COMMA),
-                    solRegexEngine_number()
+                    solRegexEngine_number_pattern()
                     )
                 )
             ),
         solPattern_literal_new(SOL_REGEX_SYMBOL_RBRACE)
         );
-    return c;
 }
 
-solPattern* solRegexEngine_count()
+solPattern* solRegexEngine_count_pattern()
 {
     reutrn solPattern_choose(
         solPattern_choose(
             solPattern_literal_new(SOL_REGEX_SYMBOL_STAR),
-            solPattern_literal_new(SOL_REGEX_SYMBOL_PLUS)),
+            solPattern_literal_new(SOL_REGEX_SYMBOL_PLUS)
+            ),
         solPattern_choose(
             solPattern_literal_new(SOL_REGEX_SYMBOL_QM),
-            solRegexEngine_range())
+            solRegexEngine_range_pattern()
+            )
         );
 }
 
-SolPattern* solRegexEngine_regex()
+SolPattern* solRegexEngine_numbers_abbr_pattern()
 {
-    return NULL;
+    return solPattern_concatenate(
+        solPattern_concatenate(
+            solRegexEngine_number_pattern(),
+            solPattern_literal_new(SOL_REGEX_SYMBOL_MIUS)
+            ),
+        solRegexEngine_number_pattern()
+        );
+}
+
+SolPattern* solRegexEngine_letters_abbr_pattern()
+{
+    return solPattern_concatenate(
+        solPattern_concatenate(
+            solRegexEngine_letter_pattern(),
+            solPattern_literal_new(SOL_REGEX_SYMBOL_MIUS)
+            ),
+        solRegexEngine_letter_pattern()
+        );
 }
 
 SolPattern* solRegexEngine_conv_pattern(SolRegexEngine *re, void *)
