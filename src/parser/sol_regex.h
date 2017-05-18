@@ -41,4 +41,28 @@ SolPattern* solRegexEngine_pattern_letters_abbr();
 
 SolPattern* solRegexEngine_conv_pattern(SolRegexEngine*, void*);
 
+/**
+ * RE := ^RE
+ * RE := RE$
+ * RE := (RE)
+ * RE := RE COUNT
+ * RE := RE LIST
+ * RE := LIST RE
+ * RE := LIST
+ * LIST := [ LIST ]
+ * LIST := RANGE LIST
+ * LIST := LIST RANGE
+ * LIST := LIST literal
+ * LIST := literal LIST
+ * LIST := literal
+ * LIST := RANGE
+ * RANGE := literal - literal
+ * COUNT := *
+ * COUNT := ?
+ * COUNT := +
+ * COUNT := { number }
+ * COUNT := { number , }
+ * COUNT := { number , number }
+ */
+
 #endif
