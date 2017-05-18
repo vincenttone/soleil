@@ -147,6 +147,22 @@ SolPattern* solPattern_literal_new(SolPatternStateGen *g, void *c)
     return p;
 }
 
+SolPattern* solPattern_repeat_new(SolPatternStateGen *g, void *c)
+{
+    SolPattern *p = solPattern_new();
+    SolPatternState *s = solPatternGen_gen_state(g);
+    if (solDfa_set_starting_state(solPattern_dfa(p), s) != 0) {
+        solPattern_free(p);
+        return NULL;
+    }
+    if (solDfa_add_accepting_state(solPattern_dfa(p), s) != 0) {
+        solPattern_free(p);
+        return NULL;
+    }
+    solDfa_add_rule(solPattern_dfa(p), s, s, c);
+    return p;
+}
+
 SolPattern* solPattern_repeat(SolPattern *p)
 {
     if (p == NULL) {
@@ -166,6 +182,33 @@ SolPattern* solPattern_repeat(SolPattern *p)
     }
     solDfa_wipe_accepting_states(solPattern_dfa(p));
     if (solDfa_add_accepting_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p))) != 0) {
+        return NULL;
+    }
+    return p;
+}
+
+SolPattern* solPattern_concatenate_new(SolPatternStateGen *g, SolList *l)
+{
+    SolPattern *p = solPattern_new();
+    SolPatternState *s1 = solPatternGen_gen_state(g);
+    if (solDfa_set_starting_state(solPattern_dfa(p), s1) != 0) {
+        solPattern_free(p);
+        return NULL;
+    }
+    SolPatternState *s2;
+    SolListNode *n = solList_head(l);
+    while (n) {
+        s2 = solPatternGen_gen_state(g);
+        if (solListNode_val(n) == NULL) {
+            solPattern_free(p);
+            return NULL;
+        }
+        solDfa_add_rule(solPattern_dfa(p), s1, s2, solListNode_val(n));
+        s1 = s2;
+        n = solListNode_next(n);
+    }
+    if (solDfa_add_accepting_state(solPattern_dfa(p), s1) != 0) {
+        solPattern_free(p);
         return NULL;
     }
     return p;
@@ -207,6 +250,31 @@ SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
     solDfa_set_all_states(solPattern_dfa(p2), NULL);
     solPattern_free(p2);
     return p1;
+}
+
+SolPattern* solPattern_choose_new(SolPatternStateGen *g, SolList *l)
+{
+    SolPattern *p = solPattern_new();
+    SolPatternState *s1 = solPatternGen_gen_state(g);
+    if (solDfa_set_starting_state(solPattern_dfa(p), s1) != 0) {
+        solPattern_free(p);
+        return NULL;
+    }
+    SolPatternState *s2 = solPatternGen_gen_state(g);
+    if (solDfa_add_accepting_state(solPattern_dfa(p), s2) != 0) {
+        solPattern_free(p);
+        return NULL;
+    }
+    SolListNode *n = solList_head(l);
+    while (n) {
+        if (solListNode_val(n) == NULL) {
+            solPattern_free(p);
+            return NULL;
+        }
+        solDfa_add_rule(solPattern_dfa(p), s1, s2, solListNode_val(n));
+        n = solListNode_next(n);
+    }
+    return p;
 }
 
 SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
