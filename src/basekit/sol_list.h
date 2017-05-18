@@ -41,7 +41,8 @@ void solList_free(SolList*);
 #define solList_set_match_func(l, f) l->f_match = f
 #define solList_set_match_and_up_func(l, f) l->f_mnu = f
 
-#define solListNode_val(l) (l)->val
+#define solListNode_val(n) (n)->val
+#define solListNode_next(n) (n)->next
 #define solListNodeVal_free(l, n) if (l->f_free) {(*l->f_free)(n->val);}
 
 SolListNode* solList_add(SolList*, void*, enum _SolListDir);
