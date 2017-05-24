@@ -39,6 +39,51 @@ SolPattern* solRegexSymbolAscii_pattern()
 											   solPattern_concatenate(solPattern_literal_new("/")));
 }
 
+int solRegexSymbolAscii_match(void *sign, void *v)
+{
+    switch ((enum SolRegexSymbol*)sign) {
+    case SolRegexSymbol_Number:
+        if (solRegexSymbolAscii_char(v) >= SOL_REGEX_SYMBOL_N_0
+            && solRegexSymbolAscii_char(v) <= SOL_REGEX_SYMBOL_N_9
+            ) {
+            return 0;
+        }
+    case SolRegexSymbol_Letter:
+        if ((solRegexSymbolAscii_char(v) >= SOL_REGEX_SYMBOL_L_a
+             && solRegexSymbolAscii_char(v) <= SOL_REGEX_SYMBOL_L_z)
+            || (solRegexSymbolAscii_char(v) >= SOL_REGEX_SYMBOL_L_A
+                && solRegexSymbolAscii_char(v) <= SOL_REGEX_SYMBOL_L_Z)
+            ) {
+            return 0;
+        }
+        // case SolRegexSymbol_Sign:
+    case SolRegexSymbol_X_0_1:
+        if (solRegexSymbolAscii_char(v) == '?') return 0;
+    case SolRegexSymbol_X_0_:
+        if (solRegexSymbolAscii_char(v) == '*') return 0;
+    case SolRegexSymbol_X_1_:
+        if (solRegexSymbolAscii_char(v) == '+') return 0;
+    case SolRegexSymbol_Capture_ls:
+        if (solRegexSymbolAscii_char(v) == '(') return 0;
+    case SolRegexSymbol_Capture_rs:
+        if (solRegexSymbolAscii_char(v) == ')') return 0;
+    case SolRegexSymbol_List_ls:
+        if (solRegexSymbolAscii_char(v) == '[') return 0;
+    case SolRegexSymbol_List_rs:
+        if (solRegexSymbolAscii_char(v) == ']') return 0;
+    case SolRegexSymbol_Range_ls:
+        if (solRegexSymbolAscii_char(v) == '{') return 0;
+    case SolRegexSymbol_Range_sep:
+        if (solRegexSymbolAscii_char(v) == ',') return 0;
+    case SolRegexSymbol_Range_rs:
+        if (solRegexSymbolAscii_char(v) == '}') return 0;
+    case SolRegexSymbol_Group_ls:
+    case SolRegexSymbol_Group_rs:
+    case SolRegexSymbol_Abbr_sep:
+    }
+    return 1;
+}
+
 SolRegexSymbol solRegexSymbolAscii_read(SolRegexReader *r)
 {
     switch (solRegexReader_current(r)) {
@@ -69,15 +114,15 @@ SolRegexSymbol solRegexSymbolAscii_read(SolRegexReader *r)
         return SolRegexSymbol_Range_sep;
     default:
         if (solRegexReader_current(r) >= SOL_REGEX_SYMBOL_L_a
-            && solRegexReader_current(r) >= SOL_REGEX_SYMBOL_L_z
+            && solRegexReader_current(r) <= SOL_REGEX_SYMBOL_L_z
             ) {
             return SolRegexSymbol_Letter;
         } else if (solRegexReader_current(r) >= SOL_REGEX_SYMBOL_L_A
-            && solRegexReader_current(r) >= SOL_REGEX_SYMBOL_L_Z
+            && solRegexReader_current(r) <= SOL_REGEX_SYMBOL_L_Z
             ) {
             return SolRegexSymbol_Letter;
         } else if (solRegexReader_current(r) >= SOL_REGEX_SYMBOL_N_0
-            && solRegexReader_current(r) >= SOL_REGEX_SYMBOL_N_9
+            && solRegexReader_current(r) <= SOL_REGEX_SYMBOL_N_9
             ) {
             return SolRegexSymbol_Number;
         }
