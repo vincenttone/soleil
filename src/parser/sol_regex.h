@@ -3,6 +3,8 @@
 
 #include "sol_common.h"
 #include "sol_pattern.h"
+#include "sol_regex_symbol.h"
+#include "sol_regex_symbol_ascii.h"
 
 typedef enum _SolRegexEncoding {
     SolRegexEncode_ascii = 1,
@@ -17,6 +19,50 @@ typedef struct _SolRegexEngine {
 SolRegexEngine* solRegexEngine_new(SolRegexEncoding);
 void solRegexEngine_free(SolRegexEngine*);
 
-SolPattern* solRegexEngine_conv_pattern(SolRegexEngine*, char*);
+SolPattern* solRegexEngine_pattern_regex();
+
+SolPattern* solRegexEngine_pattern_letter();
+SolPattern* solRegexEngine_pattern_number();
+
+SolPattern* solRegexEngine_pattern_X_0_();
+SolPattern* solRegexEngine_pattern_X_1_();
+SolPattern* solRegexEngine_pattern_X_0_1();
+
+SolPattern* solRegexEngine_pattern_list();
+SolPattern* solRegexEngine_pattern_capture();
+SolPattern* solRegexEngine_pattern_range();
+SolPattern* solRegexEngine_pattern_group();
+SolPattern* solRegexEngine_pattern_not_greed();
+
+SolPattern* solRegexEngine_pattern_character();
+SolPattern* solRegexEngine_pattern_count();
+SolPattern* solRegexEngine_pattern_numbers_abbr();
+SolPattern* solRegexEngine_pattern_letters_abbr();
+
+SolPattern* solRegexEngine_conv_pattern(SolRegexEngine*, void*);
+
+/**
+ * RE := ^RE
+ * RE := RE$
+ * RE := (RE)
+ * RE := RE COUNT
+ * RE := RE LIST
+ * RE := LIST RE
+ * RE := LIST
+ * LIST := [ LIST ]
+ * LIST := RANGE LIST
+ * LIST := LIST RANGE
+ * LIST := LIST literal
+ * LIST := literal LIST
+ * LIST := literal
+ * LIST := RANGE
+ * RANGE := literal - literal
+ * COUNT := *
+ * COUNT := ?
+ * COUNT := +
+ * COUNT := { number }
+ * COUNT := { number , }
+ * COUNT := { number , number }
+ */
 
 #endif

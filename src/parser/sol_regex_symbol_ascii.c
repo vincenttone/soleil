@@ -1,31 +1,6 @@
 #include "sol_regex_symbol_ascii.h"
+#inlucde "sol_regex_symbol.h"
 
-// [A-Z0-6j-nxz]+abc*
-// w{3}\.xyz\.com(/.*)?
-// \x [] () {} ? * + .
-/**
- * RE := ^RE
- * RE := RE$
- * RE := (RE)
- * RE := RE COUNT
- * RE := RE LIST
- * RE := LIST RE
- * RE := LIST
- * LIST := [ LIST ]
- * LIST := RANGE LIST
- * LIST := LIST RANGE
- * LIST := LIST literal
- * LIST := literal LIST
- * LIST := literal
- * LIST := RANGE
- * RANGE := literal - literal
- * COUNT := *
- * COUNT := ?
- * COUNT := +
- * COUNT := { number }
- * COUNT := { number , }
- * COUNT := { number , number }
- */
 SolPattern* solRegexSymbolAscii_pattern()
 {
 	SolPattern *caret = solPattern_literal_new("^");
@@ -62,4 +37,95 @@ SolPattern* solRegexSymbolAscii_pattern()
 	SolPattern *regex = solPattern_concatenate(solPattern_concatenate(solPattern_literal_new("/"),
 																	  solPattern_repeat(solPattern_literal_new("."))),
 											   solPattern_concatenate(solPattern_literal_new("/")));
+}
+
+int solRegexSymbolAscii_match(void *sign, void *v)
+{
+    switch ((enum SolRegexSymbol*)sign) {
+    case SolRegexSymbol_Number:
+        if (solRegexSymbolAscii_char(v) >= SOL_REGEX_SYMBOL_N_0
+            && solRegexSymbolAscii_char(v) <= SOL_REGEX_SYMBOL_N_9
+            ) {
+            return 0;
+        }
+    case SolRegexSymbol_Letter:
+        if ((solRegexSymbolAscii_char(v) >= SOL_REGEX_SYMBOL_L_a
+             && solRegexSymbolAscii_char(v) <= SOL_REGEX_SYMBOL_L_z)
+            || (solRegexSymbolAscii_char(v) >= SOL_REGEX_SYMBOL_L_A
+                && solRegexSymbolAscii_char(v) <= SOL_REGEX_SYMBOL_L_Z)
+            ) {
+            return 0;
+        }
+        // case SolRegexSymbol_Sign:
+    case SolRegexSymbol_X_0_1:
+        if (solRegexSymbolAscii_char(v) == '?') return 0;
+    case SolRegexSymbol_X_0_:
+        if (solRegexSymbolAscii_char(v) == '*') return 0;
+    case SolRegexSymbol_X_1_:
+        if (solRegexSymbolAscii_char(v) == '+') return 0;
+    case SolRegexSymbol_Capture_ls:
+        if (solRegexSymbolAscii_char(v) == '(') return 0;
+    case SolRegexSymbol_Capture_rs:
+        if (solRegexSymbolAscii_char(v) == ')') return 0;
+    case SolRegexSymbol_List_ls:
+        if (solRegexSymbolAscii_char(v) == '[') return 0;
+    case SolRegexSymbol_List_rs:
+        if (solRegexSymbolAscii_char(v) == ']') return 0;
+    case SolRegexSymbol_Range_ls:
+        if (solRegexSymbolAscii_char(v) == '{') return 0;
+    case SolRegexSymbol_Range_sep:
+        if (solRegexSymbolAscii_char(v) == ',') return 0;
+    case SolRegexSymbol_Range_rs:
+        if (solRegexSymbolAscii_char(v) == '}') return 0;
+    case SolRegexSymbol_Group_ls:
+    case SolRegexSymbol_Group_rs:
+    case SolRegexSymbol_Abbr_sep:
+    }
+    return 1;
+}
+
+SolRegexSymbol solRegexSymbolAscii_read(SolRegexReader *r)
+{
+    switch (solRegexReader_current(r)) {
+    case '\\':
+        switch (solRegexReader_next(r)) {
+        case 'n':
+        case 'r':
+        case 't':
+            return SolRegexSymbol_Sign;
+        case '[':
+        case ']':
+        case '(':
+        case ')':
+            return SolRegexSymbol_Sign;
+        }
+        break;
+    case '?':
+        return SolRegexSymbol_X_0_1;
+    case '+':
+        return SolRegexSymbol_X_1_;
+    case '*':
+        return SolRegexSymbol_X_0_;
+    case '[':
+        return SolRegexSymbol_Range_ls;
+    case ']':
+        return SolRegexSymbol_Range_rs;
+    case '-': // 双重可能?
+        return SolRegexSymbol_Range_sep;
+    default:
+        if (solRegexReader_current(r) >= SOL_REGEX_SYMBOL_L_a
+            && solRegexReader_current(r) <= SOL_REGEX_SYMBOL_L_z
+            ) {
+            return SolRegexSymbol_Letter;
+        } else if (solRegexReader_current(r) >= SOL_REGEX_SYMBOL_L_A
+            && solRegexReader_current(r) <= SOL_REGEX_SYMBOL_L_Z
+            ) {
+            return SolRegexSymbol_Letter;
+        } else if (solRegexReader_current(r) >= SOL_REGEX_SYMBOL_N_0
+            && solRegexReader_current(r) <= SOL_REGEX_SYMBOL_N_9
+            ) {
+            return SolRegexSymbol_Number;
+        }
+    }
+    return SolRegexSymbol_None;
 }

@@ -92,6 +92,9 @@ int solPattern_match(SolPattern*, void*, size_t);
 
 SolPattern* solPattern_empty_new(SolPatternStateGen*);
 SolPattern* solPattern_literal_new(SolPatternStateGen*, void*);
+SolPattern* solPattern_concatenate_new(SolPatternStateGen*, SolList*);
+SolPattern* solPattern_choose_new(SolPatternStateGen*, SolList*);
+SolPattern* solPattern_repeat_new(SolPatternStateGen*, void*);
 SolPattern* solPattern_repeat(SolPattern *);
 SolPattern* solPattern_concatenate(SolPattern*, SolPattern*);
 SolPattern* solPattern_choose(SolPattern*, SolPattern*);
