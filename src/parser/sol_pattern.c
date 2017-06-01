@@ -24,9 +24,6 @@ void solPattern_free(SolPattern *p)
     if (p->dfa) {
         solDfa_free(p->dfa);
     }
-    if (solPattern_state_stack(p)) {
-        solStack_free(solPattern_state_stack(p));
-    }
     if (solPattern_capture_list(p)) {
         solList_free(solPattern_capture_list(p));
     }
@@ -35,46 +32,27 @@ void solPattern_free(SolPattern *p)
     }
 }
 
-int solPattern_push_state(SolPattern *p, SolPatternState *s)
-{
-    if (solPattern_state_stack(p) == NULL) {
-        p->s = solStack_new();
-    }
-    if (solPattern_state_stack(p) == NULL) {
-        return 1;
-    }
-    if (solStack_push(solPattern_state_stack(p), s)) {
-        return 0;
-    }
-    return 2;
-}
-
-SolPatternState* solPattern_pop_state(SolPattern *p)
-{
-    if (solPattern_state_stack(p) == NULL) {
-        return NULL;
-    }
-    SolPatternState *s = (SolPatternState*)(solStack_pop(solPattern_state_stack(p)));
-    return s;
-}
-
 SolPatternStateGen* solPatternStateGen_new()
 {
-    SolPatternStateGen *g = sol_calloc(1, sizeof(SolPatternStateGen));
-    g->i = 0;
+    SolPatternStateGen *g = sol_alloc(sizeof(SolPatternStateGen));
+    g->i = 1;
+    g->l = solSlist_new();
+    solSlist_set_val_free_func(g->l, &sol_free);
     return g;
 }
 
 void solPatternStateGen_free(SolPatternStateGen *g)
 {
+    solSlist_free(g->l);
     sol_free(g);
 }
 
 SolPatternState* solPatternGen_gen_state(SolPatternStateGen *g)
 {
-    g->i++;
-    g->l[g->i] = g->i;
-    return &(g->l[g->i]);
+    SolPatternState *s = sol_alloc(sizeof(SolPatternState));
+    *s = g->i++;
+    SolSlistNode *n = solSlist_add(g->l, s);
+    return solSlistNode_val(n);
 }
 
 void solPattern_reset(SolPattern *p)

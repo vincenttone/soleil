@@ -4,22 +4,21 @@
 #include <string.h>
 #include "sol_common.h"
 #include "sol_utils.h"
-#include "sol_stack.h"
 #include "sol_dfa.h"
+#include "sol_list.h"
+#include "sol_slist.h"
 
 #define SolPatternState unsigned int
-#define _SOL_PATTERN_STATE_MAX 65535
 
 typedef struct _SolPattern {
     SolDfa *dfa;
-    SolStack *s; // state stack
     SolList *cl; // capture list
     size_t (*r)(void*); // read literal
 } SolPattern;
 
 typedef struct _SolPatternStateGen {
     SolPatternState i;
-    SolPatternState l[_SOL_PATTERN_STATE_MAX];
+    SolSlist *l;
 } SolPatternStateGen;
 
 enum SolPatternCaptureMarkFlag {
@@ -54,7 +53,6 @@ enum _SolPatternReadStrStatus {
 };
 
 #define solPattern_dfa(p) (p)->dfa
-#define solPattern_state_stack(p) (p)->s
 #define solPattern_capture_list(p) (p)->cl
 #define solPattern_reading_literal_func(p) (p)->r
 
@@ -78,8 +76,6 @@ enum _SolPatternReadStrStatus {
 
 SolPattern* solPattern_new();
 void solPattern_free(SolPattern*);
-int solPattern_push_state(SolPattern*, SolPatternState*);
-SolPatternState* solPattern_pop_state(SolPattern*);
 
 SolPatternStateGen* solPatternStateGen_new();
 void solPatternStateGen_free(SolPatternStateGen*);
