@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <assert.h>
 #include "sol_list.h"
 
 SolList* solList_new()
@@ -80,17 +81,21 @@ int solList_merge(SolList *l1, SolList *l2)
     if (l1 == NULL || l2 == NULL) {
         return -1;
     }
-    if (l1->tail) {
-        l1->tail->next = l2->head;
-    } else {
-        l1->tail = l2->head;
+    if (l1->head == NULL) {
+        l1->head = l2->head;
+        l1->tail = l2->tail;
+        goto finish;
     }
+    assert(solList_tail(l1) && "seems like list do not have tail");
+    l1->tail->next = l2->head;
     if (l2->head) {
         l2->head->pre = l1->tail;
     }
     if (l2->tail) {
         l1->tail = l2->tail;
     }
+finish:
+    l1->len += l2->len;
     l2->head = NULL;
     l2->tail = NULL;
     l2->len = 0;

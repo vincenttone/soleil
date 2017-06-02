@@ -49,6 +49,7 @@ SolSlistNode* solSlist_add(SolSlist*, void*);
 int solSlist_del_node(SolSlist*, SolSlistNode*);
 int solSlist_remove(SolSlist*, void*);
 int solSlist_has(SolSlist*, void*);
+int solSlist_merge(SolSlist*, SolSlist*);
 
 SolSlistNode* solSlistNode_new();
 void solSlistNode_free(SolSlist*, SolSlistNode*);
