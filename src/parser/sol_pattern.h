@@ -5,14 +5,13 @@
 #include "sol_common.h"
 #include "sol_utils.h"
 #include "sol_dfa.h"
-#include "sol_list.h"
 #include "sol_slist.h"
 
 #define SolPatternState unsigned int
 
 typedef struct _SolPattern {
     SolDfa *dfa;
-    SolList *cl; // capture list
+    SolSlist *cl; // capture list
     size_t (*r)(void*); // read literal
 } SolPattern;
 
@@ -88,8 +87,8 @@ int solPattern_match(SolPattern*, void*, size_t);
 
 SolPattern* solPattern_empty_new(SolPatternStateGen*);
 SolPattern* solPattern_literal_new(SolPatternStateGen*, void*);
-SolPattern* solPattern_concatenate_new(SolPatternStateGen*, SolList*);
-SolPattern* solPattern_choose_new(SolPatternStateGen*, SolList*);
+SolPattern* solPattern_concatenate_new(SolPatternStateGen*, SolSlist*);
+SolPattern* solPattern_choose_new(SolPatternStateGen*, SolSlist*);
 SolPattern* solPattern_repeat_new(SolPatternStateGen*, void*);
 SolPattern* solPattern_repeat(SolPattern *);
 SolPattern* solPattern_concatenate(SolPattern*, SolPattern*);
