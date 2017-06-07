@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include "sol_common.h"
-#include "sol_list.h"
+#include "sol_dl_list.h"
 
 typedef SolDlList SolStack;
 
