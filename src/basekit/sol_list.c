@@ -2,25 +2,25 @@
 #include <assert.h>
 #include "sol_list.h"
 
-SolList* solList_new()
+SolDlList* solDlList_new()
 {
-    SolList *l = sol_calloc(1, sizeof(SolList));
+    SolDlList *l = sol_calloc(1, sizeof(SolDlList));
     if (l == NULL) {
         return NULL;
     }
     return l;
 }
 
-void solList_free(SolList *l)
+void solDlList_free(SolDlList *l)
 {
     unsigned long len;
-    SolListNode *c, *n;
+    SolDlListNode *c, *n;
     c = l->head;
     len = l->len;
     if (c != NULL) {
         while (len--) {
             n = c->next;
-            solListNodeVal_free(l, c);
+            solDlListNodeVal_free(l, c);
             if (c != NULL) {
                 sol_free(c);
             }
@@ -30,9 +30,9 @@ void solList_free(SolList *l)
     sol_free(l);
 }
 
-SolListNode *solList_add(SolList *l, void *v, enum _SolListDir d)
+SolDlListNode *solDlList_add(SolDlList *l, void *v, enum _SolDlListDir d)
 {
-    SolListNode  *n = sol_alloc(sizeof(SolListNode));
+    SolDlListNode  *n = sol_alloc(sizeof(SolDlListNode));
     if (n == NULL) {
         return NULL;
     }
@@ -43,7 +43,7 @@ SolListNode *solList_add(SolList *l, void *v, enum _SolListDir d)
         n->pre = NULL;
         n->next = NULL;
     } else {
-        if (d == _SolListDirBak) {
+        if (d == _SolDlListDirBak) {
             n->pre = NULL;
             n->next = l->head;
             l->head->pre = n;
@@ -59,7 +59,7 @@ SolListNode *solList_add(SolList *l, void *v, enum _SolListDir d)
     return n;
 }
 
-void solList_del_node(SolList *l, SolListNode *n)
+void solDlList_del_node(SolDlList *l, SolDlListNode *n)
 {
     if (n->pre) {
         n->pre->next = n->next;
@@ -71,12 +71,12 @@ void solList_del_node(SolList *l, SolListNode *n)
     } else {
         l->tail = n->pre;
     }
-    solListNodeVal_free(l, n);
+    solDlListNodeVal_free(l, n);
     l->len--;
     sol_free(n);
 }
 
-int solList_merge(SolList *l1, SolList *l2)
+int solDlList_merge(SolDlList *l1, SolDlList *l2)
 {
     if (l1 == NULL || l2 == NULL) {
         return -1;
@@ -86,7 +86,7 @@ int solList_merge(SolList *l1, SolList *l2)
         l1->tail = l2->tail;
         goto finish;
     }
-    assert(solList_tail(l1) && "seems like list do not have tail");
+    assert(solDlList_tail(l1) && "seems like list do not have tail");
     l1->tail->next = l2->head;
     if (l2->head) {
         l2->head->pre = l1->tail;
@@ -99,22 +99,22 @@ finish:
     l2->head = NULL;
     l2->tail = NULL;
     l2->len = 0;
-    solList_free(l2);
+    solDlList_free(l2);
     return 0;
 }
 
-SolListIter* solListIter_new(SolList *l, enum _SolListDir d)
+SolDlListIter* solDlListIter_new(SolDlList *l, enum _SolDlListDir d)
 {
     if (l == NULL) {
         return NULL;
     }
-    SolListIter *i = sol_alloc(sizeof(SolListIter));
+    SolDlListIter *i = sol_alloc(sizeof(SolDlListIter));
     if (i == NULL) {
         return NULL;
     }
     i->l = l;
     i->dir = d;
-    if (d == _SolListDirBak) {
+    if (d == _SolDlListDirBak) {
         i->next = l->tail;
     } else {
         i->next = l->head;
@@ -122,27 +122,27 @@ SolListIter* solListIter_new(SolList *l, enum _SolListDir d)
     return i;
 }
 
-void solListIter_free(SolListIter *i)
+void solDlListIter_free(SolDlListIter *i)
 {
     if (i != NULL) {
         sol_free(i);
     }
 }
 
-void solListIter_rewind(SolListIter *i)
+void solDlListIter_rewind(SolDlListIter *i)
 {
-    if (i->dir == _SolListDirBak) {
+    if (i->dir == _SolDlListDirBak) {
         i->next = i->l->tail;
     } else {
         i->next = i->l->head;
     }
 }
 
-SolListNode* solListIter_next(SolListIter *i)
+SolDlListNode* solDlListIter_next(SolDlListIter *i)
 {
-    SolListNode *cn = i->next;
+    SolDlListNode *cn = i->next;
     if (cn != NULL) {
-        if (i->dir == _SolListDirBak) {
+        if (i->dir == _SolDlListDirBak) {
             i->next = cn->pre;
         } else {
             i->next = cn->next;
