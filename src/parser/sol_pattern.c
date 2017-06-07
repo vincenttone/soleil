@@ -25,7 +25,7 @@ void solPattern_free(SolPattern *p)
         solDfa_free(p->dfa);
     }
     if (solPattern_capture_list(p)) {
-        solSlist_free(solPattern_capture_list(p));
+        solList_free(solPattern_capture_list(p));
     }
     if (p) {
         sol_free(p);
@@ -36,14 +36,14 @@ SolPatternStateGen* solPatternStateGen_new()
 {
     SolPatternStateGen *g = sol_alloc(sizeof(SolPatternStateGen));
     g->i = 1;
-    g->l = solSlist_new();
-    solSlist_set_val_free_func(g->l, &sol_free);
+    g->l = solList_new();
+    solList_set_val_free_func(g->l, &sol_free);
     return g;
 }
 
 void solPatternStateGen_free(SolPatternStateGen *g)
 {
-    solSlist_free(g->l);
+    solList_free(g->l);
     sol_free(g);
 }
 
@@ -51,8 +51,8 @@ SolPatternState* solPatternGen_gen_state(SolPatternStateGen *g)
 {
     SolPatternState *s = sol_alloc(sizeof(SolPatternState));
     *s = g->i++;
-    SolSlistNode *n = solSlist_add(g->l, s);
-    return solSlistNode_val(n);
+    SolListNode *n = solList_add(g->l, s);
+    return solListNode_val(n);
 }
 
 void solPattern_reset(SolPattern *p)
@@ -165,7 +165,7 @@ SolPattern* solPattern_repeat(SolPattern *p)
     return p;
 }
 
-SolPattern* solPattern_concatenate_new(SolPatternStateGen *g, SolSlist *l)
+SolPattern* solPattern_concatenate_new(SolPatternStateGen *g, SolList *l)
 {
     SolPattern *p = solPattern_new();
     SolPatternState *s1 = solPatternGen_gen_state(g);
@@ -174,16 +174,16 @@ SolPattern* solPattern_concatenate_new(SolPatternStateGen *g, SolSlist *l)
         return NULL;
     }
     SolPatternState *s2;
-    SolSlistNode *n = solSlist_head(l);
+    SolListNode *n = solList_head(l);
     while (n) {
         s2 = solPatternGen_gen_state(g);
-        if (solSlistNode_val(n) == NULL) {
+        if (solListNode_val(n) == NULL) {
             solPattern_free(p);
             return NULL;
         }
-        solDfa_add_rule(solPattern_dfa(p), s1, s2, solSlistNode_val(n));
+        solDfa_add_rule(solPattern_dfa(p), s1, s2, solListNode_val(n));
         s1 = s2;
-        n = solSlistNode_next(n);
+        n = solListNode_next(n);
     }
     if (solDfa_add_accepting_state(solPattern_dfa(p), s1) != 0) {
         solPattern_free(p);
@@ -220,7 +220,7 @@ SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
     solDfa_set_starting_state(solPattern_dfa(p1), solDfa_starting_state(solPattern_dfa(p2)));
     solPattern_set_reading_literal_func(p1, solPattern_reading_literal_func(p2));
     if (solPattern_capture_list(p1)) {
-        solSlist_merge(solPattern_capture_list(p1), solPattern_capture_list(p2));
+        solList_merge(solPattern_capture_list(p1), solPattern_capture_list(p2));
     } else if (solPattern_capture_list(p2)) {
         solPattern_set_capture_list(p1, solPattern_capture_list(p2));
     }
@@ -230,7 +230,7 @@ SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
     return p1;
 }
 
-SolPattern* solPattern_choose_new(SolPatternStateGen *g, SolSlist *l)
+SolPattern* solPattern_choose_new(SolPatternStateGen *g, SolList *l)
 {
     SolPattern *p = solPattern_new();
     SolPatternState *s1 = solPatternGen_gen_state(g);
@@ -243,14 +243,14 @@ SolPattern* solPattern_choose_new(SolPatternStateGen *g, SolSlist *l)
         solPattern_free(p);
         return NULL;
     }
-    SolSlistNode *n = solSlist_head(l);
+    SolListNode *n = solList_head(l);
     while (n) {
-        if (solSlistNode_val(n) == NULL) {
+        if (solListNode_val(n) == NULL) {
             solPattern_free(p);
             return NULL;
         }
-        solDfa_add_rule(solPattern_dfa(p), s1, s2, solSlistNode_val(n));
-        n = solSlistNode_next(n);
+        solDfa_add_rule(solPattern_dfa(p), s1, s2, solListNode_val(n));
+        n = solListNode_next(n);
     }
     return p;
 }
@@ -274,7 +274,7 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
     }
     solDfa_merge_accepting_states(solPattern_dfa(p1), solPattern_dfa(p2));
     if (solPattern_capture_list(p1)) {
-        solSlist_merge(solPattern_capture_list(p1), solPattern_capture_list(p2));
+        solList_merge(solPattern_capture_list(p1), solPattern_capture_list(p2));
     } else if (solPattern_capture_list(p2)) {
         solPattern_set_capture_list(p1, solPattern_capture_list(p2));
     }
@@ -296,12 +296,12 @@ SolPattern* solPattern_capture(SolPattern *p, enum SolPatternCaptureMarkFlag f, 
         return NULL;
     }
     if (solPattern_capture_list(p) == NULL) {
-        solPattern_set_capture_list(p, solSlist_new());
+        solPattern_set_capture_list(p, solList_new());
         if (solPattern_capture_list(p) == NULL) {
             solPattern_free(p);
             return NULL;
         }
-        solSlist_set_val_free_func(solPattern_capture_list(p), &sol_free);
+        solList_set_val_free_func(solPattern_capture_list(p), &sol_free);
     }
     SolPatternCaptureMark* cm = sol_calloc(1, sizeof(SolPatternCaptureMark));
     if (cm == NULL) {
@@ -310,7 +310,7 @@ SolPattern* solPattern_capture(SolPattern *p, enum SolPatternCaptureMarkFlag f, 
     }
     solPatternCaptureMark_set_tag(cm, t);
     solPatternCaptureMark_set_flag(cm, f);
-    solSlist_add(solPattern_capture_list(p), cm);
+    solList_add(solPattern_capture_list(p), cm);
     SolDfaState *ds = solDfa_conv_dfa_state(solPattern_dfa(p), solDfa_starting_state(solPattern_dfa(p)));
     SolDfaStateMark *dsm = solDfaState_mark(ds);
     int flag = SolPatternDfaStateFlag_Begin | SolPatternDfaStateFlag_Is_cm;
@@ -514,10 +514,10 @@ inline void solPattern_reset_unmatched_capture_mark(SolPattern *p)
         return;
     }
     SolPatternCaptureMark *m;
-    SolSlistNode *n = solSlist_head(solPattern_capture_list(p));
+    SolListNode *n = solList_head(solPattern_capture_list(p));
     int f;
     while (n) {
-        m = (SolPatternCaptureMark*)(solSlistNode_val(n));
+        m = (SolPatternCaptureMark*)(solListNode_val(n));
         if (m == NULL) {
             continue;
         }
@@ -532,7 +532,7 @@ inline void solPattern_reset_unmatched_capture_mark(SolPattern *p)
             printf("FLUSH flag to %d!!!!!!\n", solPatternCaptureMark_flag(m));
 #endif
         }
-        n = solSlistNode_next(n);
+        n = solListNode_next(n);
     }
 }
 
@@ -542,10 +542,10 @@ inline void solPattern_reset_capture_mark(SolPattern *p)
         return;
     }
     SolPatternCaptureMark *m;
-    SolSlistNode *n = solSlist_head(solPattern_capture_list(p));
+    SolListNode *n = solList_head(solPattern_capture_list(p));
     int f;
     while (n) {
-        m = solSlistNode_val(n);
+        m = solListNode_val(n);
         if (m == NULL) {
             continue;
         }
@@ -559,6 +559,6 @@ inline void solPattern_reset_capture_mark(SolPattern *p)
 #ifdef __SOL_DEBUG__
         printf("RESET flag to %d!!!!!!\n", solPatternCaptureMark_flag(m));
 #endif
-        n = solSlistNode_next(n);
+        n = solListNode_next(n);
     }
 }

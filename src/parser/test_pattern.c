@@ -89,11 +89,11 @@ void print_match_result(SolPattern *p, char* s)
 {
     char *ms = sol_calloc(10, sizeof(char));
     SolPatternCaptureMark *cm;
-    SolSlistNode *ln;
+    SolListNode *ln;
     if (solPattern_capture_list(p)) {
-        ln = solSlist_head(solPattern_capture_list(p));
+        ln = solList_head(solPattern_capture_list(p));
         while (ln) {
-            cm = solSlistNode_val(ln);
+            cm = solListNode_val(ln);
             strncpy(ms,
                     s + solPatternCaptureMark_starting_index(cm),
                     solPatternCaptureMark_end_index(cm) - solPatternCaptureMark_starting_index(cm)
@@ -106,7 +106,7 @@ void print_match_result(SolPattern *p, char* s)
                    solPatternCaptureMark_end_index(cm),
                    (solPatternCaptureMark_flag(cm) & SolPatternCaptureMarkFlag_Matched)
                 );
-            ln = solSlistNode_next(ln);
+            ln = solListNode_next(ln);
         }
     }
     sol_free(ms);
