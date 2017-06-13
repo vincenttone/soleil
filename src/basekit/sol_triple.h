@@ -47,7 +47,7 @@ void solTripleRecord_free();
 #define solTriple_set_size(t, s) t->size = s
 #define solTriple_update_mask(t) t->mask = t->size - 1
 
-#define solTriple_record(t) t->record
+#define solTriple_records(t) t->record
 #define solTriple_size(t) t->size
 #define solTriple_mask(t) t->mask
 
@@ -61,5 +61,13 @@ void solTripleRecord_free();
 
 #define solTripleRecord_set_v1_node(r, node) r->v1->n = node
 #define solTripleRecord_v1_node(r) r->v1->n
+
+#define solTriple_v1_hash1(h) (*h->f_v1_hash1)
+#define solTriple_v1_hash2(h) (*h->f_v1_hash2)
+
+#define solTriple_v2_hash1(h) (*h->f_v2_hash1)
+#define solTriple_v2_hash2(h) (*h->f_v2_hash2)
+
+#define solTriple_record_at_offset(r, o) (SolTripleRecord*)(r + o)
 
 #endif
