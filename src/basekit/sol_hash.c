@@ -192,10 +192,11 @@ int solHash_put_key_and_val(SolHash *hash, void *k, void *v)
 
 int solHash_try_to_put(SolHash *hash, void *k, void *v)
 {
-    SolHashRecord *r, rs;
+    SolHashRecord *r;
+    SolHashRecord rs;
     rs.k = k;
     rs.v = v;
-    int i = 0;
+    size_t i = 0;
     for (; i < hash->size * 2; i++) {
         // get conflict hash record
         r = solHash_record1_of_key(hash, k);
