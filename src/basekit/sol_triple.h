@@ -6,6 +6,7 @@
 #include "sol_list.h"
 
 #define SOL_TRIPLE_INIT_SIZE 8
+#define SOL_TRIPLE_RESIZE_LIMIT 64
 
 typedef struct _SolTripleRecord {
     struct v1 {
@@ -20,7 +21,7 @@ typedef struct _SolTriple {
     size_t mask;
     size_t size;
     size_t count;
-    int is_resizing;
+    int flag;
     SolTripleRecord *r;
     SolHash *m;
     sol_f_hash_ptr f_v1_hash1;
@@ -43,13 +44,17 @@ int solTriple_set_size(SolTriple*, size_t);
 SolTripleRecord* solTripleRecord_new();
 void solTripleRecord_free();
 
-#define solTriple_set_record(t, r) t->record = r
+#define solTriple_set_records(t, r) t->record = r
 #define solTriple_set_size(t, s) t->size = s
+#define solTriple_set_count(t, c) t->count = c
 #define solTriple_update_mask(t) t->mask = t->size - 1
 
 #define solTriple_records(t) t->record
 #define solTriple_size(t) t->size
 #define solTriple_mask(t) t->mask
+#define solTriple_count(t) t->count
+
+#define solTriple_count_incr(t) t->count++
 
 #define solTripleRecord_set_v1(r, val) r->v1->v = val
 #define solTripleRecord_set_v2(r, val) r->v2 = val
@@ -64,10 +69,16 @@ void solTripleRecord_free();
 
 #define solTriple_v1_hash1(h) (*h->f_v1_hash1)
 #define solTriple_v1_hash2(h) (*h->f_v1_hash2)
+#define solTriple_v1_match(h) (*h->f_v1_match)
 
 #define solTriple_v2_hash1(h) (*h->f_v2_hash1)
 #define solTriple_v2_hash2(h) (*h->f_v2_hash2)
+#define solTriple_v2_match(h) (*h->f_v2_match)
 
 #define solTriple_record_at_offset(r, o) (SolTripleRecord*)(r + o)
+#define solTriple_grow(t) solTriple_resize(t, solTriple_size(t) *2)
+#define solTriple_is_resizing(t) t->flag & 0x1
+#define solTriple_set_start_resizing_flag(t) t->is_resizing | 0x1
+#define solTriple_set_finish_resizing_flag(t) t->is_resizing | 0x0
 
 #endif
