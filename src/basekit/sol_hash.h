@@ -13,8 +13,6 @@
 #define solHash_grow(h) solHash_resize(h, h->size * 2)
 #define solHash_record_extend(r) //
 
-typedef size_t (*sol_f_hash_ptr)(void*);
-
 typedef struct _SolHashRecord {
     void *k;
     void *v;
