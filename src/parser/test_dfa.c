@@ -107,10 +107,10 @@ int main()
     mark1.m = 23456;
     mark2.m = 45678;
     mark3.m = 11111;
-    solDfaState_add_mark(ds, &mark1);
-    solDfaState_add_mark(ds, &mark2);
+    solDfaState_add_mark(ds, &mark1, 1);
+    solDfaState_add_mark(ds, &mark2, 1);
     ds = solDfa_conv_dfa_state(d, &iv);
-    solDfaState_add_mark(ds, &mark3);
+    solDfaState_add_mark(ds, &mark3, 1);
     _solDfa_debug_relations(d);
     printf("read %c\n", a);
     solDfa_read_character(d, &a);
