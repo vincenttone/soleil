@@ -22,7 +22,7 @@ typedef struct _SolRBTreeNode {
 typedef struct _SolRBTree {
     SolRBTreeNode *nil;
     SolRBTreeNode *root;
-    sol_f_match_ptr f_compare;
+    sol_f_cmp_ptr f_compare;
     sol_f_free_ptr f_free; // free node val func
     solRBTree_f_ptr_insert f_insert;
 } SolRBTree;
