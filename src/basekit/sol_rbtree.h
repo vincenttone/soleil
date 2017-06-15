@@ -3,101 +3,101 @@
 
 #include "sol_common.h"
 
-typedef int (*solRbt_f_ptr_act)(SolRbt*, SolRbtNode*);
-typedef int (*solRbt_f_ptr_insert)(SolRbt*, SolRbtNode*);
+typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*);
+typedef int (*solRBTree_f_ptr_insert)(SolRBTree*, SolRBTreeNode*);
 
-enum _SolRbtCol {
-    _SolRbtCol_red = 1,
-    _SolRbtCol_black,
+enum _SolRBTreeCol {
+    _SolRBTreeCol_red = 1,
+    _SolRBTreeCol_black,
 };
 
-typedef struct _SolRbtNode {
-    enum _SolRbtCol col; //color
-    struct _SolRbtNode *l; // left
-    struct _SolRbtNode *r; // right
-    struct _SolRbtNode *p; // parent
+typedef struct _SolRBTreeNode {
+    enum _SolRBTreeCol col; //color
+    struct _SolRBTreeNode *l; // left
+    struct _SolRBTreeNode *r; // right
+    struct _SolRBTreeNode *p; // parent
     void *val;
-} SolRbtNode;
+} SolRBTreeNode;
 
-typedef struct _SolRbt {
-    SolRbtNode *nil;
-    SolRbtNode *root;
+typedef struct _SolRBTree {
+    SolRBTreeNode *nil;
+    SolRBTreeNode *root;
     sol_f_match_ptr f_compare;
     sol_f_free_ptr f_free; // free node val func
-    solRbt_f_ptr_insert f_insert;
-} SolRbt;
+    solRBTree_f_ptr_insert f_insert;
+} SolRBTree;
 
-SolRbt* solRbt_new();
-void solRbt_free(SolRbt*);
-SolRbtNode* solRbt_insert(SolRbt*, void*);
-int solRbt_del(SolRbt*, void*);
-void solRbt_node_free(SolRbt*, SolRbtNode*);
+SolRBTree* solRBTree_new();
+void solRBTree_free(SolRBTree*);
+SolRBTreeNode* solRBTree_insert(SolRBTree*, void*);
+int solRBTree_del(SolRBTree*, void*);
+void solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
 
-SolRbtNode* solRbt_search_node(SolRbt*, void*);
-SolRbtNode* solRbt_search_min_node(SolRbt*, void*);
-SolRbtNode* solRbt_search_max_node(SolRbt*, void*);
-SolRbtNode* solRbt_search_successor(SolRbt*, SolRbtNode*);
+SolRBTreeNode* solRBTree_search_node(SolRBTree*, void*);
+SolRBTreeNode* solRBTree_search_min_node(SolRBTree*, void*);
+SolRBTreeNode* solRBTree_search_max_node(SolRBTree*, void*);
+SolRBTreeNode* solRBTree_search_successor(SolRBTree*, SolRBTreeNode*);
 
-static int solRbt_left_rorate(SolRbt*, SolRbtNode*);
-static int solRbt_right_rorate(SolRbt*, SolRbtNode*);
-static void solRbt_insert_fixup(SolRbt*, SolRbtNode*);
-static void solRbt_delete_fixup(SolRbt*, SolRbtNode*);
+static int solRBTree_left_rorate(SolRBTree*, SolRBTreeNode*);
+static int solRBTree_right_rorate(SolRBTree*, SolRBTreeNode*);
+static void solRBTree_insert_fixup(SolRBTree*, SolRBTreeNode*);
+static void solRBTree_delete_fixup(SolRBTree*, SolRBTreeNode*);
 
-int solRbt_travelsal_inorder(SolRbt*, SolRbtNode*, solRbt_f_ptr_act);
-int solRbt_travelsal_preorder(SolRbt*, SolRbtNode*, solRbt_f_ptr_act);
-int solRbt_travelsal_backorder(SolRbt*, SolRbtNode*, solRbt_f_ptr_act);
+int solRBTree_travelsal_inorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
+int solRBTree_travelsal_preorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
+int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
 
-#define solRbt_root(t) t->root
-#define solRbt_nil(t) t->nil
+#define solRBTree_root(t) t->root
+#define solRBTree_nil(t) t->nil
 
-#define solRbt_set_root(t, n) t->root = n
-#define solRbt_set_nil(t, n) t->nil = n
-#define solRbt_node_is_nil(t, n) (t->nil == n)
-#define solRbt_node_is_NOT_nil(t, n) (t->nil != n)
+#define solRBTree_set_root(t, n) t->root = n
+#define solRBTree_set_nil(t, n) t->nil = n
+#define solRBTree_node_is_nil(t, n) (t->nil == n)
+#define solRBTree_node_is_NOT_nil(t, n) (t->nil != n)
 
-#define solRbt_node_val_free_func(t) t->f_free
-#define solRbt_node_val_free(v) (*t->f_free)(v)
+#define solRBTree_node_val_free_func(t) t->f_free
+#define solRBTree_node_val_free(v) (*t->f_free)(v)
 
-#define solRbt_node_val_compare_func(t) t->f_compare
-#define solRbt_node_val_compare(t, v1, v2) (*t->f_compare)(v1, v2)
-#define solRbt_node_compare(t, n1, n2) solRbt_node_val_compare(t, solRbtNode_val(n1), solRbtNode_val(n2))
+#define solRBTree_node_val_compare_func(t) t->f_compare
+#define solRBTree_node_val_compare(t, v1, v2) (*t->f_compare)(v1, v2)
+#define solRBTree_node_compare(t, n1, n2) solRBTree_node_val_compare(t, solRBTreeNode_val(n1), solRBTreeNode_val(n2))
 
-#define solRbtNode_left(n) n->l
-#define solRbtNode_right(n) n->r
-#define solRbtNode_parent(n) n->p
-#define solRbtNode_val(n) n->val
-#define solRbtNode_color(n) n->col
+#define solRBTreeNode_left(n) n->l
+#define solRBTreeNode_right(n) n->r
+#define solRBTreeNode_parent(n) n->p
+#define solRBTreeNode_val(n) n->val
+#define solRBTreeNode_color(n) n->col
 
-#define solRbtNode_set_left(n, x) n->l = x
-#define solRbtNode_set_right(n, x) n->r = x
-#define solRbtNode_set_parent(n, x) n->p = x
-#define solRbtNode_set_val(n, v) n->val = v
-#define solRbtNode_set_color(n, x) n->col = x
+#define solRBTreeNode_set_left(n, x) n->l = x
+#define solRBTreeNode_set_right(n, x) n->r = x
+#define solRBTreeNode_set_parent(n, x) n->p = x
+#define solRBTreeNode_set_val(n, v) n->val = v
+#define solRBTreeNode_set_color(n, x) n->col = x
 
-#define solRbtNode_dye(n, x) solRbtNode_set_color(n, x)
-#define solRbtNode_dye_red(n) solRbtNode_set_color(n, _SolRbtCol_red)
-#define solRbtNode_dye_black(n) solRbtNode_set_color(n, _SolRbtCol_black)
+#define solRBTreeNode_dye(n, x) solRBTreeNode_set_color(n, x)
+#define solRBTreeNode_dye_red(n) solRBTreeNode_set_color(n, _SolRBTreeCol_red)
+#define solRBTreeNode_dye_black(n) solRBTreeNode_set_color(n, _SolRBTreeCol_black)
 
-#define solRbtNode_is_red(n) solRbtNode_color(n) == _SolRbtCol_red
-#define solRbtNode_is_black(n) solRbtNode_color(n) == _SolRbtCol_black
+#define solRBTreeNode_is_red(n) solRBTreeNode_color(n) == _SolRBTreeCol_red
+#define solRBTreeNode_is_black(n) solRBTreeNode_color(n) == _SolRBTreeCol_black
 
-#define solRbtNode_grandad(n) solRbtNode_parent(solRbtNode_parent(n))
-#define solRbtNode_left_elder(n) solRbtNode_left(solRbtNode_grandad(n))
-#define solRbtNode_right_elder(n) solRbtNode_right(solRbtNode_grandad(n))
+#define solRBTreeNode_grandad(n) solRBTreeNode_parent(solRBTreeNode_parent(n))
+#define solRBTreeNode_left_elder(n) solRBTreeNode_left(solRBTreeNode_grandad(n))
+#define solRBTreeNode_right_elder(n) solRBTreeNode_right(solRBTreeNode_grandad(n))
 
-#define solRbt_node_is_root(t, n) solRbt_node_is_nil(t, solRbtNode_parent(n))
-#define solRbtNode_is_left(n) solRbtNode_left(solRbtNode_parent(n)) == n
-#define solRbtNode_is_right(n) solRbtNode_right(solRbtNode_parent(n)) == n
-#define solRbtNode_parent_is_left(n) solRbtNode_left_elder(n) == solRbtNode_parent(n)
-#define solRbtNode_parent_is_right(n) solRbtNode_right_elder(n) == solRbtNode_parent(n)
-#define solRbtNode_parent_is_red(n) solRbtNode_is_red(solRbtNode_parent(n))
+#define solRBTree_node_is_root(t, n) solRBTree_node_is_nil(t, solRBTreeNode_parent(n))
+#define solRBTreeNode_is_left(n) solRBTreeNode_left(solRBTreeNode_parent(n)) == n
+#define solRBTreeNode_is_right(n) solRBTreeNode_right(solRBTreeNode_parent(n)) == n
+#define solRBTreeNode_parent_is_left(n) solRBTreeNode_left_elder(n) == solRBTreeNode_parent(n)
+#define solRBTreeNode_parent_is_right(n) solRBTreeNode_right_elder(n) == solRBTreeNode_parent(n)
+#define solRBTreeNode_parent_is_red(n) solRBTreeNode_is_red(solRBTreeNode_parent(n))
 
-#define solRbtNode_set_left_parent(n, x) solRbtNode_set_parent(solRbtNode_left(n), x)
-#define solRbtNode_set_right_parent(n, x) solRbtNode_set_parent(solRbtNode_right(n), x)
-#define solRbtNode_set_parent_left(n, x) solRbtNode_set_left(solRbtNode_parent(n), x)
-#define solRbtNode_set_parent_right(n, x) solRbtNode_set_right(solRbtNode_parent(n), x)
+#define solRBTreeNode_set_left_parent(n, x) solRBTreeNode_set_parent(solRBTreeNode_left(n), x)
+#define solRBTreeNode_set_right_parent(n, x) solRBTreeNode_set_parent(solRBTreeNode_right(n), x)
+#define solRBTreeNode_set_parent_left(n, x) solRBTreeNode_set_left(solRBTreeNode_parent(n), x)
+#define solRBTreeNode_set_parent_right(n, x) solRBTreeNode_set_right(solRBTreeNode_parent(n), x)
 
-#define solRbt_node_left_is_nil(t, n) solRbt_node_is_nil(t, solRbtNode_left(n))
-#define solRbt_node_right_is_nil(t, n) solRbt_node_is_nil(t, solRbtNode_right(n))
+#define solRBTree_node_left_is_nil(t, n) solRBTree_node_is_nil(t, solRBTreeNode_left(n))
+#define solRBTree_node_right_is_nil(t, n) solRBTree_node_is_nil(t, solRBTreeNode_right(n))
 
 #endif
