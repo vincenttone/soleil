@@ -168,19 +168,20 @@ SolRbtNode* solRbt_insert(SolRbt *tree, void *val)
         return NULL;
     }
     solRbtNode_dye_red(node);
-    solRbtNode_set_weight(node, solRbt_node_val_hash(val));
     solRbtNode_set_parent(node, solRbt_nil(tree));
     solRbtNode_set_left(node, solRbt_nil(tree));
     solRbtNode_set_right(node, solRbt_nil(tree));
     // find insert position
+    int w;
     SolRbtNode *current_node = solRbt_root(tree);
     SolRbtNode *pre_node = solRbt_nil(tree);
     while (solRbt_node_is_NOT_nil(current_node)) {
         pre_node = current_node;
-        if (solRbtNode_weight(current_node) == solRbtNode_weight(node)) {
+        w = solRbt_node_compare(t, current_node, node);
+        if (w == 0) {
             // has this node
             return;
-        } else if (solRbtNode_weight(current_node) > solRbtNode_weight(node)) {
+        } else if (w > 0) {
             current_node = solRbtNode_left(current_node);
         } else {
             current_node = solRbtNode_right(current_node);
@@ -190,7 +191,7 @@ SolRbtNode* solRbt_insert(SolRbt *tree, void *val)
     if (solRbt_node_is_nil(tree, pre_node)) {
         // empty tree
         solRbt_set_root(tree, node);
-    } else if (solRbtNode_weight(node) < solRbtNode_weight(pre_node)) {
+    } else if (solRbt_node_compare(node, pre_node) < 0) {
         // is left child
         solRbtNode_set_left(pre_node, node);
     } else {
@@ -210,12 +211,11 @@ SolRbtNode* solRbt_insert(SolRbt *tree, void *val)
  */
 SolRbtNode* solRbt_search_node(SolRbt *tree, void *val)
 {
-    size_t weight = solRbt_node_val_hash(val);
     SolRbtNode *current_node = solRbt_root(tree);
     while (solRbt_node_is_NOT_nil(tree, current_node)
-           && weight != solRbtNode_weight(current_node)
+           && solRbt_node_val_compare(val, solRbtNode_val(current_node)) != 0
         ) {
-        current_node = weight < solRbtNode_weight(current_node)
+        current_node = solRbt_node_val_compare(val, solRbtNode_val(current_node)) < 0
             ? solRbtNode_left(current_node)
             : solRbtNode_right(current_node);
     }
@@ -378,7 +378,6 @@ int solRbt_del(SolRbt *tree, void *val)
     }
     // fix the key
     if (del_node != rp_node) {
-        solRbtNode_set_weight(del_node, solRbtNode_weight(rp_node));
         solRbtNode_set_val(del_node, solRbtNode_val(rp_node));
     }
     // if deleted node is black, need to fixup

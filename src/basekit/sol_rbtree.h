@@ -12,7 +12,6 @@ enum _SolRbtCol {
 };
 
 typedef struct _SolRbtNode {
-    size_t w; // weight
     enum _SolRbtCol col; //color
     struct _SolRbtNode *l; // left
     struct _SolRbtNode *r; // right
@@ -23,8 +22,7 @@ typedef struct _SolRbtNode {
 typedef struct _SolRbt {
     SolRbtNode *nil;
     SolRbtNode *root;
-    sol_f_match_ptr f_match;
-    sol_f_hash_ptr f_hash; // get weight
+    sol_f_match_ptr f_compare;
     sol_f_free_ptr f_free; // free node val func
     solRbt_f_ptr_insert f_insert;
 } SolRbt;
@@ -60,22 +58,21 @@ int solRbt_travelsal_backorder(SolRbt*, SolRbtNode*, solRbt_f_ptr_act);
 #define solRbt_node_val_free_func(t) t->f_free
 #define solRbt_node_val_free(v) (*t->f_free)(v)
 
-#define solRbt_node_val_hash_func(t) t->f_hash
-#define solRbt_node_val_hash(v) (*t->f_hash)(v)
+#define solRbt_node_val_compare_func(t) t->f_compare
+#define solRbt_node_val_compare(t, v1, v2) (*t->f_compare)(v1, v2)
+#define solRbt_node_compare(t, n1, n2) solRbt_node_val_compare(t, solRbtNode_val(n1), solRbtNode_val(n2))
 
 #define solRbtNode_left(n) n->l
 #define solRbtNode_right(n) n->r
 #define solRbtNode_parent(n) n->p
 #define solRbtNode_val(n) n->val
 #define solRbtNode_color(n) n->col
-#define solRbtNode_weight(n) n->w
 
 #define solRbtNode_set_left(n, x) n->l = x
 #define solRbtNode_set_right(n, x) n->r = x
 #define solRbtNode_set_parent(n, x) n->p = x
 #define solRbtNode_set_val(n, v) n->val = v
 #define solRbtNode_set_color(n, x) n->col = x
-#define solRbtNode_set_weight(n, x) n->w = x
 
 #define solRbtNode_dye(n, x) solRbtNode_set_color(n, x)
 #define solRbtNode_dye_red(n) solRbtNode_set_color(n, _SolRbtCol_red)
