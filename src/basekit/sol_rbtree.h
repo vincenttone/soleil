@@ -3,13 +3,12 @@
 
 #include "sol_common.h"
 
-typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*);
-typedef int (*solRBTree_f_ptr_insert)(SolRBTree*, SolRBTreeNode*);
-
 enum _SolRBTreeCol {
     _SolRBTreeCol_red = 1,
     _SolRBTreeCol_black,
 };
+
+
 
 typedef struct _SolRBTreeNode {
     enum _SolRBTreeCol col; //color
@@ -24,24 +23,29 @@ typedef struct _SolRBTree {
     SolRBTreeNode *root;
     sol_f_cmp_ptr f_compare;
     sol_f_free_ptr f_free; // free node val func
-    solRBTree_f_ptr_insert f_insert;
+    int (*f_insert)(struct _SolRBTree*, SolRBTreeNode*);
 } SolRBTree;
+
+typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*);
 
 SolRBTree* solRBTree_new();
 void solRBTree_free(SolRBTree*);
 SolRBTreeNode* solRBTree_insert(SolRBTree*, void*);
 int solRBTree_del(SolRBTree*, void*);
-void solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
+int solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
 
 SolRBTreeNode* solRBTree_search_node(SolRBTree*, void*);
-SolRBTreeNode* solRBTree_search_min_node(SolRBTree*, void*);
-SolRBTreeNode* solRBTree_search_max_node(SolRBTree*, void*);
+SolRBTreeNode* solRBTree_search_min_node(SolRBTree*, SolRBTreeNode*);
+SolRBTreeNode* solRBTree_search_max_node(SolRBTree*, SolRBTreeNode*);
 SolRBTreeNode* solRBTree_search_successor(SolRBTree*, SolRBTreeNode*);
 
-static int solRBTree_left_rorate(SolRBTree*, SolRBTreeNode*);
-static int solRBTree_right_rorate(SolRBTree*, SolRBTreeNode*);
-static void solRBTree_insert_fixup(SolRBTree*, SolRBTreeNode*);
-static void solRBTree_delete_fixup(SolRBTree*, SolRBTreeNode*);
+void* solRBTree_min(SolRBTree*);
+void* solRBTree_max(SolRBTree*);
+
+int solRBTree_left_rorate(SolRBTree*, SolRBTreeNode*);
+int solRBTree_right_rorate(SolRBTree*, SolRBTreeNode*);
+void solRBTree_insert_fixup(SolRBTree*, SolRBTreeNode*);
+void solRBTree_delete_fixup(SolRBTree*, SolRBTreeNode*);
 
 int solRBTree_travelsal_inorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
 int solRBTree_travelsal_preorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
@@ -55,9 +59,15 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 #define solRBTree_node_is_nil(t, n) (t->nil == n)
 #define solRBTree_node_is_NOT_nil(t, n) (t->nil != n)
 
+#define solRBTree_set_val_free_func(t, f) t->f_free = f
 #define solRBTree_node_val_free_func(t) t->f_free
 #define solRBTree_node_val_free(v) (*t->f_free)(v)
 
+#define solRBTree_set_insert_func(t, f) t->f_insert = f
+#define solRBTree_insert_func(t) t->f_insert
+#define solRBTree_insert_val(v) (*t->f_insert)(v)
+
+#define solRBTree_set_compare_func(t, f) t->f_compare = f
 #define solRBTree_node_val_compare_func(t) t->f_compare
 #define solRBTree_node_val_compare(t, v1, v2) (*t->f_compare)(v1, v2)
 #define solRBTree_node_compare(t, n1, n2) solRBTree_node_val_compare(t, solRBTreeNode_val(n1), solRBTreeNode_val(n2))

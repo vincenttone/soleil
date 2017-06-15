@@ -13,11 +13,11 @@ SolRBTree* solRBTree_new()
         return NULL;
     }
     solRBTreeNode_dye_black(solRBTree_nil(t));
-    solRBTree_set_root(solRBTree_nil(t));
+    solRBTree_set_root(t, solRBTree_nil(t));
     return t;
 }
 
-void solRBTree_node_free(SolRBTree *t, SolRBTreeNode *n)
+int solRBTree_node_free(SolRBTree *t, SolRBTreeNode *n)
 {
     if (n) {
         if (solRBTree_node_val_free_func(t)) {
@@ -25,11 +25,13 @@ void solRBTree_node_free(SolRBTree *t, SolRBTreeNode *n)
         }
         sol_free(n);
     }
+    return 0;
 }
 
 void solRBTree_free(SolRBTree *t)
 {
-    solRBTree_travelsal_backorder(t, solRBTreeNode_root(t), &solRBTree_node_free);
+    solRBTree_travelsal_backorder(t, solRBTree_root(t), &solRBTree_node_free);
+    sol_free(solRBTree_nil(t));
     sol_free(t);
 }
 
@@ -45,7 +47,7 @@ void solRBTree_free(SolRBTree *t)
  * @params v_br_tree *tree
  * @params v_br_node *node
  **/
-static int solRBTree_left_rorate(SolRBTree *tree, SolRBTreeNode *node)
+int solRBTree_left_rorate(SolRBTree *tree, SolRBTreeNode *node)
 {
     if (solRBTree_node_right_is_nil(tree, node)) {
         // without right child! can not rorate
@@ -84,7 +86,7 @@ static int solRBTree_left_rorate(SolRBTree *tree, SolRBTreeNode *node)
  * @params v_br_tree *tree
  * @params v_br_node *node
  **/
-static int solRBTree_right_rorate(SolRBTree *tree, SolRBTreeNode *node)
+int solRBTree_right_rorate(SolRBTree *tree, SolRBTreeNode *node)
 {
     if (solRBTree_node_left_is_nil(tree, node)) {
         // without left child! can not rorate
@@ -99,8 +101,8 @@ static int solRBTree_right_rorate(SolRBTree *tree, SolRBTreeNode *node)
     }
     // change new node and it's parent relation
     solRBTreeNode_set_parent(replace2_node, solRBTreeNode_parent(node));
-    if (solRBTree_node_is_root(node)) {
-        solRBTree_set_root(replace2_node);
+    if (solRBTree_node_is_root(tree, node)) {
+        solRBTree_set_root(tree, replace2_node);
     } else if (solRBTreeNode_is_left(node)) {
         solRBTreeNode_set_parent_left(node, replace2_node);
     } else { // node is right child
@@ -112,7 +114,7 @@ static int solRBTree_right_rorate(SolRBTree *tree, SolRBTreeNode *node)
     return 0;
 }
 
-static void solRBTree_insert_fixup(SolRBTree *tree, SolRBTreeNode *node)
+void solRBTree_insert_fixup(SolRBTree *tree, SolRBTreeNode *node)
 {
     // only fixup when parent is red
     while (solRBTreeNode_parent_is_red(node)) {
@@ -171,17 +173,18 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
     solRBTreeNode_set_parent(node, solRBTree_nil(tree));
     solRBTreeNode_set_left(node, solRBTree_nil(tree));
     solRBTreeNode_set_right(node, solRBTree_nil(tree));
+    solRBTreeNode_set_val(node, val);
     // find insert position
     int w;
     SolRBTreeNode *current_node = solRBTree_root(tree);
     SolRBTreeNode *pre_node = solRBTree_nil(tree);
-    while (solRBTree_node_is_NOT_nil(current_node)) {
+    while (solRBTree_node_is_NOT_nil(tree, current_node)) {
         pre_node = current_node;
-        w = solRBTree_node_compare(t, current_node, node);
+        w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
-            return;
-        } else if (w > 0) {
+            return 0;
+        } else if (w < 0) {
             current_node = solRBTreeNode_left(current_node);
         } else {
             current_node = solRBTreeNode_right(current_node);
@@ -191,7 +194,7 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
     if (solRBTree_node_is_nil(tree, pre_node)) {
         // empty tree
         solRBTree_set_root(tree, node);
-    } else if (solRBTree_node_compare(node, pre_node) < 0) {
+    } else if (solRBTree_node_compare(tree, node, pre_node) < 0) {
         // is left child
         solRBTreeNode_set_left(pre_node, node);
     } else {
@@ -199,6 +202,7 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
         solRBTreeNode_set_right(pre_node, node);
     }
     solRBTree_insert_fixup(tree, node);
+    return node;
 }
 
 /**
@@ -213,9 +217,9 @@ SolRBTreeNode* solRBTree_search_node(SolRBTree *tree, void *val)
 {
     SolRBTreeNode *current_node = solRBTree_root(tree);
     while (solRBTree_node_is_NOT_nil(tree, current_node)
-           && solRBTree_node_val_compare(val, solRBTreeNode_val(current_node)) != 0
+           && solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node)) != 0
         ) {
-        current_node = solRBTree_node_val_compare(val, solRBTreeNode_val(current_node)) < 0
+        current_node = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node)) < 0
             ? solRBTreeNode_left(current_node)
             : solRBTreeNode_right(current_node);
     }
@@ -250,6 +254,25 @@ SolRBTreeNode* solRBTree_search_max_node(SolRBTree *tree, SolRBTreeNode *node)
     }
     return node;
 }
+
+void* solRBTree_min(SolRBTree *tree)
+{
+    SolRBTreeNode *node = solRBTree_search_min_node(tree, solRBTree_root(tree));
+    if (solRBTree_node_is_nil(tree, node)) {
+        return NULL;
+    }
+    return solRBTreeNode_val(node);
+}
+
+void* solRBTree_max(SolRBTree *tree)
+{
+    SolRBTreeNode *node = solRBTree_search_max_node(tree, solRBTree_root(tree));
+    if (solRBTree_node_is_nil(tree, node)) {
+        return NULL;
+    }
+    return solRBTreeNode_val(node);
+}
+void* solRBTree_max(SolRBTree*);
 /**
  * find in order successor of the node in tree
  * when find in order successor:
@@ -263,7 +286,7 @@ SolRBTreeNode* solRBTree_search_successor(SolRBTree *tree, SolRBTreeNode *node)
     }
     // has right branch
     // find the min node in right branch
-    if (solRBTree_node_is_NOT_nil(solRBTreeNode_right(node))) {
+    if (solRBTree_node_is_NOT_nil(tree, solRBTreeNode_right(node))) {
         return solRBTree_search_min_node(tree, solRBTreeNode_right(node));
     }
     // right branch not exists
@@ -283,7 +306,7 @@ SolRBTreeNode* solRBTree_search_successor(SolRBTree *tree, SolRBTreeNode *node)
  * @param v_br_node
  * @return void
  */
-static void solRBTree_delete_fixup(SolRBTree *tree, SolRBTreeNode *node)
+void solRBTree_delete_fixup(SolRBTree *tree, SolRBTreeNode *node)
 {
     while (node != solRBTree_root(tree) && solRBTreeNode_is_black(node)) {
         int is_left_branch = solRBTreeNode_is_left(node) ? 1 : 0;
@@ -386,32 +409,36 @@ int solRBTree_del(SolRBTree *tree, void *val)
     }
     // delete the node
     solRBTree_node_free(tree, rp_node);
+    return 0;
 }
 
 int solRBTree_travelsal_inorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f)
 {
-    if (solRBTree_node_is_nil(tree, node)) return;
+    if (solRBTree_node_is_nil(tree, node)) return 1;
     solRBTree_travelsal_inorder(tree, solRBTreeNode_left(node), f);
     int r = (*f)(tree, node);
     if (r != 0) return r;
     solRBTree_travelsal_inorder(tree, solRBTreeNode_right(node), f);
+    return 0;
 }
 
 int solRBTree_travelsal_preorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f)
 {
-    if (solRBTree_node_is_nil(tree, node)) return;
+    if (solRBTree_node_is_nil(tree, node)) return 1;
     int r = (*f)(tree, node);
     if (r != 0) return r;
     solRBTree_travelsal_preorder(tree, solRBTreeNode_left(node), f);
     solRBTree_travelsal_preorder(tree, solRBTreeNode_right(node), f);
+    return 0;
 }
 
 
 int solRBTree_travelsal_backorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f)
 {
-    if (solRBTree_node_is_nil(tree, node)) return;
+    if (solRBTree_node_is_nil(tree, node)) return 1;
     solRBTree_travelsal_backorder(tree, solRBTreeNode_left(node), f);
     solRBTree_travelsal_backorder(tree, solRBTreeNode_right(node), f);
     int r = (*f)(tree, node);
     if (r != 0) return r;
+    return 0;
 }
