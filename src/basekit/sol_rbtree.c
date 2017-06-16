@@ -374,6 +374,11 @@ void solRBTree_delete_fixup(SolRBTree *tree, SolRBTreeNode *node)
 int solRBTree_del(SolRBTree *tree, void *val)
 {
     SolRBTreeNode *del_node = solRBTree_search_node(tree, val);
+    return  solRBTree_delete_node(tree, del_node);
+}
+
+int solRBTree_delete_node(SolRBTree *tree, SolRBTreeNode *del_node)
+{
     if (solRBTree_node_is_nil(tree, del_node)) {
         return 1;
     }

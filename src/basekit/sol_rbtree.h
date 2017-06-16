@@ -31,6 +31,7 @@ typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*);
 SolRBTree* solRBTree_new();
 void solRBTree_free(SolRBTree*);
 SolRBTreeNode* solRBTree_insert(SolRBTree*, void*);
+int solRBTree_delete_node(SolRBTree*, SolRBTreeNode*);
 int solRBTree_del(SolRBTree*, void*);
 int solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
 
