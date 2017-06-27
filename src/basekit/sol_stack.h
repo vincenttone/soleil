@@ -7,7 +7,7 @@
 
 typedef SolDlList SolStack;
 
-SolStack* solStack_new();
+#define solStack_new() solDlList_new()
 #define solStack_free(s) solDlList_free(s)
 #define solStack_push(s, d) solDlList_add(s, d, _SolDlListDirFwd)
 void* solStack_pop(SolStack*);

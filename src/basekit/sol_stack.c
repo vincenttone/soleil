@@ -1,11 +1,5 @@
 #include "sol_stack.h"
 
-SolStack* solStack_new()
-{
-    SolStack *s = sol_alloc(sizeof(SolStack));
-    return solDlList_new(s);
-}
-
 void* solStack_pop(SolStack *s)
 {
     if (s->tail == NULL) {
