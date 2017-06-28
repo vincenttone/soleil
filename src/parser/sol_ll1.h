@@ -6,7 +6,6 @@
 #include "sol_stack.h"
 #include "sol_hash.h"
 
-
 #define SolLL1ParserSymbolFlag_NULL 0x1
 #define SolLL1ParserSymbolFlag_Terminal 0x2
 #define SolLL1ParserSymbolFlag_Nonterminal 0x4
@@ -17,6 +16,8 @@
 typedef struct _SolLL1ParserSymbol {
     void *s;
     int f;
+    SolList *first;
+    SolList *follow;
 } SolLL1ParserSymbol;
 
 #define SolLL1ParserForm SolList
@@ -54,6 +55,8 @@ void _solLL1ParserForm_free(void*);
 SolLL1ParserSymbol* solLL1ParserSymbol_new(void*, int);
 void solLL1ParserSymbol_free(SolLL1ParserSymbol*);
 void _solLL1ParserSymbol_free(void*);
+int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
+int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 
 int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserForm*);
 
@@ -75,8 +78,12 @@ int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1Parser
 
 #define solLL1ParserSymbol_set_symbol(symbol, d) (symbol)->s = d
 #define solLL1ParserSymbol_set_type(symbol, type) (symbol)->f = (symbol)->f | type
+#define solLL1ParserSymbol_set_first(symbol, s) (symbol)->first = s
+#define solLL1ParserSymbol_set_follow(symbol, s) (symbol)->follow = s
 
 #define solLL1ParserSymbol_symbol(symbol) (symbol)->s
+#define solLL1ParserSymbol_first(symbol) (symbol)->first
+#define solLL1ParserSymbol_follow(symbol) (symbol)->follow
 
 #define solLL1ParserSymbol_is_nonterminal(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Nonterminal)
 #define solLL1ParserSymbol_is_terminal(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Terminal)
@@ -85,6 +92,9 @@ int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1Parser
 #define solLL1ParserSymbol_is_first_computed(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Computed_FIRST)
 #define solLL1ParserSymbol_is_follow_computed(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Computed_FOLLOW)
 
+#define solLL1ParserSymbol_is_NOT_nonterminal(symbol) (((symbol)->f & SolLL1ParserSymbolFlag_Nonterminal) == 0)
+
+#define solLL1ParserSymbol_set_nullable(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_NULL)
 #define solLL1ParserSymbol_set_nullable_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_NULL)
 #define solLL1ParserSymbol_set_first_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FIRST)
 #define solLL1ParserSymbol_set_follow_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FOLLOW)
