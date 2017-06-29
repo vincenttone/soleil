@@ -124,7 +124,7 @@ int solList_remove(SolList *l, void *v)
     return 1;
 }
 
-int solList_merge(SolList *l1, SolList *l2)
+int solList_attach(SolList *l1, SolList *l2)
 {
     if (l1 == NULL || l2 == NULL) {
         return -1;

@@ -47,7 +47,7 @@ void solDlList_free(SolDlList*);
 
 SolDlListNode* solDlList_add(SolDlList*, void*, enum _SolDlListDir);
 void solDlList_del_node(SolDlList*, SolDlListNode*);
-int solDlList_merge(SolDlList*, SolDlList*);
+int solDlList_attach(SolDlList*, SolDlList*);
 
 #define solDlList_add_fwd(l, v) solDlList_add(l, v, _SolDlListDirFwd)
 #define solDlList_add_bak(l, v) solDlList_add(l, v, _SolDlListDirBak)

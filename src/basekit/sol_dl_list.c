@@ -76,7 +76,7 @@ void solDlList_del_node(SolDlList *l, SolDlListNode *n)
     sol_free(n);
 }
 
-int solDlList_merge(SolDlList *l1, SolDlList *l2)
+int solDlList_attach(SolDlList *l1, SolDlList *l2)
 {
     if (l1 == NULL || l2 == NULL) {
         return -1;

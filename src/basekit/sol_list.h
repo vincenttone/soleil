@@ -49,7 +49,7 @@ SolListNode* solList_add(SolList*, void*);
 int solList_del_node(SolList*, SolListNode*);
 int solList_remove(SolList*, void*);
 int solList_has(SolList*, void*);
-int solList_merge(SolList*, SolList*);
+int solList_attach(SolList*, SolList*);
 
 SolListNode* solListNode_new();
 void solListNode_free(SolList*, SolListNode*);
