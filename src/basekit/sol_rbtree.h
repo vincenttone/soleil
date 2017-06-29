@@ -8,8 +8,6 @@ enum _SolRBTreeCol {
     _SolRBTreeCol_black,
 };
 
-
-
 typedef struct _SolRBTreeNode {
     enum _SolRBTreeCol col; //color
     struct _SolRBTreeNode *l; // left
@@ -26,7 +24,7 @@ typedef struct _SolRBTree {
     int (*f_insert)(struct _SolRBTree*, SolRBTreeNode*);
 } SolRBTree;
 
-typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*);
+typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*, void*);
 
 SolRBTree* solRBTree_new();
 void solRBTree_free(SolRBTree*);
@@ -34,6 +32,7 @@ SolRBTreeNode* solRBTree_insert(SolRBTree*, void*);
 int solRBTree_delete_node(SolRBTree*, SolRBTreeNode*);
 int solRBTree_del(SolRBTree*, void*);
 int solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
+int _solRBTree_node_free(SolRBTree*, SolRBTreeNode*, void*);
 
 SolRBTreeNode* solRBTree_search_node(SolRBTree*, void*);
 SolRBTreeNode* solRBTree_search_min_node(SolRBTree*, SolRBTreeNode*);
@@ -48,9 +47,9 @@ int solRBTree_right_rorate(SolRBTree*, SolRBTreeNode*);
 void solRBTree_insert_fixup(SolRBTree*, SolRBTreeNode*);
 void solRBTree_delete_fixup(SolRBTree*, SolRBTreeNode*);
 
-int solRBTree_travelsal_inorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
-int solRBTree_travelsal_preorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
-int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act);
+int solRBTree_travelsal_inorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
+int solRBTree_travelsal_preorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
+int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
 
 #define solRBTree_root(t) t->root
 #define solRBTree_nil(t) t->nil

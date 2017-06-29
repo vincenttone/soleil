@@ -5,7 +5,7 @@
 #define conv_val(v) (*(int*)v)
 #define conv_node_val(n) conv_val(solRBTreeNode_val(n))
 
-int print_node_and_children(SolRBTree *tree, SolRBTreeNode *node)
+int print_node_and_children(SolRBTree *tree, SolRBTreeNode *node, void *d)
 {
     if (solRBTree_node_is_nil(tree, node)) {
         printf("NIL\n");
@@ -29,7 +29,7 @@ int print_node_and_children(SolRBTree *tree, SolRBTreeNode *node)
     return 0;
 }
 
-int print_key(SolRBTree *tree, SolRBTreeNode *node)
+int print_key(SolRBTree *tree, SolRBTreeNode *node, void *d)
 {
     char* colors[_SolRBTreeCol_black + 1];
     colors[_SolRBTreeCol_red] = "red";
@@ -69,11 +69,11 @@ int main()
     }
     printf("ROOT is %d\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))));
     printf("---preorder travelsal---\n");
-    solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_key);
+    solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_key, NULL);
     printf("---inorder travelsal---\n");
-    solRBTree_travelsal_inorder(tree, solRBTree_root(tree), &print_node_and_children);
+    solRBTree_travelsal_inorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
     printf("---backorder travelsal---\n");
-    solRBTree_travelsal_backorder(tree, solRBTree_root(tree), &print_key);
+    solRBTree_travelsal_backorder(tree, solRBTree_root(tree), &print_key, NULL);
     printf("MAX is %d\n", conv_val(solRBTree_max(tree)));
     printf("MIN is %d\n", conv_val(solRBTree_min(tree)));
     SolRBTreeNode *n = solRBTree_search_node(tree, &counts[CLEN - 2]);
@@ -82,11 +82,11 @@ int main()
     i = conv_node_val(solRBTree_root(tree));
     printf("ROOT is %d\n", i);
     printf("---preorder travelsal after delete node---\n");
-    solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children);
+    solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
     printf("delete node %d, result %d\n", i, solRBTree_del(tree, &counts[i]));
     printf("ROOT is %d\n", conv_node_val(solRBTree_root(tree)));
     printf("---preorder travelsal after delete node---\n");
-    solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children);
+    solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
     solRBTree_free(tree);
     return 0;
 }
