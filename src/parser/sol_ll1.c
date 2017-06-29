@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "sol_ll1.h"
 
 SolLL1Parser* solLL1Parser_new()
@@ -115,7 +116,7 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
     SolLL1ParserSymbol *s1;
     int status;
     do {
-        status = 1;
+        status = 0;
         f = (SolLL1ParserProduct*)(solListNode_val(nf));
         ns = solList_head(f);
         s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
@@ -128,10 +129,10 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
                            && solLL1Parser_symbol_compute_nullable(p, s1) == 0) {
                     continue;
                 }
-                status = 2;
+                status = 1;
                 break;
             }
-            if (status == 1) {
+            if (status == 0) {
                 solLL1ParserSymbol_set_nullable(s);
             }
             break;
@@ -139,14 +140,14 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
         nf = solListNode_next(nf);
     } while (nf);
     solLL1ParserSymbol_set_nullable_computed(s);
-    return 0;
+    return status;
 }
 
 int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
 {
     if (p == NULL) return -1;
     if (solLL1Parser_product_list(p) == NULL) return -2;
-    if (solList_len(solLL1Parser_product_list(p))) return -3;
+    if (solList_len(solLL1Parser_product_list(p)) == 0) return -3;
     if (solLL1ParserSymbol_is_first_computed(s)) return 0;
     SolListNode *nf = solList_head(solLL1Parser_product_list(p));
     SolListNode *ns;
@@ -165,17 +166,16 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
                 solLL1ParserSymbol_add_first(s, s1);
                 break;
             }
+            assert((s != s1) && "has left recursion");
             if (solLL1Parser_symbol_compute_nullable(p, s1) == 0) {
                 continue;
             }
             if (solLL1Parser_symbol_compute_first(p, s1) == 0) {
                 solLL1ParserSymbol_merge_first(s, solLL1ParserSymbol_first(s1));
-            } else {
-                break;
             }
+            break;
         }
-        nf = solListNode_next(nf);
-    } while (nf);
+    } while ((nf = solListNode_next(nf)));
     solLL1ParserSymbol_set_first_computed(s);
     return 0;
 }
@@ -184,7 +184,7 @@ int solLL1Parser_symbol_compute_follow(SolLL1Parser *p, SolLL1ParserSymbol *s)
 {
     if (p == NULL) return -1;
     if (solLL1Parser_product_list(p) == NULL) return -2;
-    if (solList_len(solLL1Parser_product_list(p))) return -3;
+    if (solList_len(solLL1Parser_product_list(p)) == 0) return -3;
     if (solLL1ParserSymbol_is_terminal(s)) return -4;
     if (solLL1ParserSymbol_is_follow_computed(s)) return 0;
     SolListNode *nf = solList_head(solLL1Parser_product_list(p));
@@ -240,9 +240,7 @@ int solLL1Parser_generate_table(SolLL1Parser *p)
         s = (SolLL1ParserSymbol*)(solListNode_val(n));
         solLL1Parser_symbol_compute_nullable(p, s);
         solLL1Parser_symbol_compute_first(p, s);
-        // if has null data
-        // then solLL1Parser_symbol_compute_follow(p, s);
-        // endif
+        solLL1Parser_symbol_compute_follow(p, s);
         n = solListNode_next(n);
     } while (n);
     
