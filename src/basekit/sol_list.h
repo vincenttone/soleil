@@ -52,6 +52,7 @@ int solList_has(SolList*, void*);
 int solList_attach(SolList*, SolList*);
 int solList_merge(SolList*, SolList*);
 SolList* solList_dup(SolList*);
+int solList_uniq(SolList*);
 
 SolListNode* solListNode_new();
 void solListNode_free(SolList*, SolListNode*);

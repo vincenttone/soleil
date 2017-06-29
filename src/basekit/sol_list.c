@@ -124,6 +124,28 @@ int solList_remove(SolList *l, void *v)
     return 1;
 }
 
+int solList_uniq(SolList *l)
+{
+    SolListNode *n = solList_head(l);
+    if (n == NULL) return -1;
+    SolListNode *n1;
+    do {
+        n1 = n;
+        while ((n1 = solListNode_next(n1))) {
+            if (solListVal_match_func(l)) {
+                if (solListVal_match(l, solListNode_val(n), solListNode_val(n1)) == 0) {
+                    solList_del_node(l, n1);
+                }
+            } else {
+                if (solListNode_val(n) == solListNode_val(n1)) {
+                    solList_del_node(l, n1);
+                }
+            }
+        }
+    } while ((n = solListNode_next(n)));
+    return 0;
+}
+
 int solList_attach(SolList *l1, SolList *l2)
 {
     if (l1 == NULL || l2 == NULL) {
