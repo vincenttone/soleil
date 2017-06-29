@@ -8,16 +8,16 @@ SolLL1Parser* solLL1Parser_new()
     }
     solLL1Parser_set_stack(p, solStack_new());
     solLL1Parser_set_table(p, solHash_new());
-    solLL1Parser_set_form_list(p, solList_new());
+    solLL1Parser_set_product_list(p, solList_new());
     solLL1Parser_set_symbol_list(p, solList_new());
     if (solLL1Parser_stack(p) == NULL
         || solLL1Parser_table(p) == NULL
-        || solLL1Parser_form_list(p) == NULL
+        || solLL1Parser_product_list(p) == NULL
         ) {
         solLL1Parser_free(p);
         return NULL;
     }
-    solList_set_val_free_func(solLL1Parser_form_list(p), &_solLL1ParserForm_free);
+    solList_set_val_free_func(solLL1Parser_product_list(p), &_solLL1ParserProduct_free);
     solList_set_val_free_func(solLL1Parser_symbol_list(p), &sol_free);
     solHash_set_free_k_func(solLL1Parser_table(p), &sol_free);
     return p;
@@ -31,8 +31,8 @@ void solLL1Parser_free(SolLL1Parser *p)
     if (solLL1Parser_table(p)) {
         solHash_free(solLL1Parser_table(p));
     }
-    if (solLL1Parser_form_list(p)) {
-        solList_free(solLL1Parser_form_list(p));
+    if (solLL1Parser_product_list(p)) {
+        solList_free(solLL1Parser_product_list(p));
     }
     if (solLL1Parser_symbol_list(p)) {
         solList_free(solLL1Parser_symbol_list(p));
@@ -40,15 +40,15 @@ void solLL1Parser_free(SolLL1Parser *p)
     sol_free(p);
 }
 
-int solLL1Parser_reg_form(SolLL1Parser *p, SolLL1ParserForm *f)
+int solLL1Parser_reg_product(SolLL1Parser *p, SolLL1ParserProduct *f)
 {
     if (p == NULL
-        || solLL1Parser_form_list(p) == NULL
+        || solLL1Parser_product_list(p) == NULL
         || f == NULL
         ) {
         return -1;
     }
-    if (solList_add(solLL1Parser_form_list(p), f)) {
+    if (solList_add(solLL1Parser_product_list(p), f)) {
         return 0;
     }
     return 1;
@@ -105,18 +105,18 @@ SolLL1ParserSymbol* solLL1Parser_null(SolLL1Parser *p, void *s)
 int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
 {
     if (p == NULL) return -1;
-    if (solLL1Parser_form_list(p) == NULL) return -2;
-    if (solList_len(solLL1Parser_form_list(p)) == 0) return -3;
+    if (solLL1Parser_product_list(p) == NULL) return -2;
+    if (solList_len(solLL1Parser_product_list(p)) == 0) return -3;
     if (solLL1ParserSymbol_is_nullable(s)) return 0;
     if (solLL1ParserSymbol_is_nullable_computed(s)) return 1;
-    SolListNode *nf = solList_head(solLL1Parser_form_list(p));
+    SolListNode *nf = solList_head(solLL1Parser_product_list(p));
     SolListNode *ns;
-    SolLL1ParserForm *f;
+    SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
     int status;
     do {
         status = 1;
-        f = (SolLL1ParserForm*)(solListNode_val(nf));
+        f = (SolLL1ParserProduct*)(solListNode_val(nf));
         ns = solList_head(f);
         s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
         if (s == s1) {
@@ -145,15 +145,15 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
 int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
 {
     if (p == NULL) return -1;
-    if (solLL1Parser_form_list(p) == NULL) return -2;
-    if (solList_len(solLL1Parser_form_list(p))) return -3;
+    if (solLL1Parser_product_list(p) == NULL) return -2;
+    if (solList_len(solLL1Parser_product_list(p))) return -3;
     if (solLL1ParserSymbol_is_first_computed(s)) return 0;
-    SolListNode *nf = solList_head(solLL1Parser_form_list(p));
+    SolListNode *nf = solList_head(solLL1Parser_product_list(p));
     SolListNode *ns;
-    SolLL1ParserForm *f;
+    SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
     do {
-        f = (SolLL1ParserForm*)(solListNode_val(nf));
+        f = (SolLL1ParserProduct*)(solListNode_val(nf));
         ns = solList_head(f);
         s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
         if (s1 != s) {
@@ -183,18 +183,18 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
 int solLL1Parser_symbol_compute_follow(SolLL1Parser *p, SolLL1ParserSymbol *s)
 {
     if (p == NULL) return -1;
-    if (solLL1Parser_form_list(p) == NULL) return -2;
-    if (solList_len(solLL1Parser_form_list(p))) return -3;
+    if (solLL1Parser_product_list(p) == NULL) return -2;
+    if (solList_len(solLL1Parser_product_list(p))) return -3;
     if (solLL1ParserSymbol_is_terminal(s)) return -4;
     if (solLL1ParserSymbol_is_follow_computed(s)) return 0;
-    SolListNode *nf = solList_head(solLL1Parser_form_list(p));
+    SolListNode *nf = solList_head(solLL1Parser_product_list(p));
     SolListNode *ns;
-    SolLL1ParserForm *f;
+    SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
     SolLL1ParserSymbol *s2;
     int status = 1;
     do {
-        f = (SolLL1ParserForm*)(solListNode_val(nf));
+        f = (SolLL1ParserProduct*)(solListNode_val(nf));
         ns = solList_head(f);
         s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
         while ((ns = solListNode_next(ns))) {
@@ -231,8 +231,8 @@ int solLL1Parser_generate_table(SolLL1Parser *p)
     if (solLL1Parser_symbol_list(p) == NULL
         || solList_len(solLL1Parser_symbol_list(p))
         ) return -2;
-    if (solLL1Parser_form_list(p) == NULL
-        || solList_len(solLL1Parser_form_list(p)) == 0
+    if (solLL1Parser_product_list(p) == NULL
+        || solList_len(solLL1Parser_product_list(p)) == 0
         ) return -3;
     SolListNode *n = solList_head(solLL1Parser_symbol_list(p));
     SolLL1ParserSymbol *s;
@@ -249,12 +249,12 @@ int solLL1Parser_generate_table(SolLL1Parser *p)
     return 0;
 }
 
-void _solLL1ParserForm_free(void *f)
+void _solLL1ParserProduct_free(void *f)
 {
-    solLL1ParserForm_free((SolLL1ParserForm*)(f));
+    solLL1ParserProduct_free((SolLL1ParserProduct*)(f));
 }
 
-int solLL1ParserForm_add_symbol(SolLL1ParserForm *f, SolLL1ParserSymbol *s)
+int solLL1ParserProduct_add_symbol(SolLL1ParserProduct *f, SolLL1ParserSymbol *s)
 {
     if (f == NULL || s == NULL) {
         return -1;
@@ -302,7 +302,7 @@ void _solLL1ParserSymbol_free(void *s)
 }
 
 int solLL1Parser_table_add_rule(SolLL1Parser *p, SolLL1ParserSymbol *s1,
-                                SolLL1ParserSymbol *s2, SolLL1ParserForm *f)
+                                SolLL1ParserSymbol *s2, SolLL1ParserProduct *f)
 {
     if (p == NULL || s1 == NULL || s2 == NULL || f == NULL) {
         return -1;

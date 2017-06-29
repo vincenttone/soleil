@@ -20,12 +20,12 @@ typedef struct _SolLL1ParserSymbol {
     SolList *follow;
 } SolLL1ParserSymbol;
 
-#define SolLL1ParserForm SolList
+#define SolLL1ParserProduct SolList
 
 typedef struct _SolLL1Parser {
     SolHash *t;
     SolStack *s;
-    SolList *fl; // form list
+    SolList *fl; // product list
     SolList *ss; // symbol list
 } SolLL1Parser;
 
@@ -36,7 +36,7 @@ typedef struct _SolLL1ParserTableK {
 
 SolLL1Parser* solLL1Parser_new();
 void solLL1Parser_free(SolLL1Parser*);
-int solLL1Parser_reg_form(SolLL1Parser*, SolLL1ParserForm*);
+int solLL1Parser_reg_product(SolLL1Parser*, SolLL1ParserProduct*);
 int solLL1Parser_reg_symbol(SolLL1Parser*, SolLL1ParserSymbol*);
 SolLL1ParserSymbol* solLL1Parser_terminal(SolLL1Parser*, void*);
 SolLL1ParserSymbol* solLL1Parser_nonterminal(SolLL1Parser*, void*);
@@ -47,10 +47,10 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_symbol_compute_follow(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_symbol_compute_nullable(SolLL1Parser*, SolLL1ParserSymbol*);
 
-#define solLL1ParserForm_new() solList_new()
-#define solLL1ParserForm_free(f) solList_free(f)
-int solLL1ParserForm_add_symbol(SolLL1ParserForm*, SolLL1ParserSymbol*);
-void _solLL1ParserForm_free(void*);
+#define solLL1ParserProduct_new() solList_new()
+#define solLL1ParserProduct_free(f) solList_free(f)
+int solLL1ParserProduct_add_symbol(SolLL1ParserProduct*, SolLL1ParserSymbol*);
+void _solLL1ParserProduct_free(void*);
 
 SolLL1ParserSymbol* solLL1ParserSymbol_new(void*, int);
 void solLL1ParserSymbol_free(SolLL1ParserSymbol*);
@@ -58,23 +58,23 @@ void _solLL1ParserSymbol_free(void*);
 int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 
-int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserForm*);
+int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
 
 #define solLL1Parser_set_stack(p, stack) (p)->s = stack
 #define solLL1Parser_set_table(p, table) (p)->t = table
-#define solLL1Parser_set_form_list(p, l) (p)->fl = l
+#define solLL1Parser_set_product_list(p, l) (p)->fl = l
 #define solLL1Parser_set_symbol_list(p, l) (p)->ss = l
 
 #define solLL1Parser_stack(p) (p)->s
 #define solLL1Parser_table(p) (p)->t
-#define solLL1Parser_form_list(p) (p)->fl
+#define solLL1Parser_product_list(p) (p)->fl
 #define solLL1Parser_symbol_list(p) (p)->ss
 
-#define solLL1ParserForm_set_symbol(f, symbol) (f)->s = symbol
-#define solLL1ParserForm_set_next(f, next) (f)->n = next
+#define solLL1ParserProduct_set_symbol(f, symbol) (f)->s = symbol
+#define solLL1ParserProduct_set_next(f, next) (f)->n = next
 
-#define solLL1ParserForm_symbol(f) (f)->s
-#define solLL1ParserForm_next(f) (f)->n
+#define solLL1ParserProduct_symbol(f) (f)->s
+#define solLL1ParserProduct_next(f) (f)->n
 
 #define solLL1ParserSymbol_set_symbol(symbol, d) (symbol)->s = d
 #define solLL1ParserSymbol_set_type(symbol, type) (symbol)->f = (symbol)->f | type
