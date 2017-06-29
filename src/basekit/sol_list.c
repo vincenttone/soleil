@@ -65,23 +65,21 @@ int solList_del_node(SolList *l, SolListNode *n)
         return -1;
     }
     SolListNode *pn = NULL;
-    SolListNode *nn;
     while (cn) {
-        nn = solListNode_next(cn);
         if (cn == n) {
-            if (pn == NULL) {
-                solList_set_head(l, nn);
+            if (n == solList_head(l)) {
+                solList_set_head(l, solListNode_next(cn));
             } else {
-                solListNode_set_next(pn, nn);
+                solListNode_set_next(pn, solListNode_next(cn));
             }
-            if (nn == NULL) {
-                solList_set_tail(l, NULL);
+            if (n == solList_tail(l)) {
+                solList_set_tail(l, pn);
             }
             solListNode_free(l, n);
             return 0;
         }
         pn = cn;
-        cn = nn;
+        cn = solListNode_next(cn);
     }
     return 1;
 }
@@ -129,18 +127,31 @@ int solList_uniq(SolList *l)
     SolListNode *n = solList_head(l);
     if (n == NULL) return -1;
     SolListNode *n1;
+    SolListNode *pn;
+    SolListNode *nn;
     do {
         n1 = n;
-        while ((n1 = solListNode_next(n1))) {
+        pn = n;
+        nn = solListNode_next(n1);
+        while ((n1 = nn)) {
+            nn = solListNode_next(n1);
             if (solListVal_match_func(l)) {
                 if (solListVal_match(l, solListNode_val(n), solListNode_val(n1)) == 0) {
-                    solList_del_node(l, n1);
+                    goto del_node;
                 }
             } else {
                 if (solListNode_val(n) == solListNode_val(n1)) {
-                    solList_del_node(l, n1);
+                    goto del_node;
                 }
             }
+            pn = n1;
+            continue;
+        del_node:
+            if (solList_tail(l) == n) {
+                solList_set_tail(l, pn);
+            }
+            solListNode_set_next(pn, nn);
+            solListNode_free(l, n1);
         }
     } while ((n = solListNode_next(n)));
     return 0;
@@ -175,8 +186,7 @@ int solList_merge(SolList *l1, SolList *l2)
     SolListNode *n = solList_head(l2);
     do {
         solList_add(l1, solListNode_val(n));
-        n = solListNode_next(n);
-    } while (n);
+    } while ((n = solListNode_next(n)));
     return 0;
 }
 
