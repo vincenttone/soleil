@@ -145,6 +145,32 @@ finish:
     return 0;
 }
 
+int solList_merge(SolList *l1, SolList *l2)
+{
+    if (l1 == NULL || l2 == NULL)
+        return -1;
+    if (solList_len(l2) == 0) return 0;
+    SolListNode *n = solList_head(l2);
+    do {
+        solList_add(l1, solListNode_val(n));
+        n = solListNode_next(n);
+    } while (n);
+    return 0;
+}
+
+SolList* solList_dup(SolList *l)
+{
+    if (l == NULL) return NULL;
+    SolList *l1 = solList_new();
+    if (solList_len(l) == 0) return l1;
+    SolListNode *n = solList_head(l);
+    do {
+        solList_add(l1, solListNode_val(n));
+        n = solListNode_next(n);
+    } while (n);
+    return l1;
+}
+
 SolListNode* solListNode_new(void *val)
 {
     SolListNode *n = sol_calloc(1, sizeof(SolListNode));
