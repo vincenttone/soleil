@@ -147,7 +147,7 @@ int solList_uniq(SolList *l)
             pn = n1;
             continue;
         del_node:
-            if (solList_tail(l) == n) {
+            if (solList_tail(l) == n1) {
                 solList_set_tail(l, pn);
             }
             solListNode_set_next(pn, nn);
