@@ -169,7 +169,7 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
                 continue;
             }
             if (solLL1Parser_symbol_compute_first(p, s1) == 0) {
-                // todo add to s1 first set to s first set
+                solLL1ParserSymbol_merge_first(s, solLL1ParserSymbol_first(s1));
             } else {
                 break;
             }
@@ -210,14 +210,14 @@ int solLL1Parser_symbol_compute_follow(SolLL1Parser *p, SolLL1ParserSymbol *s)
                     continue;
                 } else { // no terminal
                     solLL1Parser_symbol_compute_first(p, s2);
-                    // todo add s2 first set to s follow set
+                    solLL1ParserSymbol_merge_follow(s, solLL1ParserSymbol_first(s2));
                     status = 4;
                 }
             }
         }
         if (status == 2) { // after s are all nullable
             solLL1Parser_symbol_compute_follow(p, s1);
-            // todo add s1 follow set to s follow set
+            solLL1ParserSymbol_merge_follow(s, solLL1ParserSymbol_follow(s1));
         }
         nf = solListNode_next(nf);
     } while (nf);
@@ -330,12 +330,34 @@ int solLL1ParserSymbol_add_first(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2)
     return 1;
 }
 
+int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol *s, SolList *f)
+{
+    if (s == NULL || f == NULL) return -1;
+    if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -2;
+    if (solLL1ParserSymbol_first(s) == NULL) return -3;
+    if (solList_merge(solLL1ParserSymbol_first(s), f)) {
+        return 0;
+    }
+    return 1;
+}
+
 int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2)
 {
     if (s1 == NULL || s2 == NULL) return -1;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s1)) return -2;
     if (solLL1ParserSymbol_follow(s1) == NULL) return -3;
     if (solList_add(solLL1ParserSymbol_follow(s1), s2)) {
+        return 0;
+    }
+    return 1;
+}
+
+int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol *s, SolList *f)
+{
+    if (s == NULL || f == NULL) return -1;
+    if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -2;
+    if (solLL1ParserSymbol_follow(s) == NULL) return -3;
+    if (solList_merge(solLL1ParserSymbol_follow(s), f)) {
         return 0;
     }
     return 1;

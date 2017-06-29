@@ -57,6 +57,8 @@ void solLL1ParserSymbol_free(SolLL1ParserSymbol*);
 void _solLL1ParserSymbol_free(void*);
 int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
+int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol*, SolList*);
+int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol*, SolList*);
 
 int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
 
