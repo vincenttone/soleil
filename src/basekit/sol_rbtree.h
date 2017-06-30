@@ -52,9 +52,6 @@ int solRBTree_travelsal_inorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act,
 int solRBTree_travelsal_preorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
 int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
 
-int solRBTree_merge(SolRBTree*, SolRBTree*, SolRBTreeNode*);
-int _solRBTree_insert_to_another(SolRBTree*, SolRBTreeNode*, void*);
-
 #define solRBTree_root(t) (t)->root
 #define solRBTree_nil(t) (t)->nil
 #define solRBTree_count(t) (t)->c
