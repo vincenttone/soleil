@@ -67,7 +67,7 @@ int main()
         counts[i] = i;
         solRBTree_insert(tree, &counts[i]);
     }
-    printf("ROOT is %d\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))));
+    printf("ROOT is %d, count: %zu\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))), solRBTree_count(tree));
     printf("---preorder travelsal---\n");
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_key, NULL);
     printf("---inorder travelsal---\n");
@@ -80,11 +80,12 @@ int main()
     i = conv_node_val(n);
     printf("delete node %d, result %d\n", i, solRBTree_delete_node(tree, n));
     i = conv_node_val(solRBTree_root(tree));
-    printf("ROOT is %d\n", i);
+    // printf("ROOT is %d\n", i);
+    printf("ROOT is %d, count: %zu\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))), solRBTree_count(tree));
     printf("---preorder travelsal after delete node---\n");
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
     printf("delete node %d, result %d\n", i, solRBTree_del(tree, &counts[i]));
-    printf("ROOT is %d\n", conv_node_val(solRBTree_root(tree)));
+    printf("ROOT is %d, count: %zu\n", conv_node_val(solRBTree_root(tree)), solRBTree_count(tree));
     printf("---preorder travelsal after delete node---\n");
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
     solRBTree_free(tree);
