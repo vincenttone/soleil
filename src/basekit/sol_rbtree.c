@@ -28,9 +28,14 @@ int solRBTree_node_free(SolRBTree *t, SolRBTreeNode *n)
     return 0;
 }
 
+int _solRBTree_node_free(SolRBTree *t, SolRBTreeNode *n, void *d)
+{
+    return solRBTree_node_free(t, n);
+}
+
 void solRBTree_free(SolRBTree *t)
 {
-    solRBTree_travelsal_backorder(t, solRBTree_root(t), &solRBTree_node_free);
+    solRBTree_travelsal_backorder(t, solRBTree_root(t), &_solRBTree_node_free, NULL);
     sol_free(solRBTree_nil(t));
     sol_free(t);
 }
@@ -417,33 +422,46 @@ int solRBTree_delete_node(SolRBTree *tree, SolRBTreeNode *del_node)
     return 0;
 }
 
-int solRBTree_travelsal_inorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f)
+int solRBTree_travelsal_inorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f, void *d)
 {
     if (solRBTree_node_is_nil(tree, node)) return 1;
-    solRBTree_travelsal_inorder(tree, solRBTreeNode_left(node), f);
-    int r = (*f)(tree, node);
+    solRBTree_travelsal_inorder(tree, solRBTreeNode_left(node), f, d);
+    int r = (*f)(tree, node, d);
     if (r != 0) return r;
-    solRBTree_travelsal_inorder(tree, solRBTreeNode_right(node), f);
+    solRBTree_travelsal_inorder(tree, solRBTreeNode_right(node), f, d);
     return 0;
 }
 
-int solRBTree_travelsal_preorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f)
+int solRBTree_travelsal_preorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f, void *d)
 {
     if (solRBTree_node_is_nil(tree, node)) return 1;
-    int r = (*f)(tree, node);
+    int r = (*f)(tree, node, d);
     if (r != 0) return r;
-    solRBTree_travelsal_preorder(tree, solRBTreeNode_left(node), f);
-    solRBTree_travelsal_preorder(tree, solRBTreeNode_right(node), f);
+    solRBTree_travelsal_preorder(tree, solRBTreeNode_left(node), f, d);
+    solRBTree_travelsal_preorder(tree, solRBTreeNode_right(node), f, d);
     return 0;
 }
 
 
-int solRBTree_travelsal_backorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f)
+int solRBTree_travelsal_backorder(SolRBTree *tree, SolRBTreeNode *node, solRBTree_f_ptr_act f, void *d)
 {
     if (solRBTree_node_is_nil(tree, node)) return 1;
-    solRBTree_travelsal_backorder(tree, solRBTreeNode_left(node), f);
-    solRBTree_travelsal_backorder(tree, solRBTreeNode_right(node), f);
-    int r = (*f)(tree, node);
+    solRBTree_travelsal_backorder(tree, solRBTreeNode_left(node), f, d);
+    solRBTree_travelsal_backorder(tree, solRBTreeNode_right(node), f, d);
+    int r = (*f)(tree, node, d);
     if (r != 0) return r;
     return 0;
+}
+
+int _solRBTree_insert_to_another(SolRBTree *t1, SolRBTreeNode *n, void* t2)
+{
+    if (solRBTree_insert((SolRBTree*)t2, solRBTreeNode_val(n))) {
+        return 0;
+    }
+    return 1;
+}
+
+int solRBTree_merge(SolRBTree *t1, SolRBTree *t2, SolRBTreeNode *t2n)
+{
+    return solRBTree_travelsal_backorder(t2, t2n, &_solRBTree_insert_to_another, t1);
 }
