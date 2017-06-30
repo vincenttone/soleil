@@ -67,15 +67,24 @@ void inspect_product(SolLL1Parser *p, SolLL1ParserProduct *f)
 
 int print_symbol(SolRBTree *t, SolRBTreeNode *n, void *v)
 {
-    SolLL1ParserSymbol *s= (SolLL1ParserSymbol*)(solRBTreeNode_val(n));
+    SolLL1ParserEntry *e= solRBTreeNode_val(n);
+    SolLL1ParserSymbol *s= solLL1ParserEntry_symbol(e);
     int d= *(int*)(solLL1ParserSymbol_symbol(s));
+    if (d > Limit) {
+        printf("entry data is not right!");
+        return 1;
+    }
     printf("%s ", cc[d-1]);
     return 0;
 }
 
 int inspect_symbol_list(SolRBTree *t)
 {
-    solRBTree_travelsal_inorder(t, solRBTree_root(t), &print_symbol, NULL);
+    if (solRBTree_count(t) == 0) {
+        printf("<<<None>>");
+    } else {
+        solRBTree_travelsal_inorder(t, solRBTree_root(t), &print_symbol, NULL);
+    }
     printf("\n");
     return 0;
 }
@@ -199,41 +208,41 @@ int main()
     printf("compute nullable of T':\t%d\n", solLL1Parser_symbol_compute_nullable(p, sT1));
     printf("compute nullable of F:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sF));
 
-    printf("compute first of S[%d]:\t", solLL1Parser_symbol_compute_first(p, sS));
+    printf("compute first of S[%d]: ", solLL1Parser_symbol_compute_first(p, sS));
     if (inspect_symbol_list(solLL1ParserSymbol_first(sS)))
         printf("empty first\n");
-    printf("compute first of E[%d]:\t", solLL1Parser_symbol_compute_first(p, sE));
+    printf("compute first of E[%d]: ", solLL1Parser_symbol_compute_first(p, sE));
     if (inspect_symbol_list(solLL1ParserSymbol_first(sE)))
         printf("empty first\n");
-    printf("compute first of E' [%d]:\t", solLL1Parser_symbol_compute_first(p, sE1));
+    printf("compute first of E' [%d]: ", solLL1Parser_symbol_compute_first(p, sE1));
     if (inspect_symbol_list(solLL1ParserSymbol_first(sE1)))
         printf("empty first\n");
-    printf("compute first of T [%d]:\t", solLL1Parser_symbol_compute_first(p, sT));
+    printf("compute first of T [%d]: ", solLL1Parser_symbol_compute_first(p, sT));
     if (inspect_symbol_list(solLL1ParserSymbol_first(sT)))
         printf("empty first\n");
-    printf("compute first of T' [%d]:\t", solLL1Parser_symbol_compute_first(p, sT1));
+    printf("compute first of T' [%d]: ", solLL1Parser_symbol_compute_first(p, sT1));
     if (inspect_symbol_list(solLL1ParserSymbol_first(sT1)))
         printf("empty first\n");
-    printf("compute first of F [%d]:\t", solLL1Parser_symbol_compute_first(p, sF));
+    printf("compute first of F [%d]: ", solLL1Parser_symbol_compute_first(p, sF));
     if (inspect_symbol_list(solLL1ParserSymbol_first(sF)))
         printf("empty first\n");
 
-    printf("compute follow of S[%d]:\t", solLL1Parser_symbol_compute_follow(p, sS));
+    printf("compute follow of S[%d]: ", solLL1Parser_symbol_compute_follow(p, sS));
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sS)))
         printf("empty follow\n");
-    printf("compute follow of E[%d]:\t", solLL1Parser_symbol_compute_follow(p, sE));
+    printf("compute follow of E[%d]: ", solLL1Parser_symbol_compute_follow(p, sE));
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sE)))
         printf("empty follow\n");
-    printf("compute follow of E'[%d]:\t", solLL1Parser_symbol_compute_follow(p, sE1));
+    printf("compute follow of E'[%d]: ", solLL1Parser_symbol_compute_follow(p, sE1));
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sE1)))
         printf("empty follow\n");
-    printf("compute follow of T[%d]:\t", solLL1Parser_symbol_compute_follow(p, sT));
+    printf("compute follow of T[%d]: ", solLL1Parser_symbol_compute_follow(p, sT));
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sT)))
         printf("empty follow\n");
-    printf("compute follow of T'[%d]:\t", solLL1Parser_symbol_compute_follow(p, sT1));
+    printf("compute follow of T'[%d]: ", solLL1Parser_symbol_compute_follow(p, sT1));
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sT1)))
         printf("empty follow\n");
-    printf("compute follow of F[%d]:\t", solLL1Parser_symbol_compute_follow(p, sF));
+    printf("compute follow of F[%d]: ", solLL1Parser_symbol_compute_follow(p, sF));
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sF)))
         printf("empty follow\n");
 

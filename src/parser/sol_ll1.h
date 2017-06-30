@@ -14,6 +14,8 @@
 #define SolLL1ParserSymbolFlag_Computed_FIRST 0x10
 #define SolLL1ParserSymbolFlag_Computed_FOLLOW 0x20
 
+#define SolLL1ParserProduct SolList
+
 typedef struct _SolLL1ParserSymbol {
     void *s;
     int f;
@@ -21,13 +23,16 @@ typedef struct _SolLL1ParserSymbol {
     SolRBTree *follow;
 } SolLL1ParserSymbol;
 
-#define SolLL1ParserProduct SolList
-
 typedef struct _SolLL1Parser {
     SolStack *s;
     SolList *fl; // product list
-    SolList *ss; // symbol list
+    SolRBTree *ss; // symbol list
 } SolLL1Parser;
+
+typedef struct _SolLL1ParserEntry {
+    SolLL1ParserSymbol *s;
+    SolLL1ParserProduct *p;
+} SolLL1ParserEntry;
 
 SolLL1Parser* solLL1Parser_new();
 void solLL1Parser_free(SolLL1Parser*);
@@ -50,12 +55,18 @@ void _solLL1ParserProduct_free(void*);
 SolLL1ParserSymbol* solLL1ParserSymbol_new(void*, int);
 void solLL1ParserSymbol_free(SolLL1ParserSymbol*);
 void _solLL1ParserSymbol_free(void*);
-int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
-int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
+int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
+int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
 int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol*, SolRBTree*);
 int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol*, SolRBTree*);
 
+int _solLL1Parser_entry_compare(void*, void*);
 int _solLL1Parser_symbol_compare(void*, void*);
+void _solLL1ParserEntry_free(void*);
+int _solLL1Parser_dup_entry_and_insert(SolRBTree*, SolRBTreeNode*, void *);
+
+SolLL1ParserEntry* solLL1ParserEntry_new(SolLL1ParserSymbol*, SolLL1ParserProduct*);
+void solLL1ParserEntry_free(SolLL1ParserEntry*);
 
 #define solLL1Parser_set_stack(p, stack) (p)->s = stack
 #define solLL1Parser_set_product_list(p, l) (p)->fl = l
@@ -93,6 +104,12 @@ int _solLL1Parser_symbol_compare(void*, void*);
 #define solLL1ParserSymbol_set_nullable_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_NULL)
 #define solLL1ParserSymbol_set_first_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FIRST)
 #define solLL1ParserSymbol_set_follow_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FOLLOW)
+
+#define solLL1ParserEntry_set_symbol(e, symbol) (e)->s = symbol
+#define solLL1ParserEntry_set_product(e, product) (e)->p = product
+
+#define solLL1ParserEntry_symbol(e) (e)->s
+#define solLL1ParserEntry_product(e) (e)->p
 
 #define solLL1Parser_table_set_hash_func1(p, f) solHash_set_hash_func1(solLL1Parser_table(p), f)
 #define solLL1Parser_table_set_hash_func2(p, f) solHash_set_hash_func2(solLL1Parser_table(p), f)
