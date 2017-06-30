@@ -284,13 +284,15 @@ SolLL1ParserSymbol* solLL1ParserSymbol_new(void *s, int t)
     solLL1ParserSymbol_set_symbol(symbol, s);
     solLL1ParserSymbol_set_type(symbol, t);
     if (solLL1ParserSymbol_is_nonterminal(symbol)) {
-        solLL1ParserSymbol_set_first(symbol, solList_new());
-        solLL1ParserSymbol_set_follow(symbol, solList_new());
+        solLL1ParserSymbol_set_first(symbol, solRBTree_new());
+        solLL1ParserSymbol_set_follow(symbol, solRBTree_new());
         if (solLL1ParserSymbol_first(symbol) == NULL
             || solLL1ParserSymbol_follow(symbol) == NULL) {
             solLL1ParserSymbol_free(symbol);
             return NULL;
         }
+        solRBTree_set_compare_func(solLL1ParserSymbol_first(symbol), &_solLL1Parser_symbol_compare);
+        solRBTree_set_compare_func(solLL1ParserSymbol_follow(symbol), &_solLL1Parser_symbol_compare);
     }
     return symbol;
 }
@@ -298,10 +300,10 @@ SolLL1ParserSymbol* solLL1ParserSymbol_new(void *s, int t)
 void solLL1ParserSymbol_free(SolLL1ParserSymbol *s)
 {
     if (solLL1ParserSymbol_first(s)) {
-        solList_free(solLL1ParserSymbol_first(s));
+        solRBTree_free(solLL1ParserSymbol_first(s));
     }
     if (solLL1ParserSymbol_follow(s)) {
-        solList_free(solLL1ParserSymbol_follow(s));
+        solRBTree_free(solLL1ParserSymbol_follow(s));
     }
     sol_free(s);
 }
@@ -335,21 +337,19 @@ int solLL1ParserSymbol_add_first(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2)
     if (s1 == s2) return -2;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s1)) return -3;
     if (solLL1ParserSymbol_first(s1) == NULL) return -4;
-    if (solList_add(solLL1ParserSymbol_first(s1), s2)) {
-        solList_uniq(solLL1ParserSymbol_first(s1));
+    if (solRBTree_insert(solLL1ParserSymbol_first(s1), s2)) {
         return 0;
     }
     return 1;
 }
 
-int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol *s, SolList *f)
+int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol *s, SolRBTree *f)
 {
     if (s == NULL || f == NULL) return -1;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -2;
     if (solLL1ParserSymbol_first(s) == NULL) return -3;
     if (solLL1ParserSymbol_first(s) == f) return -4;
-    if (solList_merge(solLL1ParserSymbol_first(s), f) == 0) {
-        solList_uniq(solLL1ParserSymbol_first(s));
+    if (solRBTree_merge(solLL1ParserSymbol_first(s), f, solRBTree_root(f)) == 0) {
         return 0;
     }
     return 1;
@@ -361,22 +361,27 @@ int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2
     if (s1 == s2) return -2;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s1)) return -3;
     if (solLL1ParserSymbol_follow(s1) == NULL) return -4;
-    if (solList_add(solLL1ParserSymbol_follow(s1), s2)) {
-        solList_uniq(solLL1ParserSymbol_follow(s1));
+    if (solRBTree_insert(solLL1ParserSymbol_follow(s1), s2)) {
         return 0;
     }
     return 1;
 }
 
-int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol *s, SolList *f)
+int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol *s, SolRBTree *f)
 {
     if (s == NULL || f == NULL) return -1;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -2;
     if (solLL1ParserSymbol_follow(s) == NULL) return -3;
     if (solLL1ParserSymbol_follow(s) == f) return -3;
-    if (solList_merge(solLL1ParserSymbol_follow(s), f) == 0) {
-        solList_uniq(solLL1ParserSymbol_follow(s));
+    if (solRBTree_merge(solLL1ParserSymbol_follow(s), f, solRBTree_root(f)) == 0) {
         return 0;
     }
     return 1;
+}
+
+int _solLL1Parser_symbol_compare(void *s1, void *s2)
+{
+    if (s1 > s2) return 1;
+    else if (s1 < s2) return -1;
+    else return 0;
 }

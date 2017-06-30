@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "sol_list.h"
 #include "sol_ll1.h"
+#include "sol_rbtree.h"
 
 enum _Symbol {
     S = 1,
@@ -64,19 +65,17 @@ void inspect_product(SolLL1Parser *p, SolLL1ParserProduct *f)
     printf("\n");
 }
 
-int inspect_symbol_list(SolList *l)
+int print_symbol(SolRBTree *t, SolRBTreeNode *n, void *v)
 {
-    if (solList_len(l) == 0) {
-        return 1;
-    }
-    SolListNode *n = solList_head(l);
-    SolLL1ParserSymbol *s;
-    int v;
-    do {
-        s= (SolLL1ParserSymbol*)(solListNode_val(n));
-        v= *(int*)(solLL1ParserSymbol_symbol(s));
-        printf("%s ", cc[v-1]);
-    } while ((n = solListNode_next(n)));
+    SolLL1ParserSymbol *s= (SolLL1ParserSymbol*)(solRBTreeNode_val(n));
+    int d= *(int*)(solLL1ParserSymbol_symbol(s));
+    printf("%s ", cc[d-1]);
+    return 0;
+}
+
+int inspect_symbol_list(SolRBTree *t)
+{
+    solRBTree_travelsal_inorder(t, solRBTree_root(t), &print_symbol, NULL);
     printf("\n");
     return 0;
 }

@@ -5,6 +5,7 @@
 #include "sol_list.h"
 #include "sol_stack.h"
 #include "sol_hash.h"
+#include "sol_rbtree.h"
 
 #define SolLL1ParserSymbolFlag_NULL 0x1
 #define SolLL1ParserSymbolFlag_Terminal 0x2
@@ -16,8 +17,8 @@
 typedef struct _SolLL1ParserSymbol {
     void *s;
     int f;
-    SolList *first;
-    SolList *follow;
+    SolRBTree *first;
+    SolRBTree *follow;
 } SolLL1ParserSymbol;
 
 #define SolLL1ParserProduct SolList
@@ -57,10 +58,12 @@ void solLL1ParserSymbol_free(SolLL1ParserSymbol*);
 void _solLL1ParserSymbol_free(void*);
 int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
-int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol*, SolList*);
-int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol*, SolList*);
+int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol*, SolRBTree*);
+int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol*, SolRBTree*);
 
 int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
+
+int _solLL1Parser_symbol_compare(void*, void*);
 
 #define solLL1Parser_set_stack(p, stack) (p)->s = stack
 #define solLL1Parser_set_table(p, table) (p)->t = table
