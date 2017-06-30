@@ -453,15 +453,15 @@ int solRBTree_travelsal_backorder(SolRBTree *tree, SolRBTreeNode *node, solRBTre
     return 0;
 }
 
-int _solRBTree_insert_to_another(SolRBTree *t, SolRBTreeNode *n, void* v)
+int _solRBTree_insert_to_another(SolRBTree *t1, SolRBTreeNode *n, void* t2)
 {
-    if (solRBTree_insert((SolRBTree*)v, solRBTreeNode_val(n))) {
+    if (solRBTree_insert((SolRBTree*)t2, solRBTreeNode_val(n))) {
         return 0;
     }
     return 1;
 }
 
-int solRBTree_merge(SolRBTree *t1, SolRBTree *t2)
+int solRBTree_merge(SolRBTree *t1, SolRBTree *t2, SolRBTreeNode *t2n)
 {
-    return solRBTree_travelsal_backorder(t2, solRBTree_root(t2), &_solRBTree_insert_to_another, t1);
+    return solRBTree_travelsal_backorder(t2, t2n, &_solRBTree_insert_to_another, t1);
 }
