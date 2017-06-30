@@ -246,6 +246,8 @@ int main()
     if (inspect_symbol_list(solLL1ParserSymbol_follow(sF)))
         printf("empty follow\n");
 
+    printf("Generate table return %d\n", solLL1Parser_generate_table(p));
+
     solLL1Parser_free(p);
 
     return 0;

@@ -96,7 +96,7 @@ SolLL1ParserSymbol* solLL1Parser_null(SolLL1Parser *p, void *s)
     solLL1ParserSymbol_free(symbol);
     return NULL;
 }
-
+// return 0 when s is nullable, error < 0, finish but not nullable > 0
 int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
 {
     if (p == NULL) return -1;
@@ -241,17 +241,16 @@ int solLL1Parser_generate_table(SolLL1Parser *p)
     if (solLL1Parser_product_list(p) == NULL
         || solList_len(solLL1Parser_product_list(p)) == 0
         ) return -3;
-    /*
-    SolListNode *n = solList_head(solLL1Parser_symbol_list(p));
-    SolLL1ParserSymbol *s;
-    do {
-        s = (SolLL1ParserSymbol*)(solListNode_val(n));
-        solLL1Parser_symbol_compute_nullable(p, s);
-        solLL1Parser_symbol_compute_first(p, s);
-        solLL1Parser_symbol_compute_follow(p, s);
-        n = solListNode_next(n);
-    } while (n);
-    */
+    SolRBTree *t = solLL1Parser_symbol_list(p);
+    if (solRBTree_travelsal_inorder(t, solRBTree_root(t), &_solLL1Parser_rbnode_compute_nullable, p)) {
+        return 1;
+    }
+    if (solRBTree_travelsal_inorder(t, solRBTree_root(t), &_solLL1Parser_rbnode_compute_first, p)) {
+        return 2;
+    }
+    if (solRBTree_travelsal_inorder(t, solRBTree_root(t), &_solLL1Parser_rbnode_compute_follow, p)) {
+        return 3;
+    }
     return 0;
 }
 
@@ -422,4 +421,35 @@ int _solLL1Parser_dup_entry_and_insert(SolRBTree *t1, SolRBTreeNode *n, void *t2
         return 0;
     }
     return 1;
+}
+
+int _solLL1Parser_rbnode_compute_nullable(SolRBTree *t, SolRBTreeNode *n, void *p)
+{
+    SolLL1ParserSymbol* s = (solRBTreeNode_val(n));
+    if (solLL1ParserSymbol_is_nonterminal(s)) {
+        if (solLL1Parser_symbol_compute_nullable((SolLL1Parser*)p, s) < 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int _solLL1Parser_rbnode_compute_first(SolRBTree *t, SolRBTreeNode *n, void *p)
+{
+    SolLL1ParserSymbol* s = (solRBTreeNode_val(n));
+    if (solLL1ParserSymbol_is_nonterminal(s)) {
+        return solLL1Parser_symbol_compute_first((SolLL1Parser*)p, s);
+    }
+    return 0;
+}
+
+int _solLL1Parser_rbnode_compute_follow(SolRBTree *t, SolRBTreeNode *n, void *p)
+{
+    SolLL1ParserSymbol* s = (solRBTreeNode_val(n));
+    if (solLL1ParserSymbol_is_nullable(s)
+        && solLL1ParserSymbol_is_nonterminal(s)
+        ) {
+        return solLL1Parser_symbol_compute_follow((SolLL1Parser*)p, s);
+    }
+    return 0;
 }
