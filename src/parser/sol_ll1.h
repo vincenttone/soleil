@@ -24,16 +24,10 @@ typedef struct _SolLL1ParserSymbol {
 #define SolLL1ParserProduct SolList
 
 typedef struct _SolLL1Parser {
-    SolHash *t;
     SolStack *s;
     SolList *fl; // product list
     SolList *ss; // symbol list
 } SolLL1Parser;
-
-typedef struct _SolLL1ParserTableK {
-    SolLL1ParserSymbol *s1;
-    SolLL1ParserSymbol *s2;
-} SolLL1ParserTableK;
 
 SolLL1Parser* solLL1Parser_new();
 void solLL1Parser_free(SolLL1Parser*);
@@ -61,17 +55,13 @@ int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol*, SolRBTree*);
 int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol*, SolRBTree*);
 
-int solLL1Parser_table_add_rule(SolLL1Parser*, SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
-
 int _solLL1Parser_symbol_compare(void*, void*);
 
 #define solLL1Parser_set_stack(p, stack) (p)->s = stack
-#define solLL1Parser_set_table(p, table) (p)->t = table
 #define solLL1Parser_set_product_list(p, l) (p)->fl = l
 #define solLL1Parser_set_symbol_list(p, l) (p)->ss = l
 
 #define solLL1Parser_stack(p) (p)->s
-#define solLL1Parser_table(p) (p)->t
 #define solLL1Parser_product_list(p) (p)->fl
 #define solLL1Parser_symbol_list(p) (p)->ss
 

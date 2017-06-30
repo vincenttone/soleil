@@ -8,19 +8,16 @@ SolLL1Parser* solLL1Parser_new()
         return NULL;
     }
     solLL1Parser_set_stack(p, solStack_new());
-    solLL1Parser_set_table(p, solHash_new());
     solLL1Parser_set_product_list(p, solList_new());
     solLL1Parser_set_symbol_list(p, solList_new());
     if (solLL1Parser_stack(p) == NULL
-        || solLL1Parser_table(p) == NULL
         || solLL1Parser_product_list(p) == NULL
         ) {
         solLL1Parser_free(p);
         return NULL;
     }
     solList_set_val_free_func(solLL1Parser_product_list(p), &_solLL1ParserProduct_free);
-    solList_set_val_free_func(solLL1Parser_symbol_list(p), &sol_free);
-    solHash_set_free_k_func(solLL1Parser_table(p), &sol_free);
+    solList_set_val_free_func(solLL1Parser_symbol_list(p), &_solLL1ParserSymbol_free);
     return p;
 }
 
@@ -28,9 +25,6 @@ void solLL1Parser_free(SolLL1Parser *p)
 {
     if (solLL1Parser_stack(p)) {
         solStack_free(solLL1Parser_stack(p));
-    }
-    if (solLL1Parser_table(p)) {
-        solHash_free(solLL1Parser_table(p));
     }
     if (solLL1Parser_product_list(p)) {
         solList_free(solLL1Parser_product_list(p));
@@ -64,7 +58,6 @@ int solLL1Parser_reg_symbol(SolLL1Parser *p, SolLL1ParserSymbol *s)
         return -1;
     }
     if (solList_add(solLL1Parser_symbol_list(p), s)) {
-        solList_set_val_free_func(solLL1Parser_symbol_list(p), &_solLL1ParserSymbol_free);
         return 0;
     }
     return 1;
@@ -311,24 +304,6 @@ void solLL1ParserSymbol_free(SolLL1ParserSymbol *s)
 void _solLL1ParserSymbol_free(void *s)
 {
     solLL1ParserSymbol_free((SolLL1ParserSymbol*)s);
-}
-
-int solLL1Parser_table_add_rule(SolLL1Parser *p, SolLL1ParserSymbol *s1,
-                                SolLL1ParserSymbol *s2, SolLL1ParserProduct *f)
-{
-    if (p == NULL || s1 == NULL || s2 == NULL || f == NULL) {
-        return -1;
-    }
-    SolLL1ParserTableK *k = sol_alloc(sizeof(SolLL1ParserTableK));
-    if (k == NULL) {
-        return -2;
-    }
-    k->s1 = s1;
-    k->s2 = s2;
-    if (solHash_put(solLL1Parser_table(p), k, f) == 0) {
-        return 0;
-    }
-    return 1;
 }
 
 int solLL1ParserSymbol_add_first(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2)
