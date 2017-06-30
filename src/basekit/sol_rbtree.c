@@ -188,6 +188,7 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
         w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
+            solRBTreeNode_set_val(node, NULL);
             solRBTree_node_free(tree, node);
             return current_node;
         } else if (w < 0) {
