@@ -110,7 +110,7 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
     SolLL1ParserSymbol *s1;
     int status = 2;
     do {
-        f = (SolLL1ParserProduct*)(solListNode_val(nf));
+        f = solListNode_val(nf);
         ns = solList_head(f);
         s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
         if (s == s1) {
@@ -128,6 +128,7 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
             }
             if (status == 0) {
                 solLL1ParserSymbol_set_nullable(s);
+                solLL1ParserSymbol_set_nullable_product(s, f);
                 break;
             }
         }
@@ -223,8 +224,10 @@ int solLL1Parser_symbol_compute_follow(SolLL1Parser *p, SolLL1ParserSymbol *s)
             if (solLL1Parser_symbol_compute_follow(p, s1) != 0) {
                 return -8;
             }
-            if (solLL1ParserSymbol_merge_follow(s, solLL1ParserSymbol_follow(s1)) != 0) {
-                return -6;
+            if (solLL1ParserSymbol_follow(s1)) {
+                if (solLL1ParserSymbol_merge_follow(s, solLL1ParserSymbol_follow(s1)) != 0) {
+                    return -6;
+                }
             }
         }
     } while ((nf = solListNode_next(nf)));
@@ -280,16 +283,12 @@ SolLL1ParserSymbol* solLL1ParserSymbol_new(void *s, int t)
     solLL1ParserSymbol_set_type(symbol, t);
     if (solLL1ParserSymbol_is_nonterminal(symbol)) {
         solLL1ParserSymbol_set_first(symbol, solRBTree_new());
-        solLL1ParserSymbol_set_follow(symbol, solRBTree_new());
-        if (solLL1ParserSymbol_first(symbol) == NULL
-            || solLL1ParserSymbol_follow(symbol) == NULL) {
+        if (solLL1ParserSymbol_first(symbol) == NULL) {
             solLL1ParserSymbol_free(symbol);
             return NULL;
         }
         solRBTree_set_compare_func(solLL1ParserSymbol_first(symbol), &_solLL1Parser_entry_compare);
-        solRBTree_set_compare_func(solLL1ParserSymbol_follow(symbol), &_solLL1Parser_entry_compare);
         solRBTree_set_val_free_func(solLL1ParserSymbol_first(symbol), &_solLL1ParserEntry_free);
-        solRBTree_set_val_free_func(solLL1ParserSymbol_follow(symbol), &_solLL1ParserEntry_free);
     }
     return symbol;
 }
@@ -346,7 +345,14 @@ int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2
     if (s1 == NULL || s2 == NULL) return -1;
     if (s1 == s2) return -2;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s1)) return -3;
-    if (solLL1ParserSymbol_follow(s1) == NULL) return -4;
+    if (solLL1ParserSymbol_follow(s1) == NULL) {
+        solLL1ParserSymbol_set_follow(s1, solRBTree_new());
+        if (solLL1ParserSymbol_follow(s1) == NULL) {
+            return -4;
+        }
+        solRBTree_set_compare_func(solLL1ParserSymbol_follow(s1), &_solLL1Parser_entry_compare);
+        solRBTree_set_val_free_func(solLL1ParserSymbol_follow(s1), &_solLL1ParserEntry_free);
+    }
     SolLL1ParserEntry *e = solLL1ParserEntry_new(s2, p);
     if (e == NULL) return -5;
     if (solRBTree_insert(solLL1ParserSymbol_follow(s1), e)) {
@@ -357,10 +363,18 @@ int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2
 
 int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol *s, SolRBTree *f)
 {
-    if (s == NULL || f == NULL) return -1;
-    if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -2;
-    if (solLL1ParserSymbol_follow(s) == NULL) return -3;
-    if (solLL1ParserSymbol_follow(s) == f) return -3;
+    if (s == NULL) return -1;
+    if (f == NULL) return -2;
+    if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -3;
+    if (solLL1ParserSymbol_follow(s) == NULL) {
+        solLL1ParserSymbol_set_follow(s, solRBTree_new());
+        if (solLL1ParserSymbol_follow(s) == NULL) {
+            return -4;
+        }
+        solRBTree_set_compare_func(solLL1ParserSymbol_follow(s), &_solLL1Parser_entry_compare);
+        solRBTree_set_val_free_func(solLL1ParserSymbol_follow(s), &_solLL1ParserEntry_free);
+    }
+    if (solLL1ParserSymbol_follow(s) == f) return -5;
     if (solRBTree_travelsal_backorder(
             f,
             solRBTree_root(f),

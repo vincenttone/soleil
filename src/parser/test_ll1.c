@@ -80,7 +80,7 @@ int print_symbol(SolRBTree *t, SolRBTreeNode *n, void *v)
 
 int inspect_symbol_list(SolRBTree *t)
 {
-    if (solRBTree_count(t) == 0) {
+    if (t == NULL || solRBTree_count(t) == 0) {
         printf("<<<None>>");
     } else {
         solRBTree_travelsal_inorder(t, solRBTree_root(t), &print_symbol, NULL);

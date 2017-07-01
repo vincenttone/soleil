@@ -21,6 +21,7 @@ typedef struct _SolLL1ParserSymbol {
     int f;
     SolRBTree *first;
     SolRBTree *follow;
+    SolLL1ParserProduct *np; // nullable product
 } SolLL1ParserSymbol;
 
 typedef struct _SolLL1Parser {
@@ -87,8 +88,8 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 
 #define solLL1ParserSymbol_set_symbol(symbol, d) (symbol)->s = d
 #define solLL1ParserSymbol_set_type(symbol, type) (symbol)->f = (symbol)->f | type
-#define solLL1ParserSymbol_set_first(symbol, s) (symbol)->first = s
-#define solLL1ParserSymbol_set_follow(symbol, s) (symbol)->follow = s
+#define solLL1ParserSymbol_set_first(symbol, f) (symbol)->first = f
+#define solLL1ParserSymbol_set_follow(symbol, f) (symbol)->follow = f
 
 #define solLL1ParserSymbol_symbol(symbol) (symbol)->s
 #define solLL1ParserSymbol_first(symbol) (symbol)->first
@@ -107,6 +108,7 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1ParserSymbol_set_nullable_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_NULL)
 #define solLL1ParserSymbol_set_first_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FIRST)
 #define solLL1ParserSymbol_set_follow_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FOLLOW)
+#define solLL1ParserSymbol_set_nullable_product(symbol, p) (symbol)->np = p
 
 #define solLL1ParserEntry_set_symbol(e, symbol) (e)->s = symbol
 #define solLL1ParserEntry_set_product(e, product) (e)->p = product
