@@ -51,13 +51,13 @@ char cc[Limit-1][4] = {
 
 void inspect_product(SolLL1Parser *p, SolLL1ParserProduct *f)
 {
-    SolListNode *n = solList_head(f);
-    SolLL1ParserSymbol *s = (SolLL1ParserSymbol*)(solListNode_val(n));
+    SolLL1ParserProductNode *n = solLL1ParserProduct_left(f);
+    SolLL1ParserSymbol *s = solLL1ParserProductNode_symbol(n);
     int v = *(int*)(solLL1ParserSymbol_symbol(s));
     //printf("%d\t->\t", v);
     printf("%s.%d\t=>\t", cc[v-1], v);
     while ((n = solListNode_next(n))) {
-        SolLL1ParserSymbol *s = (SolLL1ParserSymbol*)(solListNode_val(n));
+        SolLL1ParserSymbol *s = solLL1ParserProductNode_symbol(n);
         int v = *(int*)(solLL1ParserSymbol_symbol(s));
         //printf(" %d", v);
         printf(" %s.%d ", cc[v-1], v);

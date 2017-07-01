@@ -119,18 +119,18 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
     if (solLL1ParserSymbol_is_nullable(s)) return 0;
     if (solLL1ParserSymbol_is_nullable_computed(s)) return 1;
     SolListNode *nf = solList_head(solLL1Parser_product_list(p));
-    SolListNode *ns;
+    SolLL1ParserProductNode *ns;
     SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
     int status = 2;
     do {
         f = solListNode_val(nf);
-        ns = solList_head(f);
-        s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
+        ns = solLL1ParserProduct_left(f);
+        s1 = solLL1ParserProductNode_symbol(ns);
         if (s == s1) {
             status = 0;
-            while ((ns = solListNode_next(ns))) {
-                s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
+            while ((ns = solLL1ParserProductNode_symbol_next(ns))) {
+                s1 = solLL1ParserProductNode_symbol(ns);
                 if (solLL1ParserSymbol_is_nullable(s1)) {
                     continue;
                 } else if (solLL1ParserSymbol_is_nonterminal(s1)
@@ -146,8 +146,7 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
                 break;
             }
         }
-        nf = solListNode_next(nf);
-    } while (nf);
+    } while ((nf = solListNode_next(nf)));
     solLL1ParserSymbol_set_nullable_computed(s);
     return status;
 }
@@ -159,18 +158,18 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
     if (solList_len(solLL1Parser_product_list(p)) == 0) return -3;
     if (solLL1ParserSymbol_is_first_computed(s)) return 0;
     SolListNode *nf = solList_head(solLL1Parser_product_list(p));
-    SolListNode *ns;
+    SolLL1ParserProductNode *ns;
     SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
     do {
         f = solListNode_val(nf);
-        ns = solList_head(f);
-        s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
+        ns = solLL1ParserProduct_left(f);
+        s1 = solLL1ParserProductNode_symbol(ns);
         if (s1 != s) {
             continue;
         }
-        while ((ns = solListNode_next(ns))) {
-            s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
+        while ((ns = solLL1ParserProductNode_symbol_next(ns))) {
+            s1 = solLL1ParserProductNode_symbol(ns);
             if (solLL1ParserSymbol_is_terminal(s1)) {
                 solLL1ParserSymbol_add_first(s, s1, f);
                 break;
@@ -197,18 +196,18 @@ int solLL1Parser_symbol_compute_follow(SolLL1Parser *p, SolLL1ParserSymbol *s)
     if (solLL1ParserSymbol_is_terminal(s)) return -4;
     if (solLL1ParserSymbol_is_follow_computed(s)) return 0;
     SolListNode *nf = solList_head(solLL1Parser_product_list(p));
-    SolListNode *ns;
     SolLL1ParserSymbol *s1;
     SolLL1ParserSymbol *s2;
     SolLL1ParserProduct *f;
+    SolLL1ParserProductNode *ns;
     int status = 1;
     do {
         status = 2;
         f = solListNode_val(nf);
-        ns = solList_head(f);
-        s1 = (SolLL1ParserSymbol*)(solListNode_val(ns));
-        while ((ns = solListNode_next(ns))) {
-            s2 = (SolLL1ParserSymbol*)(solListNode_val(ns));
+        ns = solLL1ParserProduct_left(f);
+        s1 = solLL1ParserProductNode_symbol(ns);
+        while ((ns = solLL1ParserProductNode_symbol_next(ns))) {
+            s2 = solLL1ParserProductNode_symbol(ns);
             if (s == s2) {
                 status = 3;
             } else if (status == 3) {
@@ -281,7 +280,7 @@ int solLL1ParserProduct_add_symbol(SolLL1ParserProduct *f, SolLL1ParserSymbol *s
     if (f == NULL || s == NULL) {
         return -1;
     }
-    if (solList_add(f, s)) {
+    if (solLL1ParserProduct_add(f, s)) {
         return 0;
     }
     return 1;
@@ -437,10 +436,10 @@ int solLL1Parser_parse(SolLL1Parser *p, void *s)
                 goto check_nullable;
             if (solList_head(solLL1ParserEntry_product(e2)) == NULL)
                 goto check_nullable;
-            if (solListNode_val(solList_head(solLL1ParserEntry_product(e2))) == NULL) {
+            sbl2 = solLL1ParserProductNode_symbol(solLL1ParserProduct_left(solLL1ParserEntry_product(e2)));
+            if (sbl2 == NULL) {
                 break;
             }
-            sbl2 = solListNode_val(solList_head(solLL1ParserEntry_product(e2)));
             if (solLL1ParserSymbol_is_nonterminal(sbl2)) {
                 goto check_first;
             }

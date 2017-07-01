@@ -3,6 +3,7 @@
 
 #include "sol_common.h"
 #include "sol_list.h"
+#include "sol_dl_list.h"
 #include "sol_stack.h"
 #include "sol_hash.h"
 #include "sol_rbtree.h"
@@ -15,7 +16,8 @@
 #define SolLL1ParserSymbolFlag_Computed_FIRST 0x20
 #define SolLL1ParserSymbolFlag_Computed_FOLLOW 0x40
 
-#define SolLL1ParserProduct SolList
+#define SolLL1ParserProduct SolDlList
+#define SolLL1ParserProductNode SolDlListNode
 
 typedef struct _SolLL1ParserSymbol {
     void *s;
@@ -55,8 +57,15 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_symbol_compute_follow(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_symbol_compute_nullable(SolLL1Parser*, SolLL1ParserSymbol*);
 
-#define solLL1ParserProduct_new() solList_new()
-#define solLL1ParserProduct_free(f) solList_free(f)
+#define solLL1ParserProduct_new() solDlList_new()
+#define solLL1ParserProduct_free(f) solDlList_free(f)
+#define solLL1ParserProduct_len(f) solDlList_len(f)
+#define solLL1ParserProduct_left(f) solDlList_head(f)
+#define solLL1ParserProduct_right(f) solDlListNode_next(solDlList_head(f))
+#define solLL1ParserProduct_add(f, s) solDlList_add(f, s, _SolDlListDirFwd)
+#define solLL1ParserProductNode_symbol_next(s) solDlListNode_next(s)
+#define solLL1ParserProductNode_symbol(f) solDlListNode_val(f)
+
 int solLL1ParserProduct_add_symbol(SolLL1ParserProduct*, SolLL1ParserSymbol*);
 void _solLL1ParserProduct_free(void*);
 
@@ -94,6 +103,8 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1Parser_end_symbol(p) (p)->end
 
 #define solLL1Parser_read_symbol(p, s) (*(p)->f_read)(s)
+
+#define solLL1ParserProduct_left_symbol(f) solDlListNode_val(solDlList_head(f))
 
 #define solLL1ParserProduct_set_symbol(f, symbol) (f)->s = symbol
 #define solLL1ParserProduct_set_next(f, next) (f)->n = next
