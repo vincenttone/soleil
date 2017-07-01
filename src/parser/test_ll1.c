@@ -92,6 +92,7 @@ int inspect_symbol_list(SolRBTree *t)
 #define NONTERMINAL(S) SolLL1ParserSymbol *s##S = solLL1Parser_nonterminal(p, &c[S-1])
 #define TERMINAL(S) SolLL1ParserSymbol *s##S = solLL1Parser_terminal(p, &c[S-1])
 #define NULLABLE(S) SolLL1ParserSymbol *s##S = solLL1Parser_null(p, &c[S-1])
+#define END_SYMBOL(S) SolLL1ParserSymbol *s##S = solLL1Parser_symbol_end(p, &c[S-1])
 
 int main()
 {
@@ -111,7 +112,7 @@ int main()
     TERMINAL(divi);
     TERMINAL(id);
     TERMINAL(num);
-    TERMINAL(end);
+    END_SYMBOL(end);
     NULLABLE(empty);
     
     SolLL1ParserProduct *f1 = solLL1ParserProduct_new();
