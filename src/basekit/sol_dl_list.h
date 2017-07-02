@@ -43,6 +43,7 @@ void solDlList_free(SolDlList*);
 
 #define solDlListNode_val(n) (n)->val
 #define solDlListNode_next(n) (n)->next
+#define solDlListNode_pre(n) (n)->pre
 #define solDlListNodeVal_free(l, n) if (l->f_free) {(*l->f_free)(n->val);}
 
 SolDlListNode* solDlList_add(SolDlList*, void*, enum _SolDlListDir);
