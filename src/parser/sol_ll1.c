@@ -415,19 +415,37 @@ void solLL1ParserEntry_free(SolLL1ParserEntry *e)
     if (e) sol_free(e);
 }
 
-int solLL1Parser_parse(SolLL1Parser *p, void *s)
+int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x)
 {
     assert((solLL1Parser_read_symbol_func(p) == NULL)
            && "Parser: no read symbol func");
     solStack_push(solLL1Parser_stack(p), solLL1Parser_end_symbol(p));
     solStack_push(solLL1Parser_stack(p), solLL1Parser_start_symbol(p));
+    int status = 0;
     SolLL1ParserSymbol *sbl1;
     SolLL1ParserSymbol *sbl2;
     SolLL1ParserEntry *e1 = solLL1ParserEntry_new(NULL, NULL);
     SolLL1ParserEntry *e2;
+    SolLL1ParserProductNode *n;
     while ((sbl1 = solLL1Parser_read_symbol(p, s))) {
+    parse:
         sbl2 = solStack_pop(solLL1Parser_stack(p));
-    check_first:
+        if (solLL1ParserSymbol_is_end(sbl2)) {
+            if (solStack_pop(solLL1Parser_stack(p))) {
+                //assert("Expect empty stack");
+                status = -1;
+            }
+            if (solLL1Parser_read_symbol(p, s)) {
+                status = -2;
+                //assert("unfinished symbol");
+            }
+            // fininsh
+            break;
+        }
+        if (solLL1ParserSymbol_is_nonterminal(sbl2)) {
+            solLL1Parser_match_symbol(p, x, sbl2);
+            continue;
+        }
         if (solLL1ParserSymbol_first(sbl2) == NULL) break;
         solLL1ParserEntry_set_symbol(sbl2, NULL);
         if (solRBTree_count(solLL1ParserSymbol_first(sbl2))) {
@@ -440,18 +458,26 @@ int solLL1Parser_parse(SolLL1Parser *p, void *s)
             if (sbl2 == NULL) {
                 break;
             }
-            if (solLL1ParserSymbol_is_nonterminal(sbl2)) {
-                goto check_first;
-            }
+            n = solDlList_tail(solLL1ParserEntry_product(e2));
+            do {
+                solStack_push(solLL1Parser_stack(p), solDlListNode_val(n));
+                n = solDlListNode_pre(n);
+            } while ((n != solDlList_head(solLL1ParserEntry_product(e2))) && n);
+            goto parse;
         }
     check_nullable:
         if (solLL1ParserSymbol_is_nullable(sbl2)
             && solLL1ParserSymbol_follow(sbl2)) {
             if (solRBTree_count(solLL1ParserSymbol_follow(sbl2))) {
+                solStack_pop(solLL1Parser_stack(p));
+                goto parse;
             }
         }
+        status = -3;
+        break; // error
     }
-    return 0;
+    solLL1ParserEntry_free(e1);
+    return status;
 }
 
 void _solLL1ParserEntry_free(void *e)
