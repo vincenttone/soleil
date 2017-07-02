@@ -188,7 +188,8 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
         w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
-            return 0;
+            solRBTree_node_free(tree, node);
+            return current_node;
         } else if (w < 0) {
             current_node = solRBTreeNode_left(current_node);
         } else {
@@ -207,6 +208,7 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
         solRBTreeNode_set_right(pre_node, node);
     }
     solRBTree_insert_fixup(tree, node);
+    solRBTree_count_inc(tree);
     return node;
 }
 
@@ -419,6 +421,7 @@ int solRBTree_delete_node(SolRBTree *tree, SolRBTreeNode *del_node)
     }
     // delete the node
     solRBTree_node_free(tree, rp_node);
+    solRBTree_count_dec(tree);
     return 0;
 }
 

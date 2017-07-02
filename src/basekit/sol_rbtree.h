@@ -17,6 +17,7 @@ typedef struct _SolRBTreeNode {
 } SolRBTreeNode;
 
 typedef struct _SolRBTree {
+    size_t c; // count
     SolRBTreeNode *nil;
     SolRBTreeNode *root;
     sol_f_cmp_ptr f_compare;
@@ -51,25 +52,28 @@ int solRBTree_travelsal_inorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act,
 int solRBTree_travelsal_preorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
 int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_act, void*);
 
-#define solRBTree_root(t) t->root
-#define solRBTree_nil(t) t->nil
+#define solRBTree_root(t) (t)->root
+#define solRBTree_nil(t) (t)->nil
+#define solRBTree_count(t) (t)->c
 
-#define solRBTree_set_root(t, n) t->root = n
-#define solRBTree_set_nil(t, n) t->nil = n
-#define solRBTree_node_is_nil(t, n) (t->nil == n)
-#define solRBTree_node_is_NOT_nil(t, n) (t->nil != n)
+#define solRBTree_set_root(t, n) (t)->root = n
+#define solRBTree_set_nil(t, n) (t)->nil = n
+#define solRBTree_node_is_nil(t, n) ((t)->nil == n)
+#define solRBTree_node_is_NOT_nil(t, n) ((t)->nil != n)
+#define solRBTree_count_inc(t) (t)->c++
+#define solRBTree_count_dec(t) (t)->c--
 
-#define solRBTree_set_val_free_func(t, f) t->f_free = f
-#define solRBTree_node_val_free_func(t) t->f_free
-#define solRBTree_node_val_free(v) (*t->f_free)(v)
+#define solRBTree_set_val_free_func(t, f) (t)->f_free = f
+#define solRBTree_node_val_free_func(t) (t)->f_free
+#define solRBTree_node_val_free(v) (*(t)->f_free)(v)
 
-#define solRBTree_set_insert_func(t, f) t->f_insert = f
-#define solRBTree_insert_func(t) t->f_insert
-#define solRBTree_insert_val(v) (*t->f_insert)(v)
+#define solRBTree_set_insert_func(t, f) (t)->f_insert = f
+#define solRBTree_insert_func(t) (t)->f_insert
+#define solRBTree_insert_val(v) (*(t)->f_insert)(v)
 
-#define solRBTree_set_compare_func(t, f) t->f_compare = f
-#define solRBTree_node_val_compare_func(t) t->f_compare
-#define solRBTree_node_val_compare(t, v1, v2) (*t->f_compare)(v1, v2)
+#define solRBTree_set_compare_func(t, f) (t)->f_compare = f
+#define solRBTree_node_val_compare_func(t) (t)->f_compare
+#define solRBTree_node_val_compare(t, v1, v2) (*(t)->f_compare)(v1, v2)
 #define solRBTree_node_compare(t, n1, n2) solRBTree_node_val_compare(t, solRBTreeNode_val(n1), solRBTreeNode_val(n2))
 
 #define solRBTreeNode_left(n) n->l

@@ -51,12 +51,12 @@ int main()
         printf("L1 node, val is [%s]\n", (char*)(solListNode_val(n)));
         n = solListNode_next(n);
     }
-    int lm = solList_merge(l, l1);
-    printf("MERGED result %d\n", lm);
+    int lm = solList_attach(l, l1);
+    printf("ATTACH result %d\n", lm);
     if (lm == 0) {
         n = solList_head(l);
         while (n) {
-            printf("MERGED l node, val is [%s]\n", (char*)(solListNode_val(n)));
+            printf("ATTACH l node, val is [%s]\n", (char*)(solListNode_val(n)));
             n = solListNode_next(n);
         }
     } else {
