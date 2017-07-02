@@ -33,8 +33,8 @@ typedef struct _SolLL1Parser {
     SolRBTree *ss; // symbol list
     SolLL1ParserSymbol* start;
     SolLL1ParserSymbol* end;
-    SolLL1ParserSymbol* (*f_read)(void*);
-    int (*f_match)(void*, SolLL1ParserSymbol*);
+    SolLL1ParserSymbol* (*f_read)(void*, void*);
+    int (*f_out)(void*, SolLL1ParserProduct*, SolLL1ParserSymbol*);
 } SolLL1Parser;
 
 typedef struct _SolLL1ParserEntry {
@@ -46,7 +46,7 @@ SolLL1Parser* solLL1Parser_new();
 void solLL1Parser_free(SolLL1Parser*);
 int solLL1Parser_reg_product(SolLL1Parser*, SolLL1ParserProduct*);
 int solLL1Parser_reg_symbol(SolLL1Parser*, SolLL1ParserSymbol*);
-int solLL1Parser_parse(SolLL1Parser*, void*, void*);
+int solLL1Parser_parse(SolLL1Parser*, void*, void*, void*);
 
 SolLL1ParserSymbol* solLL1Parser_terminal(SolLL1Parser*, void*);
 SolLL1ParserSymbol* solLL1Parser_nonterminal(SolLL1Parser*, void*);
@@ -93,7 +93,7 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1Parser_set_product_list(p, l) (p)->fl = l
 #define solLL1Parser_set_symbol_list(p, l) (p)->ss = l
 #define solLL1Parser_set_read_symbol_func(p, f) (p)->f_read = f
-#define solLL1Parser_set_match_func(p, f) (p)->f_match = f
+#define solLL1Parser_set_output_func(p, f) (p)->f_out = f
 #define solLL1Parser_set_start_symbol(p, s) (p)->start = s
 #define solLL1Parser_set_end_symbol(p, s) (p)->end = s
 
@@ -101,12 +101,12 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1Parser_product_list(p) (p)->fl
 #define solLL1Parser_symbol_list(p) (p)->ss
 #define solLL1Parser_read_symbol_func(p) (p)->f_read
-#define solLL1Parser_match_func(p) (p)->f_match
+#define solLL1Parser_output_func(p) (p)->f_out
 #define solLL1Parser_start_symbol(p) (p)->start
 #define solLL1Parser_end_symbol(p) (p)->end
 
-#define solLL1Parser_read_symbol(p, s) (*(p)->f_read)(s)
-#define solLL1Parser_match_symbol(p, x, s) (*(p)->f_match)(x, s)
+#define solLL1Parser_read_symbol(p, r, s) (*(p)->f_read)(r, s)
+#define solLL1Parser_output(p, x, product, symbol) (*(p)->f_out)(x, product, symbol)
 
 #define solLL1ParserProduct_left_symbol(f) solDlListNode_val(solDlList_head(f))
 

@@ -105,6 +105,7 @@ SolLL1ParserSymbol* solLL1Parser_symbol_end(SolLL1Parser *p, void *s)
         );
     if (symbol == NULL) return NULL;
     if (solLL1Parser_reg_symbol(p, symbol) == 0) {
+        solLL1Parser_set_end_symbol(p, symbol);
         return symbol;
     }
     solLL1ParserSymbol_free(symbol);
@@ -415,7 +416,7 @@ void solLL1ParserEntry_free(SolLL1ParserEntry *e)
     if (e) sol_free(e);
 }
 
-int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x)
+int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x, void *r)
 {
     assert((solLL1Parser_read_symbol_func(p) == NULL)
            && "Parser: no read symbol func");
@@ -427,23 +428,21 @@ int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x)
     SolLL1ParserEntry *e1 = solLL1ParserEntry_new(NULL, NULL);
     SolLL1ParserEntry *e2;
     SolLL1ParserProductNode *n;
-    while ((sbl1 = solLL1Parser_read_symbol(p, s))) {
+    while ((sbl1 = solLL1Parser_read_symbol(p, r, s))) {
     parse:
         sbl2 = solStack_pop(solLL1Parser_stack(p));
         if (solLL1ParserSymbol_is_end(sbl2)) {
             if (solStack_pop(solLL1Parser_stack(p))) {
-                //assert("Expect empty stack");
                 status = -1;
-            }
-            if (solLL1Parser_read_symbol(p, s)) {
+            } else if (solLL1Parser_read_symbol(p, r, s)) {
                 status = -2;
-                //assert("unfinished symbol");
+            } else {
+                solLL1Parser_output(p, x, NULL, sbl2);
             }
-            // fininsh
             break;
         }
-        if (solLL1ParserSymbol_is_nonterminal(sbl2)) {
-            solLL1Parser_match_symbol(p, x, sbl2);
+        if (solLL1ParserSymbol_is_terminal(sbl2)) {
+            solLL1Parser_output(p, x, NULL, sbl2);
             continue;
         }
         if (solLL1ParserSymbol_first(sbl2) == NULL) break;
@@ -456,8 +455,10 @@ int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x)
                 goto check_nullable;
             sbl2 = solLL1ParserProductNode_symbol(solLL1ParserProduct_left(solLL1ParserEntry_product(e2)));
             if (sbl2 == NULL) {
+                status = -3;
                 break;
             }
+            solLL1Parser_output(p, x, solLL1ParserEntry_product(e2), NULL);
             n = solDlList_tail(solLL1ParserEntry_product(e2));
             do {
                 solStack_push(solLL1Parser_stack(p), solDlListNode_val(n));
@@ -473,7 +474,7 @@ int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x)
                 goto parse;
             }
         }
-        status = -3;
+        status = -4;
         break; // error
     }
     solLL1ParserEntry_free(e1);
