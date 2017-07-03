@@ -89,6 +89,27 @@ int inspect_symbol_list(SolRBTree *t)
     return 0;
 }
 
+SolLL1ParserSymbol* read_str(void *g)
+{
+    SolListNode *n = solListNode_next((SolListNode*)g);
+    if (n) {
+        return solListNode_val(n);
+    }
+    return NULL;
+}
+
+int _output(void *x, SolLL1ParserProduct *p, SolLL1ParserSymbol *s)
+{
+    if (p) {
+        printf("output product\n");
+    } else if (s) {
+        printf("output symbol\n");
+    } else {
+        printf("output nothing\n");
+    }
+    return 0;
+}
+
 #define NONTERMINAL(S) SolLL1ParserSymbol *s##S = solLL1Parser_nonterminal(p, &c[S-1])
 #define TERMINAL(S) SolLL1ParserSymbol *s##S = solLL1Parser_terminal(p, &c[S-1])
 #define NULLABLE(S) SolLL1ParserSymbol *s##S = solLL1Parser_null(p, &c[S-1])
@@ -249,6 +270,24 @@ int main()
 
     printf("Generate table return %d\n", solLL1Parser_generate_table(p));
 
+    SolList *l = solList_new();
+    // int + int * (int + int)$
+    solList_add(l, snum);
+    solList_add(l, splus);
+    solList_add(l, snum);
+    solList_add(l, smul);
+    solList_add(l, slc);
+    solList_add(l, snum);
+    solList_add(l, splus);
+    solList_add(l, snum);
+    solList_add(l, src);
+    solList_add(l, send);
+    solLL1Parser_set_read_symbol_func(p, &read_str);
+    solLL1Parser_set_output_func(p, &_output);
+    solLL1Parser_set_start_symbol(p, sS);
+    solLL1Parser_parse(p, solList_head(l), NULL);
+
+    solList_free(l);
     solLL1Parser_free(p);
 
     return 0;

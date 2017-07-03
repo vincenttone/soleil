@@ -3,7 +3,7 @@
 
 SolLL1Parser* solLL1Parser_new()
 {
-    SolLL1Parser *p = sol_alloc(sizeof(SolLL1Parser));
+    SolLL1Parser *p = sol_calloc(1, sizeof(SolLL1Parser));
     if (p == NULL) {
         return NULL;
     }
@@ -416,10 +416,12 @@ void solLL1ParserEntry_free(SolLL1ParserEntry *e)
     if (e) sol_free(e);
 }
 
-int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x, void *r)
+int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
 {
-    assert((solLL1Parser_read_symbol_func(p) == NULL)
-           && "Parser: no read symbol func");
+    assert((solLL1Parser_read_symbol_func(p)) && "Parser: no read symbol func");
+    assert((solLL1Parser_output_func(p)) && "Parser: no output func");
+    assert((solLL1Parser_start_symbol(p)) && "Parser: no start symbol");
+    assert((solLL1Parser_end_symbol(p)) && "Parser: no end symbol");
     solStack_push(solLL1Parser_stack(p), solLL1Parser_end_symbol(p));
     solStack_push(solLL1Parser_stack(p), solLL1Parser_start_symbol(p));
     int status = 0;
@@ -428,13 +430,17 @@ int solLL1Parser_parse(SolLL1Parser *p, void *s, void *x, void *r)
     SolLL1ParserEntry *e1 = solLL1ParserEntry_new(NULL, NULL);
     SolLL1ParserEntry *e2;
     SolLL1ParserProductNode *n;
-    while ((sbl1 = solLL1Parser_read_symbol(p, r, s))) {
+    while ((sbl1 = solLL1Parser_read_symbol(p, g))) {
     parse:
         sbl2 = solStack_pop(solLL1Parser_stack(p));
+        if (sbl2 == NULL) {
+            status = -5;
+            break;
+        }
         if (solLL1ParserSymbol_is_end(sbl2)) {
             if (solStack_pop(solLL1Parser_stack(p))) {
                 status = -1;
-            } else if (solLL1Parser_read_symbol(p, r, s)) {
+            } else if (solLL1Parser_read_symbol(p, g)) {
                 status = -2;
             } else {
                 solLL1Parser_output(p, x, NULL, sbl2);
