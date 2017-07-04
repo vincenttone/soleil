@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "sol_rbtree.h"
+#include "sol_rbtree_iter.h"
 
 #define conv_val(v) (*(int*)v)
 #define conv_node_val(n) conv_val(solRBTreeNode_val(n))
@@ -88,6 +89,30 @@ int main()
     printf("ROOT is %d, count: %zu\n", conv_node_val(solRBTree_root(tree)), solRBTree_count(tree));
     printf("---preorder travelsal after delete node---\n");
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
+    printf("---------Test iter preorder--------\n");
+    SolRBTreeIter *ip = solRBTreeIter_new(tree, solRBTree_root(tree), SolRBTreeIterTT_preorder);
+    while ((n = solRBTreeIter_next(ip))) {
+        printf("stack size %zu\t", solStack_size(ip->s));
+        print_key(tree, n, NULL);
+    }
+    solRBTreeIter_free(ip);
+    printf("---------End test iter preorder--------\n");
+    printf("---------Test iter inorder--------\n");
+    SolRBTreeIter *ii = solRBTreeIter_new(tree, solRBTree_root(tree), SolRBTreeIterTT_inorder);
+    while ((n = solRBTreeIter_next(ii))) {
+        printf("stack size %zu\t", solStack_size(ii->s));
+        print_key(tree, n, NULL);
+    }
+    solRBTreeIter_free(ii);
+    printf("---------End test iter inorder--------\n");
+    printf("---------Test iter backorder--------\n");
+    SolRBTreeIter *ib = solRBTreeIter_new(tree, solRBTree_root(tree), SolRBTreeIterTT_backorder);
+    while ((n = solRBTreeIter_next(ib))) {
+        printf("stack size %zu\t", solStack_size(ib->s));
+        print_key(tree, n, NULL);
+    }
+    solRBTreeIter_free(ib);
+    printf("---------End test iter backorder--------\n");
     solRBTree_free(tree);
     return 0;
 }
