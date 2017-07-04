@@ -33,7 +33,7 @@ typedef struct _SolLL1Parser {
     SolRBTree *ss; // symbol list
     SolLL1ParserSymbol* start;
     SolLL1ParserSymbol* end;
-    SolLL1ParserSymbol* (*f_read)(void*, void*);
+    SolLL1ParserSymbol* (*f_read)(void*);
     int (*f_out)(void*, SolLL1ParserProduct*, SolLL1ParserSymbol*);
 } SolLL1Parser;
 
@@ -46,7 +46,7 @@ SolLL1Parser* solLL1Parser_new();
 void solLL1Parser_free(SolLL1Parser*);
 int solLL1Parser_reg_product(SolLL1Parser*, SolLL1ParserProduct*);
 int solLL1Parser_reg_symbol(SolLL1Parser*, SolLL1ParserSymbol*);
-int solLL1Parser_parse(SolLL1Parser*, void*, void*, void*);
+int solLL1Parser_parse(SolLL1Parser*, void*, void*);
 
 SolLL1ParserSymbol* solLL1Parser_terminal(SolLL1Parser*, void*);
 SolLL1ParserSymbol* solLL1Parser_nonterminal(SolLL1Parser*, void*);
@@ -105,7 +105,7 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1Parser_start_symbol(p) (p)->start
 #define solLL1Parser_end_symbol(p) (p)->end
 
-#define solLL1Parser_read_symbol(p, r, s) (*(p)->f_read)(r, s)
+#define solLL1Parser_read_symbol(p, g) (*(p)->f_read)(g)
 #define solLL1Parser_output(p, x, product, symbol) (*(p)->f_out)(x, product, symbol)
 
 #define solLL1ParserProduct_left_symbol(f) solDlListNode_val(solDlList_head(f))

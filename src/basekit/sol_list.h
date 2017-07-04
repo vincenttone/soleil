@@ -17,6 +17,11 @@ typedef struct _SolList {
     int (*f_match)(void*, void*);
 } SolList;
 
+typedef struct _SolListIter {
+    SolList *l;
+    SolListNode *n;
+} SolListIter;
+
 #define solList_set_head(l, n) (l)->head = n
 #define solList_set_tail(l, n) (l)->tail = n
 #define solList_set_len(l, c) (l)->len = c
@@ -56,5 +61,12 @@ int solList_uniq(SolList*);
 
 SolListNode* solListNode_new();
 void solListNode_free(SolList*, SolListNode*);
+
+SolListIter* solListIter_new(SolList*);
+void solListIter_free(SolListIter*);
+SolListNode* solListIter_current(SolListIter*);
+void* solListIter_current_val(SolListIter*);
+SolListNode* solListIter_next(SolListIter*);
+void* solListIter_next_val(SolListIter*);
 
 #endif

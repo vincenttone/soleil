@@ -220,3 +220,48 @@ void solListNode_free(SolList *l, SolListNode *n)
     }
     sol_free(n);
 }
+
+SolListIter* solListIter_new(SolList *l)
+{
+    if (l == NULL) return NULL;
+    SolListIter *i = sol_alloc(sizeof(SolListIter));
+    if (i == NULL) return NULL;
+    i->l = l;
+    i->n = solList_head(l);
+    return i;
+}
+
+void solListIter_free(SolListIter *i)
+{
+    if (i) sol_free(i);
+}
+
+SolListNode* solListIter_current(SolListIter *i)
+{
+    if (i == NULL || i->n == NULL)
+        return NULL;
+    return i->n;
+}
+
+SolListNode* solListIter_next(SolListIter *i)
+{
+    if (i == NULL || i->n == NULL)
+        return NULL;
+    i->n = solListNode_next(i->n);
+    return i->n;
+}
+
+void* solListIter_current_val(SolListIter *i)
+{
+    if (i == NULL || i->n == NULL)
+        return NULL;
+    return solListNode_val(i->n);
+}
+
+void* solListIter_next_val(SolListIter *i)
+{
+    if (i == NULL || i->n == NULL) return NULL;
+    i->n = solListNode_next(i->n);
+    if (i->n == NULL) return NULL;
+    return solListNode_val(i->n);
+}
