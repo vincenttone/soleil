@@ -122,11 +122,13 @@ int inspect_rbtree(SolRBTree *t, solRBTree_f_ptr_act f)
 
 SolLL1ParserSymbol* read_str(void *g)
 {
-    SolListNode *n = solListNode_next((SolListNode*)g);
-    if (n) {
-        return solListNode_val(n);
+    SolLL1ParserSymbol *s = (SolLL1ParserSymbol*)(solListIter_current_val((SolListIter*)g));
+    if (s) {
+        int v = *(int*)(solLL1ParserSymbol_symbol(s));
+        printf("Read: %s.%d\n", cc[v-1], v);
     }
-    return NULL;
+    solListIter_next((SolListIter*)g);
+    return s;
 }
 
 int _output(void *x, SolLL1ParserProduct *p, SolLL1ParserSymbol *s)
@@ -253,52 +255,7 @@ int main()
     inspect_product(f10);
     inspect_product(f11);
     inspect_product(f12);
-    /*
-    printf("compute nullable of S:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sS));
-    printf("compute nullable of E:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sE));
-    printf("compute nullable of E':\t%d\n", solLL1Parser_symbol_compute_nullable(p, sE1));
-    printf("compute nullable of T:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sT));
-    printf("compute nullable of T':\t%d\n", solLL1Parser_symbol_compute_nullable(p, sT1));
-    printf("compute nullable of F:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sF));
 
-    printf("compute first of S[%d]: ", solLL1Parser_symbol_compute_first(p, sS));
-    if (inspect_rbtree(solLL1ParserSymbol_first(sS), &print_entry_symbol))
-        printf("empty first\n");
-    printf("compute first of E[%d]: ", solLL1Parser_symbol_compute_first(p, sE));
-    if (inspect_rbtree(solLL1ParserSymbol_first(sE), &print_entry_symbol))
-        printf("empty first\n");
-    printf("compute first of E' [%d]: ", solLL1Parser_symbol_compute_first(p, sE1));
-    if (inspect_rbtree(solLL1ParserSymbol_first(sE1), &print_entry_symbol))
-        printf("empty first\n");
-    printf("compute first of T [%d]: ", solLL1Parser_symbol_compute_first(p, sT));
-    if (inspect_rbtree(solLL1ParserSymbol_first(sT), &print_entry_symbol))
-        printf("empty first\n");
-    printf("compute first of T' [%d]: ", solLL1Parser_symbol_compute_first(p, sT1));
-    if (inspect_rbtree(solLL1ParserSymbol_first(sT1), &print_entry_symbol))
-        printf("empty first\n");
-    printf("compute first of F [%d]: ", solLL1Parser_symbol_compute_first(p, sF));
-    if (inspect_rbtree(solLL1ParserSymbol_first(sF), &print_entry_symbol))
-        printf("empty first\n");
-
-    printf("compute follow of S[%d]: ", solLL1Parser_symbol_compute_follow(p, sS));
-    if (inspect_rbtree(solLL1ParserSymbol_follow(sS), &print_entry_symbol))
-        printf("empty follow\n");
-    printf("compute follow of E[%d]: ", solLL1Parser_symbol_compute_follow(p, sE));
-    if (inspect_rbtree(solLL1ParserSymbol_follow(sE), &print_entry_symbol))
-        printf("empty follow\n");
-    printf("compute follow of E'[%d]: ", solLL1Parser_symbol_compute_follow(p, sE1));
-    if (inspect_rbtree(solLL1ParserSymbol_follow(sE1), &print_entry_symbol))
-        printf("empty follow\n");
-    printf("compute follow of T[%d]: ", solLL1Parser_symbol_compute_follow(p, sT));
-    if (inspect_rbtree(solLL1ParserSymbol_follow(sT), &print_entry_symbol))
-        printf("empty follow\n");
-    printf("compute follow of T'[%d]: ", solLL1Parser_symbol_compute_follow(p, sT1));
-    if (inspect_rbtree(solLL1ParserSymbol_follow(sT1), &print_entry_symbol))
-        printf("empty follow\n");
-    printf("compute follow of F[%d]: ", solLL1Parser_symbol_compute_follow(p, sF));
-    if (inspect_rbtree(solLL1ParserSymbol_follow(sF), &print_entry_symbol))
-        printf("empty follow\n");
-    */
     printf("Generate table return %d\n\n", solLL1Parser_generate_table(p));
 
     printf("S first:\n");
@@ -343,11 +300,14 @@ int main()
     solList_add(l, snum);
     solList_add(l, src);
     solList_add(l, send);
+    SolListIter *i = solListIter_new(l);
+
     solLL1Parser_set_read_symbol_func(p, &read_str);
     solLL1Parser_set_output_func(p, &_output);
     solLL1Parser_set_start_symbol(p, sS);
-    solLL1Parser_parse(p, solList_head(l), NULL);
+    printf("Parse result %d\n", solLL1Parser_parse(p, i, NULL));
 
+    solListIter_free(i);
     solList_free(l);
     solLL1Parser_free(p);
 
