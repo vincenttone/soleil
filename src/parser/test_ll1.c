@@ -49,8 +49,9 @@ char cc[Limit-1][4] = {
     "$", "e",
 };
 
-void inspect_product(SolLL1Parser *p, SolLL1ParserProduct *f)
+void inspect_product(SolLL1ParserProduct *f)
 {
+    if (f == NULL || solLL1ParserProduct_len(f) == 0) return;
     SolLL1ParserProductNode *n = solLL1ParserProduct_left(f);
     SolLL1ParserSymbol *s = solLL1ParserProductNode_symbol(n);
     int v = *(int*)(solLL1ParserSymbol_symbol(s));
@@ -65,8 +66,9 @@ void inspect_product(SolLL1Parser *p, SolLL1ParserProduct *f)
     printf("\n");
 }
 
-int print_symbol(SolRBTree *t, SolRBTreeNode *n, void *v)
+int print_entry_symbol(SolRBTree *t, SolRBTreeNode *n, void *v)
 {
+    if (solRBTree_node_is_nil(t, n)) return 0;
     SolLL1ParserEntry *e= solRBTreeNode_val(n);
     SolLL1ParserSymbol *s= solLL1ParserEntry_symbol(e);
     int d= *(int*)(solLL1ParserSymbol_symbol(s));
@@ -78,12 +80,41 @@ int print_symbol(SolRBTree *t, SolRBTreeNode *n, void *v)
     return 0;
 }
 
-int inspect_symbol_list(SolRBTree *t)
+int print_symbol(SolLL1ParserSymbol *s)
+{
+    int d = *(int*)(solLL1ParserSymbol_symbol(s));
+    if (d > Limit) {
+        printf("entry data is not right!");
+        return 1;
+    }
+    printf("%s ", cc[d-1]);
+    return 0;
+}
+
+int print_entry(SolRBTree *t, SolRBTreeNode *n, void *v)
+{
+    if (solRBTree_node_is_nil(t, n)) return 0;
+    SolLL1ParserEntry *e= solRBTreeNode_val(n);
+    SolLL1ParserSymbol *s= solLL1ParserEntry_symbol(e);
+    int d= *(int*)(solLL1ParserSymbol_symbol(s));
+    if (d > Limit) {
+        printf("entry data is not right!");
+        return 1;
+    }
+    printf("Entry of <<%s>> , product: ", cc[d-1]);
+    SolLL1ParserProduct *p = solLL1ParserEntry_product(e);
+    if (solLL1ParserProduct_len(p)) {
+        inspect_product(p);
+    }
+    return 0;
+}
+
+int inspect_rbtree(SolRBTree *t, solRBTree_f_ptr_act f)
 {
     if (t == NULL || solRBTree_count(t) == 0) {
-        printf("<<<None>>");
+        printf("<<<None>>\n");
     } else {
-        solRBTree_travelsal_inorder(t, solRBTree_root(t), &print_symbol, NULL);
+        solRBTree_travelsal_inorder(t, solRBTree_root(t), f, NULL);
     }
     printf("\n");
     return 0;
@@ -210,19 +241,19 @@ int main()
     solLL1Parser_reg_product(p, f11);
     solLL1Parser_reg_product(p, f12);
     
-    inspect_product(p, f1);
-    inspect_product(p, f2);
-    inspect_product(p, f3);
-    inspect_product(p, f4);
-    inspect_product(p, f5);
-    inspect_product(p, f6);
-    inspect_product(p, f7);
-    inspect_product(p, f8);
-    inspect_product(p, f9);
-    inspect_product(p, f10);
-    inspect_product(p, f11);
-    inspect_product(p, f12);
-
+    inspect_product(f1);
+    inspect_product(f2);
+    inspect_product(f3);
+    inspect_product(f4);
+    inspect_product(f5);
+    inspect_product(f6);
+    inspect_product(f7);
+    inspect_product(f8);
+    inspect_product(f9);
+    inspect_product(f10);
+    inspect_product(f11);
+    inspect_product(f12);
+    /*
     printf("compute nullable of S:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sS));
     printf("compute nullable of E:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sE));
     printf("compute nullable of E':\t%d\n", solLL1Parser_symbol_compute_nullable(p, sE1));
@@ -231,44 +262,74 @@ int main()
     printf("compute nullable of F:\t%d\n", solLL1Parser_symbol_compute_nullable(p, sF));
 
     printf("compute first of S[%d]: ", solLL1Parser_symbol_compute_first(p, sS));
-    if (inspect_symbol_list(solLL1ParserSymbol_first(sS)))
+    if (inspect_rbtree(solLL1ParserSymbol_first(sS), &print_entry_symbol))
         printf("empty first\n");
     printf("compute first of E[%d]: ", solLL1Parser_symbol_compute_first(p, sE));
-    if (inspect_symbol_list(solLL1ParserSymbol_first(sE)))
+    if (inspect_rbtree(solLL1ParserSymbol_first(sE), &print_entry_symbol))
         printf("empty first\n");
     printf("compute first of E' [%d]: ", solLL1Parser_symbol_compute_first(p, sE1));
-    if (inspect_symbol_list(solLL1ParserSymbol_first(sE1)))
+    if (inspect_rbtree(solLL1ParserSymbol_first(sE1), &print_entry_symbol))
         printf("empty first\n");
     printf("compute first of T [%d]: ", solLL1Parser_symbol_compute_first(p, sT));
-    if (inspect_symbol_list(solLL1ParserSymbol_first(sT)))
+    if (inspect_rbtree(solLL1ParserSymbol_first(sT), &print_entry_symbol))
         printf("empty first\n");
     printf("compute first of T' [%d]: ", solLL1Parser_symbol_compute_first(p, sT1));
-    if (inspect_symbol_list(solLL1ParserSymbol_first(sT1)))
+    if (inspect_rbtree(solLL1ParserSymbol_first(sT1), &print_entry_symbol))
         printf("empty first\n");
     printf("compute first of F [%d]: ", solLL1Parser_symbol_compute_first(p, sF));
-    if (inspect_symbol_list(solLL1ParserSymbol_first(sF)))
+    if (inspect_rbtree(solLL1ParserSymbol_first(sF), &print_entry_symbol))
         printf("empty first\n");
 
     printf("compute follow of S[%d]: ", solLL1Parser_symbol_compute_follow(p, sS));
-    if (inspect_symbol_list(solLL1ParserSymbol_follow(sS)))
+    if (inspect_rbtree(solLL1ParserSymbol_follow(sS), &print_entry_symbol))
         printf("empty follow\n");
     printf("compute follow of E[%d]: ", solLL1Parser_symbol_compute_follow(p, sE));
-    if (inspect_symbol_list(solLL1ParserSymbol_follow(sE)))
+    if (inspect_rbtree(solLL1ParserSymbol_follow(sE), &print_entry_symbol))
         printf("empty follow\n");
     printf("compute follow of E'[%d]: ", solLL1Parser_symbol_compute_follow(p, sE1));
-    if (inspect_symbol_list(solLL1ParserSymbol_follow(sE1)))
+    if (inspect_rbtree(solLL1ParserSymbol_follow(sE1), &print_entry_symbol))
         printf("empty follow\n");
     printf("compute follow of T[%d]: ", solLL1Parser_symbol_compute_follow(p, sT));
-    if (inspect_symbol_list(solLL1ParserSymbol_follow(sT)))
+    if (inspect_rbtree(solLL1ParserSymbol_follow(sT), &print_entry_symbol))
         printf("empty follow\n");
     printf("compute follow of T'[%d]: ", solLL1Parser_symbol_compute_follow(p, sT1));
-    if (inspect_symbol_list(solLL1ParserSymbol_follow(sT1)))
+    if (inspect_rbtree(solLL1ParserSymbol_follow(sT1), &print_entry_symbol))
         printf("empty follow\n");
     printf("compute follow of F[%d]: ", solLL1Parser_symbol_compute_follow(p, sF));
-    if (inspect_symbol_list(solLL1ParserSymbol_follow(sF)))
+    if (inspect_rbtree(solLL1ParserSymbol_follow(sF), &print_entry_symbol))
         printf("empty follow\n");
+    */
+    printf("Generate table return %d\n\n", solLL1Parser_generate_table(p));
 
-    printf("Generate table return %d\n", solLL1Parser_generate_table(p));
+    printf("S first:\n");
+    inspect_rbtree(solLL1ParserSymbol_first(sS), &print_entry);
+    printf("S follow (nullable [%d]):\n", solLL1ParserSymbol_is_nullable(sS));
+    inspect_rbtree(solLL1ParserSymbol_follow(sS), &print_entry);
+
+    printf("E first:\n");
+    inspect_rbtree(solLL1ParserSymbol_first(sE), &print_entry);
+    printf("E follow (nullable [%d]):\n", solLL1ParserSymbol_is_nullable(sE));
+    inspect_rbtree(solLL1ParserSymbol_follow(sE), &print_entry);
+
+    printf("E' first:\n");
+    inspect_rbtree(solLL1ParserSymbol_first(sE1), &print_entry);
+    printf("E' follow (nullable [%d]):\n", solLL1ParserSymbol_is_nullable(sE1));
+    inspect_rbtree(solLL1ParserSymbol_follow(sE1), &print_entry);
+
+    printf("T first:\n");
+    inspect_rbtree(solLL1ParserSymbol_first(sT), &print_entry);
+    printf("T follow (nullable [%d]):\n", solLL1ParserSymbol_is_nullable(sT));
+    inspect_rbtree(solLL1ParserSymbol_follow(sT), &print_entry);
+
+    printf("T' first:\n");
+    inspect_rbtree(solLL1ParserSymbol_first(sT1), &print_entry);
+    printf("T' follow (nullable [%d]):\n", solLL1ParserSymbol_is_nullable(sT1));
+    inspect_rbtree(solLL1ParserSymbol_follow(sT1), &print_entry);
+
+    printf("F first:\n");
+    inspect_rbtree(solLL1ParserSymbol_first(sF), &print_entry);
+    printf("F follow (nullable [%d]):\n", solLL1ParserSymbol_is_nullable(sF));
+    inspect_rbtree(solLL1ParserSymbol_follow(sF), &print_entry);
 
     SolList *l = solList_new();
     // int + int * (int + int)$
