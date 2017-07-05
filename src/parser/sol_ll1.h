@@ -74,9 +74,11 @@ SolLL1ParserSymbol* solLL1ParserSymbol_new(void*, int);
 void solLL1ParserSymbol_free(SolLL1ParserSymbol*);
 void _solLL1ParserSymbol_free(void*);
 int solLL1ParserSymbol_add_first(SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
+int solLL1ParserSymbol_add_first_entry(SolLL1ParserSymbol*, SolLL1ParserEntry*);
 int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol*, SolLL1ParserSymbol*, SolLL1ParserProduct*);
-int solLL1ParserSymbol_merge_first(SolLL1ParserSymbol*, SolRBTree*);
-int solLL1ParserSymbol_merge_follow(SolLL1ParserSymbol*, SolRBTree*);
+
+int solLL1ParserSymbol_dup_first(SolLL1ParserSymbol*, SolRBTree*, SolLL1ParserProduct*);
+int solLL1ParserSymbol_dup_follow(SolLL1ParserSymbol*, SolRBTree*, SolLL1ParserProduct*);
 
 SolLL1ParserEntry* solLL1ParserEntry_new(SolLL1ParserSymbol*, SolLL1ParserProduct*);
 void solLL1ParserEntry_free(SolLL1ParserEntry*);
@@ -84,7 +86,6 @@ void solLL1ParserEntry_free(SolLL1ParserEntry*);
 int _solLL1Parser_entry_compare(void*, void*);
 int _solLL1Parser_symbol_compare(void*, void*);
 void _solLL1ParserEntry_free(void*);
-int _solLL1Parser_dup_entry_and_insert(SolRBTree*, SolRBTreeNode*, void *);
 int _solLL1Parser_rbnode_compute_nullable(SolRBTree*, SolRBTreeNode*, void*);
 int _solLL1Parser_rbnode_compute_first(SolRBTree*, SolRBTreeNode*, void*);
 int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
