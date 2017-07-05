@@ -34,7 +34,8 @@ typedef struct _SolLL1Parser {
     SolLL1ParserSymbol* start;
     SolLL1ParserSymbol* end;
     SolLL1ParserSymbol* (*f_read)(void*);
-    int (*f_out)(void*, SolLL1ParserProduct*, SolLL1ParserSymbol*);
+    // output ANY, PRODUCT, SYMBOL, IGNORE
+    int (*f_out)(void*, SolLL1ParserProduct*, SolLL1ParserSymbol*, SolLL1ParserSymbol*);
 } SolLL1Parser;
 
 typedef struct _SolLL1ParserEntry {
@@ -107,7 +108,7 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1Parser_end_symbol(p) (p)->end
 
 #define solLL1Parser_read_symbol(p, g) (*(p)->f_read)(g)
-#define solLL1Parser_output(p, x, product, symbol) (*(p)->f_out)(x, product, symbol)
+#define solLL1Parser_output(p, x, product, symbol, ignore) (*(p)->f_out)(x, product, symbol, ignore)
 
 #define solLL1ParserProduct_left_symbol(f) solDlListNode_val(solDlList_head(f))
 
@@ -125,6 +126,7 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1ParserSymbol_symbol(symbol) (symbol)->s
 #define solLL1ParserSymbol_first(symbol) (symbol)->first
 #define solLL1ParserSymbol_follow(symbol) (symbol)->follow
+#define solLL1ParserSymbol_flag(symbol) (symbol)->f
 
 #define solLL1ParserSymbol_is_nonterminal(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Nonterminal)
 #define solLL1ParserSymbol_is_terminal(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Terminal)

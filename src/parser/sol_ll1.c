@@ -437,7 +437,6 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
     assert((solLL1Parser_output_func(p)) && "Parser: no output func");
     assert((solLL1Parser_start_symbol(p)) && "Parser: no start symbol");
     assert((solLL1Parser_end_symbol(p)) && "Parser: no end symbol");
-    solStack_push(solLL1Parser_stack(p), solLL1Parser_end_symbol(p));
     solStack_push(solLL1Parser_stack(p), solLL1Parser_start_symbol(p));
     int status = 0;
     SolLL1ParserSymbol *sbl1;
@@ -445,6 +444,7 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
     SolLL1ParserEntry *e1 = solLL1ParserEntry_new(NULL, NULL);
     SolLL1ParserEntry *e2;
     SolLL1ParserProductNode *n;
+    SolRBTreeNode *rbn;
     while ((sbl1 = solLL1Parser_read_symbol(p, g))) {
     parse:
         sbl2 = solStack_pop(solLL1Parser_stack(p));
@@ -458,18 +458,19 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
             } else if (solLL1Parser_read_symbol(p, g)) {
                 status = -2;
             } else {
-                solLL1Parser_output(p, x, NULL, sbl2);
+                solLL1Parser_output(p, x, NULL, sbl2, NULL);
             }
             break;
         }
         if (solLL1ParserSymbol_is_terminal(sbl2)) {
-            solLL1Parser_output(p, x, NULL, sbl2);
+            solLL1Parser_output(p, x, NULL, sbl2, NULL);
             continue;
         }
         if (solLL1ParserSymbol_first(sbl2) == NULL) break;
-        solLL1ParserEntry_set_symbol(sbl2, NULL);
+        solLL1ParserEntry_set_symbol(e1, sbl1);
         if (solRBTree_count(solLL1ParserSymbol_first(sbl2))) {
-            e2 = (SolLL1ParserEntry*)(solRBTree_search_node(solLL1ParserSymbol_first(sbl2), e1));
+            rbn = solRBTree_search_node(solLL1ParserSymbol_first(sbl2), e1);
+            e2 = (SolLL1ParserEntry*)solRBTreeNode_val(rbn);
             if (e2 == NULL || solLL1ParserEntry_product(e2) == NULL)
                 goto check_nullable;
             if (solList_head(solLL1ParserEntry_product(e2)) == NULL)
@@ -479,7 +480,7 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
                 status = -3;
                 break;
             }
-            solLL1Parser_output(p, x, solLL1ParserEntry_product(e2), NULL);
+            solLL1Parser_output(p, x, solLL1ParserEntry_product(e2), NULL, NULL);
             n = solDlList_tail(solLL1ParserEntry_product(e2));
             do {
                 solStack_push(solLL1Parser_stack(p), solDlListNode_val(n));
@@ -491,7 +492,7 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
         if (solLL1ParserSymbol_is_nullable(sbl2)
             && solLL1ParserSymbol_follow(sbl2)) {
             if (solRBTree_count(solLL1ParserSymbol_follow(sbl2))) {
-                solStack_pop(solLL1Parser_stack(p));
+                solLL1Parser_output(p, x, NULL, NULL, sbl2);
                 goto parse;
             }
         }
