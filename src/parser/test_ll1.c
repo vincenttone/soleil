@@ -111,8 +111,10 @@ int print_entry(SolRBTree *t, SolRBTreeNode *n, void *v)
 
 int inspect_rbtree(SolRBTree *t, solRBTree_f_ptr_act f)
 {
-    if (t == NULL || solRBTree_count(t) == 0) {
+    if (t == NULL) {
         printf("<<<None>>\n");
+    } else if (solRBTree_count(t) == 0) {
+        printf("<<<None>>>\n");
     } else {
         solRBTree_travelsal_inorder(t, solRBTree_root(t), f, NULL);
     }
@@ -131,15 +133,23 @@ SolLL1ParserSymbol* read_str(void *g)
     return s;
 }
 
-int _output(void *x, SolLL1ParserProduct *p, SolLL1ParserSymbol *s)
+int _output(void *x, SolLL1ParserProduct *p, SolLL1ParserSymbol *s, SolLL1ParserSymbol *i)
 {
     if (p) {
-        printf("output product\n");
+        printf("output product\t");
+        inspect_product(p);
     } else if (s) {
-        printf("output symbol\n");
-    } else {
+        printf("output symbol: \t");
+        print_symbol(s);
+        printf("\n");
+    } else if (i) {
+        printf("ignore symbol: \t");
+        print_symbol(i);
+        printf("\n");
+    }else {
         printf("output nothing\n");
     }
+    //(SolLL1Parser*)p
     return 0;
 }
 
@@ -305,7 +315,7 @@ int main()
     solLL1Parser_set_read_symbol_func(p, &read_str);
     solLL1Parser_set_output_func(p, &_output);
     solLL1Parser_set_start_symbol(p, sS);
-    printf("Parse result %d\n", solLL1Parser_parse(p, i, NULL));
+    printf("Parse result %d\n", solLL1Parser_parse(p, i, p));
 
     solListIter_free(i);
     solList_free(l);
