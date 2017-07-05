@@ -24,6 +24,15 @@ void solRBTreeIter_free(SolRBTreeIter *i)
     sol_free(i);
 }
 
+void solRBTreeIter_reset(SolRBTreeIter *i)
+{
+    SolRBTreeNode *n;
+    do {
+        n = solStack_pop(i->s);
+    } while ((n && solRBTree_node_is_NOT_nil(i->t, n)));
+    i->cn = NULL;
+}
+
 SolRBTreeNode* solRBTreeIter_current(SolRBTreeIter *i)
 {
     if (i == NULL) return NULL;
@@ -51,6 +60,9 @@ SolRBTreeNode* solRBTreeIter_next(SolRBTreeIter *i)
 
 SolRBTreeNode* solRBTreeIter_next_preorder(SolRBTreeIter *i)
 {
+    if (solRBTree_node_is_nil(i->t, i->n)) {
+        return NULL;
+    }
     SolRBTreeNode *n;
     n = solStack_pop(i->s);
     if (n == NULL && i->cn == NULL) {
@@ -68,6 +80,9 @@ SolRBTreeNode* solRBTreeIter_next_preorder(SolRBTreeIter *i)
 
 SolRBTreeNode* solRBTreeIter_next_inorder(SolRBTreeIter *i)
 {
+    if (solRBTree_node_is_nil(i->t, i->n)) {
+        return NULL;
+    }
     SolRBTreeNode *n;
     n = solStack_pop(i->s);
     if (n == NULL && i->cn == NULL) {
@@ -92,6 +107,9 @@ SolRBTreeNode* solRBTreeIter_next_inorder(SolRBTreeIter *i)
 
 SolRBTreeNode* solRBTreeIter_next_backorder(SolRBTreeIter *i)
 {
+    if (solRBTree_node_is_nil(i->t, i->n)) {
+        return NULL;
+    }
     SolRBTreeNode *n;
     n = solStack_pop(i->s);
     if (n == NULL && i->cn == NULL) {

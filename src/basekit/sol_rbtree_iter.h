@@ -25,6 +25,7 @@ void* solRBTreeIter_current_val(SolRBTreeIter*);
 SolRBTreeNode* solRBTreeIter_next(SolRBTreeIter*);
 void* solRBTreeIter_next_val(SolRBTreeIter*);
 void solRBTreeIter_free(SolRBTreeIter*);
+void solRBTreeIter_reset(SolRBTreeIter*);
 
 SolRBTreeNode* solRBTreeIter_next_preorder(SolRBTreeIter*);
 SolRBTreeNode* solRBTreeIter_next_inorder(SolRBTreeIter*);
