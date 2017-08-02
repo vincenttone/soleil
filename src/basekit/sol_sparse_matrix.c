@@ -20,3 +20,8 @@ void solSparseMatrix_free(SolSparseMatrix *s)
     sol_free(s->col);
     sol_free(s);
 }
+
+int solSparseMatrix_add_char(SolSparseMatrix *m, size_t col, size_t row, SolSparseMatrixRecord r)
+{
+    
+}

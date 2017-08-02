@@ -4,9 +4,9 @@
 #include "sol_common.h"
 
 enum _SolSparseMatrixRecordType {
-    SolSparseMatrixRecordType_Char = 1,
-    SolSparseMatrixRecordType_Int,
-    SolSparseMatrixRecordType_Ptr,
+    solSparseMatrixRecordType_Char = 1,
+    solSparseMatrixRecordType_Int,
+    solSparseMatrixRecordType_Ptr,
 };
 
 typedef union {
@@ -28,6 +28,6 @@ typedef struct _SolSparseMatrix {
 
 SolSparseMatrix* solSparseMatrix_new(size_t, size_t, enum _SolSparseMatrixRecordType);
 void solSparseMatrix_free(SolSparseMatrix*);
-
+int solSparseMatrix_add_char(SolSparseMatrix*, size_t, size_t, SolSparseMatrixRecord);
 
 #endif
