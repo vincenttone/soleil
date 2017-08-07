@@ -20,6 +20,7 @@ typedef struct _SolSparseMatrix {
     size_t rs; // row size
     size_t s; // size
     size_t c; // count
+    size_t row_max;
     enum _SolSparseMatrixRecordType rt; // record type
     SolSparseMatrixRecord *r; // records
     size_t *cols; // column
