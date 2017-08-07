@@ -1,4 +1,4 @@
-#include "sol_spare_matrix.h"
+#include "sol_sparse_matrix.h"
 
 SolSparseMatrix* solSparseMatrix_new(size_t row_size, size_t col_size, enum _SolSparseMatrixRecordType t)
 {
@@ -39,7 +39,7 @@ int solSparseMatrix_set(SolSparseMatrix *m, size_t row, size_t col, SolSparseMat
     size_t *o2 = o1 + 1;
     size_t o;
     int ac = 1; // prepend
-    foreach (o = *o1; o < *o2; o++) {
+    for (o = *o1; o < *o2; o++) {
         if (col == *(size_t*)(solSparseMatrix_columns(m) + o)) {
             ac = 2; // swap
             break;
@@ -50,35 +50,40 @@ int solSparseMatrix_set(SolSparseMatrix *m, size_t row, size_t col, SolSparseMat
         }
     }
     if (ac == 2) { // swap record
-        SolSparseMatrixRecord *r2s = (solSparseMatrix_records(m) + *(size_t*)o);
+        SolSparseMatrixRecord *r2s = (solSparseMatrix_records(m) + o);
         // todo: free pre record
         *r2s = r;
         return 0;
     }
-    size_t s = solSparseMatrix_size(m) - 1;
+    if (solSparseMatrix_count(m) >= solSparseMatrix_size(m)) {
+        // todo: resize
+        return -1;
+    }
+    size_t count;
     size_t *c2s;
     SolSparseMatrixRecord *r2s;
-    for (s; s > *o; s--) {
-        c2s = solSparseMatrix_columns(m) + s + 1;
-        *c2s = *(solSparseMatrix_columns(m) + s);
-        r2s = solSparseMatrix_records(m) + s + 1;
-        *r2s = *(solSparseMatrix_records(m) + s);
+    for (count = solSparseMatrix_count(m); count > o; count--) {
+        c2s = solSparseMatrix_columns(m) + count;
+        *c2s = *(c2s - 1);
+        r2s = solSparseMatrix_records(m) + count;
+        *r2s = *(r2s -1);
     }
-    c2s = solSparseMatrix_columns(m) + o + 1;
+    c2s = solSparseMatrix_columns(m) + o;
     *c2s = col;
-    r2s = solSparseMatrix_records(m) + o + 1;
+    r2s = solSparseMatrix_records(m) + o;
     *r2s = r;
+    solSparseMatrix_incr_count(m);
     return 0;
 }
 
 SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix *m, size_t row, size_t col)
 {
-    if (row > solSparseMatrix_row_size(m) - 1) return -1;
-    if (col > solSparseMatrix_col_size(m) - 1) return -1;
+    if (row > solSparseMatrix_row_size(m) - 1) return NULL;
+    if (col > solSparseMatrix_col_size(m) - 1) return NULL;
     size_t *o1 = solSparseMatrix_offsets(m) + row;
     size_t *o2 = o1 + 1;
     size_t o;
-    foreach (o = *o1; o < *o2; o++) {
+    for (o = *o1; o < *o2; o++) {
         if (col == *(size_t*)(solSparseMatrix_columns(m) + o)) {
             return (SolSparseMatrixRecord*)(solSparseMatrix_records(m) + o);
         }
