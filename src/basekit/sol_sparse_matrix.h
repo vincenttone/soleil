@@ -25,10 +25,13 @@ typedef struct _SolSparseMatrix {
     SolSparseMatrixRecord *r; // records
     size_t *cols; // column
     size_t *offsets; // offset
+    int (*f_load)();
 } SolSparseMatrix;
 
 SolSparseMatrix* solSparseMatrix_new(size_t, size_t, enum _SolSparseMatrixRecordType);
 void solSparseMatrix_free(SolSparseMatrix*);
+int solSparseMatrix_load(SolSparseMatrix*, void*, size_t, size_t);
+
 int solSparseMatrix_set(SolSparseMatrix*, size_t, size_t, SolSparseMatrixRecord);
 SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix*, size_t, size_t);
 
@@ -56,5 +59,9 @@ SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix*, size_t, size_t);
 
 #define solSparseMatrix_set_offsets(m, o) (m)->offsets = o
 #define solSparseMatrix_offsets(m) (m)->offsets
+
+#define solSparseMatrix_record(m, o) (m->r + o)
+#define solSparseMatrix_offset(m, o) (m->offsets + o)
+#define solSparseMatrix_column(m, o) (m->cols + o)
 
 #endif

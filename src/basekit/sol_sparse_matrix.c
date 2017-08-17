@@ -32,6 +32,41 @@ void solSparseMatrix_free(SolSparseMatrix *m)
     sol_free(m);
 }
 
+int solSparseMatrix_load(SolSparseMatrix *m, void *a, size_t rs, size_t cs)
+{
+    if (rs > solSparseMatrix_row_size(m) - 1) return -1;
+    if (cs > solSparseMatrix_col_size(m) - 1) return -1;
+    size_t r, c;
+    size_t o = 0;
+    SolSparseMatrixRecord *rcd;
+    SolSparseMatrixRecord *a1;
+    size_t *ro;
+    size_t *rc;
+    for (r = 0; r < rs; r++) {
+        ro = solSparseMatrix_offset(m, r);
+        *ro = o;
+        for (c = 0; c < cs; c++) {
+            a1 = a + (c * cs + r);
+            if (m->f_load) {
+                if ((*m->f_load)(solSparseMatrix_record(m, o), a1) == 0) {
+                    rc = solSparseMatrix_column(m, c);
+                    *rc = c;
+                    o++;
+                }
+            } else if (a1) {
+                rcd = solSparseMatrix_record(m, o);
+                *rcd = *a1;
+                rc = solSparseMatrix_column(m, c);
+                *rc = c;
+                o++;
+            }
+        }
+    }
+    ro = solSparseMatrix_offset(m, r);
+    *ro = o;
+    return 0;
+}
+
 int solSparseMatrix_set(SolSparseMatrix *m, size_t row, size_t col, SolSparseMatrixRecord r)
 {
     if (row > solSparseMatrix_row_size(m) - 1) return -1;
