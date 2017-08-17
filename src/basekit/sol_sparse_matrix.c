@@ -46,7 +46,10 @@ int solSparseMatrix_load(SolSparseMatrix *m, void *a, size_t rs, size_t cs)
         ro = solSparseMatrix_offset(m, r);
         *ro = o;
         for (c = 0; c < cs; c++) {
-            a1 = a + (c * cs + r);
+            a1 = (a + r * rs + c);
+            if (a1) {
+                printf("%zu:%zu->%d\n", r, c, a1);
+            }
             if (m->f_load) {
                 if ((*m->f_load)(solSparseMatrix_record(m, o), a1) == 0) {
                     rc = solSparseMatrix_column(m, c);
