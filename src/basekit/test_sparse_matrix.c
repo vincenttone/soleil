@@ -34,7 +34,7 @@ void debug_info(SolSparseMatrix *m)
     }
     printf("\n");
     printf("OFFSETS: ");
-    for (i = 0; i < m->s; i++) {
+    for (i = 0; i < m->cs; i++) {
         x = (m->offsets + i);
         printf("%zu ", *(size_t*)x);
     }
@@ -64,23 +64,33 @@ void echo(SolSparseMatrix *m, size_t r, size_t c)
     }
 }
 
+int echo_t(SolSparseMatrixRecord *record, size_t r, size_t c)
+{
+    if (record) {
+        printf("%zu:%zu --> %c\n", r, c, record->rc);
+    }
+    return 0;
+}
+
 int main()
 {
     size_t r = 10;
     size_t c = 10;
     SolSparseMatrix *m = solSparseMatrix_new(r, c, SolSparseMatrixRecordType_Char);
-    /////////
+    /*
     SolSparseMatrixRecord x = sm_new_char('x');
     SolSparseMatrixRecord y = sm_new_char('y');
     SolSparseMatrixRecord z = sm_new_char('z');
     SolSparseMatrixRecord* am[3][3] = {
         {NULL, NULL, &x},
-        {NULL, &y, NULL},
+        {NULL, &y, &x},
         {NULL, &z, NULL}
     };
-    solSparseMatrix_load(m, &am, 3, 3);
+    solSparseMatrix_load(m, *am, 3, 3);
+    debug_info(m);
     echo(m, r, c);
-    /////////
+    solSparseMatrix_traverse(m, &echo_t);
+    */
     sm_set_char_value(m, 2, 3, 'a');
     debug_info(m);
     sm_set_char_value(m, 5, 6, 'b');

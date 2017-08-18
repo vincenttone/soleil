@@ -20,7 +20,6 @@ typedef struct _SolSparseMatrix {
     size_t rs; // row size
     size_t s; // size
     size_t c; // count
-    size_t row_max;
     enum _SolSparseMatrixRecordType rt; // record type
     SolSparseMatrixRecord *r; // records
     size_t *cols; // column
@@ -30,7 +29,9 @@ typedef struct _SolSparseMatrix {
 
 SolSparseMatrix* solSparseMatrix_new(size_t, size_t, enum _SolSparseMatrixRecordType);
 void solSparseMatrix_free(SolSparseMatrix*);
-int solSparseMatrix_load(SolSparseMatrix*, void*, size_t, size_t);
+
+int solSparseMatrix_load(SolSparseMatrix*, SolSparseMatrixRecord**, size_t, size_t);
+int solSparseMatrix_traverse(SolSparseMatrix *m, int (*f_out)(SolSparseMatrixRecord*, size_t, size_t));
 
 int solSparseMatrix_set(SolSparseMatrix*, size_t, size_t, SolSparseMatrixRecord);
 SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix*, size_t, size_t);
