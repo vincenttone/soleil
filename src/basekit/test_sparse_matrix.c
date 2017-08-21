@@ -97,7 +97,16 @@ int main()
     debug_info(m);
     sm_set_char_value(m, 8, 9, 'c');
     debug_info(m);
+    echo(m, r, c);
     sm_set_char_value(m, 3, 6, 'd');
+    debug_info(m);
+    echo(m, r, c);
+    sm_set_char_value(m, 3, 7, 'e');
+    debug_info(m);
+    echo(m, r, c);
+    sm_set_char_value(m, 3, 8, 'f');
+    debug_info(m);
+    sm_set_char_value(m, 3, 5, 'g');
     debug_info(m);
     echo(m, r, c);
     solSparseMatrix_free(m);

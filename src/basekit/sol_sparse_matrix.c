@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "sol_sparse_matrix.h"
 
 SolSparseMatrix* solSparseMatrix_new(size_t row_size, size_t col_size, enum _SolSparseMatrixRecordType t)
@@ -13,7 +12,7 @@ SolSparseMatrix* solSparseMatrix_new(size_t row_size, size_t col_size, enum _Sol
     solSparseMatrix_set_size(m, row_size + col_size);
     solSparseMatrix_set_records(m, sol_calloc(1, sizeof(SolSparseMatrixRecord) * (solSparseMatrix_size(m))));
     solSparseMatrix_set_columns(m, sol_calloc(1, sizeof(size_t) * (solSparseMatrix_size(m))));
-    solSparseMatrix_set_offsets(m, sol_calloc(1, sizeof(size_t) * (solSparseMatrix_size(m))));
+    solSparseMatrix_set_offsets(m, sol_calloc(1, sizeof(size_t) * (solSparseMatrix_row_size(m) + 1)));
     if (solSparseMatrix_records(m) == NULL
         ||solSparseMatrix_columns(m) == NULL
         || solSparseMatrix_offsets(m) == NULL
@@ -116,18 +115,14 @@ int solSparseMatrix_set(SolSparseMatrix *m, size_t row, size_t col, SolSparseMat
     size_t oc = solSparseMatrix_count(m) + 1;
     SolSparseMatrixRecord *r1;
     SolSparseMatrixRecord *r2;
-    if (o1 == o2) {
-        goto append;
-    } else {
+    if (o1 != o2) {
         for (; o1 < o2; o1++) {
             c1 = solSparseMatrix_columns(m) + o1;
             if (*c1 > col) {
                 break;
             }
         }
-        o1--;
     }
-append:
     do {
         c1 = solSparseMatrix_column(m, oc);
         r1 = solSparseMatrix_record(m, oc--);
@@ -142,7 +137,7 @@ append:
     *r1 = r;
     solSparseMatrix_incr_count(m);
     size_t *o;
-    for (; row <= solSparseMatrix_row_size(m); row++) {
+    for (; row < solSparseMatrix_row_size(m); row++) {
         o = solSparseMatrix_offset(m, row + 1);
         (*o)++;
     }
