@@ -140,6 +140,7 @@ int _solLL1Parser_rbnode_check(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1ParserSymbol_is_first_computed(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Computed_FIRST)
 #define solLL1ParserSymbol_is_follow_computed(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Computed_FOLLOW)
 
+#define solLL1ParserSymbol_is_NOT_nullable(symbol) (((symbol)->f & SolLL1ParserSymbolFlag_NULL) == 0)
 #define solLL1ParserSymbol_is_NOT_nonterminal(symbol) (((symbol)->f & SolLL1ParserSymbolFlag_Nonterminal) == 0)
 
 #define solLL1ParserSymbol_set_nullable(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_NULL)

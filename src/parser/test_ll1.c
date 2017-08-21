@@ -212,12 +212,18 @@ int main()
 
     SolLL1ParserProduct *f7 = solLL1ParserProduct_new();
     solLL1ParserProduct_add_symbol(f7, sT1);
-    solLL1ParserProduct_add_symbol(f7, smul);
-    solLL1ParserProduct_add_symbol(f7, sF);
-    solLL1ParserProduct_add_symbol(f7, sT1);
+    if (0) {
+        solLL1ParserProduct_add_symbol(f7, sdivi);
+        solLL1ParserProduct_add_symbol(f7, sF);
+    } else {
+        solLL1ParserProduct_add_symbol(f7, smul);
+        solLL1ParserProduct_add_symbol(f7, sF);
+        solLL1ParserProduct_add_symbol(f7, sT1);
+    }
 
     SolLL1ParserProduct *f8 = solLL1ParserProduct_new();
     solLL1ParserProduct_add_symbol(f8, sT1);
+    //solLL1ParserProduct_add_symbol(f8, sE1);
     solLL1ParserProduct_add_symbol(f8, sdivi);
     solLL1ParserProduct_add_symbol(f8, sF);
     solLL1ParserProduct_add_symbol(f8, sT1);

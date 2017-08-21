@@ -121,9 +121,16 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
     if (p == NULL) return -1;
     if (solLL1Parser_product_list(p) == NULL) return -2;
     if (solList_len(solLL1Parser_product_list(p)) == 0) return -3;
-    if (solLL1ParserSymbol_is_nullable(s)) return 0;
-    if (solLL1ParserSymbol_is_nullable_computed(s)) return 1;
-    SolListNode *nf = solList_head(solLL1Parser_product_list(p));
+    if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -4;
+    if (solList_len(solLL1ParserSymbol_product_list(s)) == 0) return -5;
+    if (solLL1ParserSymbol_is_nullable_computed(s)) {
+        if (solLL1ParserSymbol_is_nullable(s)) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    SolListNode *nf = solList_head(solLL1ParserSymbol_product_list(s));
     SolLL1ParserProductNode *ns;
     SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
@@ -132,24 +139,23 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
         f = solListNode_val(nf);
         ns = solLL1ParserProduct_left(f);
         s1 = solLL1ParserProductNode_symbol(ns);
-        if (s == s1) {
-            status = 0;
-            while ((ns = solLL1ParserProductNode_symbol_next(ns))) {
-                s1 = solLL1ParserProductNode_symbol(ns);
-                if (solLL1ParserSymbol_is_nullable(s1)) {
-                    continue;
-                } else if (solLL1ParserSymbol_is_nonterminal(s1)
-                           && solLL1Parser_symbol_compute_nullable(p, s1) == 0) {
-                    continue;
-                }
-                status = 2;
-                break;
+        assert(s1 == s && "left symbol not match!");
+        status = 0;
+        while ((ns = solLL1ParserProductNode_symbol_next(ns))) {
+            s1 = solLL1ParserProductNode_symbol(ns);
+            if (solLL1ParserSymbol_is_nullable(s1)) {
+                continue;
+            } else if (solLL1ParserSymbol_is_nonterminal(s1)
+                       && solLL1Parser_symbol_compute_nullable(p, s1) == 0) {
+                continue;
             }
-            if (status == 0) {
-                solLL1ParserSymbol_set_nullable(s);
-                solLL1ParserSymbol_set_nullable_product(s, f);
-                break;
-            }
+            status = 2;
+            break;
+        }
+        if (status == 0) {
+            assert(solLL1ParserSymbol_is_NOT_nullable(s) && "ambiguity in nullable.");
+            solLL1ParserSymbol_set_nullable(s);
+            solLL1ParserSymbol_set_nullable_product(s, f);
         }
     } while ((nf = solListNode_next(nf)));
     solLL1ParserSymbol_set_nullable_computed(s);
@@ -161,8 +167,10 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
     if (p == NULL) return -1;
     if (solLL1Parser_product_list(p) == NULL) return -2;
     if (solList_len(solLL1Parser_product_list(p)) == 0) return -3;
+    if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -4;
+    if (solList_len(solLL1ParserSymbol_product_list(s)) == 0) return -5;
     if (solLL1ParserSymbol_is_first_computed(s)) return 0;
-    SolListNode *nf = solList_head(solLL1Parser_product_list(p));
+    SolListNode *nf = solList_head(solLL1ParserSymbol_product_list(s));
     SolLL1ParserProductNode *ns;
     SolLL1ParserProduct *f;
     SolLL1ParserSymbol *s1;
@@ -170,9 +178,7 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
         f = solListNode_val(nf);
         ns = solLL1ParserProduct_left(f);
         s1 = solLL1ParserProductNode_symbol(ns);
-        if (s1 != s) {
-            continue;
-        }
+        assert(s1 == s && "left symbol not match!");
         while ((ns = solLL1ParserProductNode_symbol_next(ns))) {
             s1 = solLL1ParserProductNode_symbol(ns);
             if (solLL1ParserSymbol_is_terminal(s1)) {
@@ -354,6 +360,8 @@ int solLL1ParserSymbol_add_first_entry(SolLL1ParserSymbol *s, SolLL1ParserEntry 
     if (s == solLL1ParserEntry_symbol(e)) return -2;
     if (solLL1ParserSymbol_is_NOT_nonterminal(s)) return -3;
     if (solLL1ParserSymbol_first(s) == NULL) return -4;
+    SolRBTreeNode *n = solRBTree_search_node(solLL1ParserSymbol_first(s), e);
+    assert(solRBTree_node_is_nil(solLL1ParserSymbol_first(s), n) && "ambiguity is first.");
     if (solRBTree_insert(solLL1ParserSymbol_first(s), e)) {
         return 0;
     }
