@@ -42,10 +42,13 @@ int solLL1Parser_reg_product(SolLL1Parser *p, SolLL1ParserProduct *f)
     if (p == NULL
         || solLL1Parser_product_list(p) == NULL
         || f == NULL
+        || solList_head(f) == NULL
         ) {
         return -1;
     }
     if (solList_add(solLL1Parser_product_list(p), f)) {
+        SolLL1ParserSymbol *s = solListNode_val(solList_head(f));
+        solList_add(solLL1ParserSymbol_product_list(s), f);
         return 0;
     }
     return 1;
@@ -271,6 +274,9 @@ int solLL1Parser_generate_table(SolLL1Parser *p)
     if (solRBTree_travelsal_preorder(t, solRBTree_root(t), &_solLL1Parser_rbnode_compute_follow, p)) {
         return 3;
     }
+    if (solRBTree_travelsal_preorder(t, solRBTree_root(t), &_solLL1Parser_rbnode_check, p)) {
+        return 4;
+    }
     return 0;
 }
 
@@ -306,12 +312,20 @@ SolLL1ParserSymbol* solLL1ParserSymbol_new(void *s, int t)
         }
         solRBTree_set_compare_func(solLL1ParserSymbol_first(symbol), &_solLL1Parser_entry_compare);
         solRBTree_set_val_free_func(solLL1ParserSymbol_first(symbol), &_solLL1ParserEntry_free);
+        solLL1ParserSymbol_set_product_list(symbol, solList_new());
+        if (solLL1ParserSymbol_product_list(symbol) == NULL) {
+            solLL1ParserSymbol_free(symbol);
+            return NULL;
+        }
     }
     return symbol;
 }
 
 void solLL1ParserSymbol_free(SolLL1ParserSymbol *s)
 {
+    if (solLL1ParserSymbol_product_list(s)) {
+        solList_free(solLL1ParserSymbol_product_list(s));
+    }
     if (solLL1ParserSymbol_first(s)) {
         solRBTree_free(solLL1ParserSymbol_first(s));
     }
@@ -553,6 +567,17 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree *t, SolRBTreeNode *n, void *p)
         && solLL1ParserSymbol_is_nonterminal(s)
         ) {
         return solLL1Parser_symbol_compute_follow((SolLL1Parser*)p, s);
+    }
+    return 0;
+}
+
+int _solLL1Parser_rbnode_check(SolRBTree *t, SolRBTreeNode *n, void *p)
+{
+    SolLL1ParserSymbol* s = solRBTreeNode_val(n);
+    if (solLL1ParserSymbol_is_nonterminal(s)) {
+        if (solList_len(solLL1ParserSymbol_product_list(s)) > 1) {
+            // SolListNode *p1 = solList_head(solLL1ParserSymbol_product_list(s));
+        }
     }
     return 0;
 }

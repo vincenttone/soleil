@@ -11,7 +11,7 @@ typedef struct _SolListNode {
 typedef struct _SolList {
     SolListNode *head;
     SolListNode *tail;
-    unsigned long len;
+    size_t len;
     void *(*f_dup)(void*);
     void (*f_free)(void*);
     int (*f_match)(void*, void*);

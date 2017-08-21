@@ -20,11 +20,12 @@
 #define SolLL1ParserProductNode SolDlListNode
 
 typedef struct _SolLL1ParserSymbol {
-    void *s;
-    int f;
+    int f; // flag
+    void *s; // symbol
     SolRBTree *first;
     SolRBTree *follow;
     SolLL1ParserProduct *np; // nullable product
+    SolList *l; // product list
 } SolLL1ParserSymbol;
 
 typedef struct _SolLL1Parser {
@@ -90,6 +91,7 @@ void _solLL1ParserEntry_free(void*);
 int _solLL1Parser_rbnode_compute_nullable(SolRBTree*, SolRBTreeNode*, void*);
 int _solLL1Parser_rbnode_compute_first(SolRBTree*, SolRBTreeNode*, void*);
 int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
+int _solLL1Parser_rbnode_check(SolRBTree*, SolRBTreeNode*, void*);
 
 #define solLL1Parser_set_stack(p, stack) (p)->s = stack
 #define solLL1Parser_set_product_list(p, l) (p)->fl = l
@@ -122,11 +124,13 @@ int _solLL1Parser_rbnode_compute_follow(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1ParserSymbol_set_type(symbol, type) (symbol)->f = (symbol)->f | type
 #define solLL1ParserSymbol_set_first(symbol, f) (symbol)->first = f
 #define solLL1ParserSymbol_set_follow(symbol, f) (symbol)->follow = f
+#define solLL1ParserSymbol_set_product_list(symbol, list) (symbol)->l = list
 
 #define solLL1ParserSymbol_symbol(symbol) (symbol)->s
 #define solLL1ParserSymbol_first(symbol) (symbol)->first
 #define solLL1ParserSymbol_follow(symbol) (symbol)->follow
 #define solLL1ParserSymbol_flag(symbol) (symbol)->f
+#define solLL1ParserSymbol_product_list(symbol) (symbol)->l
 
 #define solLL1ParserSymbol_is_nonterminal(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Nonterminal)
 #define solLL1ParserSymbol_is_terminal(symbol) ((symbol)->f & SolLL1ParserSymbolFlag_Terminal)
