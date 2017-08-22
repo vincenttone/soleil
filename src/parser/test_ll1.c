@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include "sol_stack.h"
+#include "sol_dl_list.h"
 #include "sol_list.h"
 #include "sol_ll1.h"
 #include "sol_rbtree.h"
@@ -52,17 +54,17 @@ char cc[Limit-1][4] = {
 void inspect_product(SolLL1ParserProduct *f)
 {
     if (f == NULL || solLL1ParserProduct_len(f) == 0) return;
-    SolLL1ParserProductNode *n = solLL1ParserProduct_left(f);
-    SolLL1ParserSymbol *s = solLL1ParserProductNode_symbol(n);
+    SolLL1ParserSymbol *s = solLL1ParserProduct_left(f);
     int v = *(int*)(solLL1ParserSymbol_symbol(s));
     //printf("%d\t->\t", v);
     printf("%s.%d\t=>\t", cc[v-1], v);
-    while ((n = solListNode_next(n))) {
-        SolLL1ParserSymbol *s = solLL1ParserProductNode_symbol(n);
+    SolLL1ParserProductNode *n = solLL1ParserProduct_right_first(f);
+    do {
+        s = solLL1ParserProduct_right_symbol(n);
         int v = *(int*)(solLL1ParserSymbol_symbol(s));
         //printf(" %d", v);
         printf(" %s.%d ", cc[v-1], v);
-    }
+    } while ((n = solListNode_next(n)));
     printf("\n");
 }
 
@@ -149,7 +151,15 @@ int _output(void *x, SolLL1ParserProduct *p, SolLL1ParserSymbol *s, SolLL1Parser
     }else {
         printf("output nothing\n");
     }
-    //(SolLL1Parser*)p
+    SolDlListNode *n = solDlList_head(((SolLL1Parser*)x)->s);
+    printf("======stack=====\n");
+    if (n) {
+        do {
+            int v = *(int*)(solLL1ParserSymbol_symbol((SolLL1ParserSymbol*)solDlListNode_val(n)));
+            printf("Read: %s.%d\n", cc[v-1], v);
+        } while ((n = solDlListNode_next(n)));
+    }
+    printf("======end stack=====\n");
     return 0;
 }
 
@@ -179,39 +189,32 @@ int main()
     END_SYMBOL(end);
     NULLABLE(empty);
     
-    SolLL1ParserProduct *f1 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f1, sS);
+    SolLL1ParserProduct *f1 = solLL1ParserProduct_new(p, sS);
     solLL1ParserProduct_add_symbol(f1, sE);
     solLL1ParserProduct_add_symbol(f1, send);
     
-    SolLL1ParserProduct *f2 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f2, sE);
+    SolLL1ParserProduct *f2 = solLL1ParserProduct_new(p, sE);
     solLL1ParserProduct_add_symbol(f2, sT);
     solLL1ParserProduct_add_symbol(f2, sE1);
 
-    SolLL1ParserProduct *f3 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f3, sE1);
+    SolLL1ParserProduct *f3 = solLL1ParserProduct_new(p, sE1);
     solLL1ParserProduct_add_symbol(f3, splus);
     solLL1ParserProduct_add_symbol(f3, sT);
     solLL1ParserProduct_add_symbol(f3, sE1);
 
-    SolLL1ParserProduct *f4 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f4, sE1);
+    SolLL1ParserProduct *f4 = solLL1ParserProduct_new(p, sE1);
     solLL1ParserProduct_add_symbol(f4, ssub);
     solLL1ParserProduct_add_symbol(f4, sT);
     solLL1ParserProduct_add_symbol(f4, sE1);
 
-    SolLL1ParserProduct *f5 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f5, sE1);
+    SolLL1ParserProduct *f5 = solLL1ParserProduct_new(p, sE1);
     solLL1ParserProduct_add_symbol(f5, sempty);
 
-    SolLL1ParserProduct *f6 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f6, sT);
+    SolLL1ParserProduct *f6 = solLL1ParserProduct_new(p, sT);
     solLL1ParserProduct_add_symbol(f6, sF);
     solLL1ParserProduct_add_symbol(f6, sT1);
 
-    SolLL1ParserProduct *f7 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f7, sT1);
+    SolLL1ParserProduct *f7 = solLL1ParserProduct_new(p, sT1);
     if (0) {
         solLL1ParserProduct_add_symbol(f7, sdivi);
         solLL1ParserProduct_add_symbol(f7, sF);
@@ -221,43 +224,25 @@ int main()
         solLL1ParserProduct_add_symbol(f7, sT1);
     }
 
-    SolLL1ParserProduct *f8 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f8, sT1);
+    SolLL1ParserProduct *f8 = solLL1ParserProduct_new(p, sT1);
     //solLL1ParserProduct_add_symbol(f8, sE1);
     solLL1ParserProduct_add_symbol(f8, sdivi);
     solLL1ParserProduct_add_symbol(f8, sF);
     solLL1ParserProduct_add_symbol(f8, sT1);
 
-    SolLL1ParserProduct *f9 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f9, sT1);
+    SolLL1ParserProduct *f9 = solLL1ParserProduct_new(p, sT1);
     solLL1ParserProduct_add_symbol(f9, sempty);
 
-    SolLL1ParserProduct *f10 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f10, sF);
+    SolLL1ParserProduct *f10 = solLL1ParserProduct_new(p, sF);
     solLL1ParserProduct_add_symbol(f10, sid);
 
-    SolLL1ParserProduct *f11 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f11, sF);
+    SolLL1ParserProduct *f11 = solLL1ParserProduct_new(p, sF);
     solLL1ParserProduct_add_symbol(f11, snum);
 
-    SolLL1ParserProduct *f12 = solLL1ParserProduct_new();
-    solLL1ParserProduct_add_symbol(f12, sF);
+    SolLL1ParserProduct *f12 = solLL1ParserProduct_new(p, sF);
     solLL1ParserProduct_add_symbol(f12, slc);
     solLL1ParserProduct_add_symbol(f12, sE);
     solLL1ParserProduct_add_symbol(f12, src);
-
-    solLL1Parser_reg_product(p, f1);
-    solLL1Parser_reg_product(p, f2);
-    solLL1Parser_reg_product(p, f3);
-    solLL1Parser_reg_product(p, f4);
-    solLL1Parser_reg_product(p, f5);
-    solLL1Parser_reg_product(p, f6);
-    solLL1Parser_reg_product(p, f7);
-    solLL1Parser_reg_product(p, f8);
-    solLL1Parser_reg_product(p, f9);
-    solLL1Parser_reg_product(p, f10);
-    solLL1Parser_reg_product(p, f11);
-    solLL1Parser_reg_product(p, f12);
     
     inspect_product(f1);
     inspect_product(f2);

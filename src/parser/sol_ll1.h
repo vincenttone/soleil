@@ -16,7 +16,8 @@
 #define SolLL1ParserSymbolFlag_Computed_FIRST 0x20
 #define SolLL1ParserSymbolFlag_Computed_FOLLOW 0x40
 
-#define SolLL1ParserProduct SolDlList
+#define SolLL1ParserProductFlag_NULLABLE 0x1
+
 #define SolLL1ParserProductNode SolDlListNode
 
 typedef struct _SolLL1ParserSymbol {
@@ -24,9 +25,15 @@ typedef struct _SolLL1ParserSymbol {
     void *s; // symbol
     SolRBTree *first;
     SolRBTree *follow;
-    SolLL1ParserProduct *np; // nullable product
+    //SolLL1ParserProduct *np; // nullable product
     SolList *l; // product list
 } SolLL1ParserSymbol;
+
+typedef struct _SolLL1ParserProduct {
+    int f;
+    SolLL1ParserSymbol *s; // symbol
+    SolDlList *r; // rule
+} SolLL1ParserProduct;
 
 typedef struct _SolLL1Parser {
     SolStack *s;
@@ -46,7 +53,6 @@ typedef struct _SolLL1ParserEntry {
 
 SolLL1Parser* solLL1Parser_new();
 void solLL1Parser_free(SolLL1Parser*);
-int solLL1Parser_reg_product(SolLL1Parser*, SolLL1ParserProduct*);
 int solLL1Parser_reg_symbol(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_parse(SolLL1Parser*, void*, void*);
 
@@ -60,14 +66,17 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_symbol_compute_follow(SolLL1Parser*, SolLL1ParserSymbol*);
 int solLL1Parser_symbol_compute_nullable(SolLL1Parser*, SolLL1ParserSymbol*);
 
-#define solLL1ParserProduct_new() solDlList_new()
-#define solLL1ParserProduct_free(f) solDlList_free(f)
-#define solLL1ParserProduct_len(f) solDlList_len(f)
-#define solLL1ParserProduct_left(f) solDlList_head(f)
-#define solLL1ParserProduct_right(f) solDlListNode_next(solDlList_head(f))
-#define solLL1ParserProduct_add(f, s) solDlList_add(f, s, _SolDlListDirFwd)
-#define solLL1ParserProductNode_symbol_next(s) solDlListNode_next(s)
-#define solLL1ParserProductNode_symbol(f) solDlListNode_val(f)
+SolLL1ParserProduct* solLL1ParserProduct_new(SolLL1Parser*, SolLL1ParserSymbol*);
+void solLL1ParserProduct_free(SolLL1ParserProduct*);
+#define solLL1ParserProduct_left(p) (p)->s
+#define solLL1ParserProduct_right(p) (p)->r
+#define solLL1ParserProduct_right_first(p) solDlList_head(solLL1ParserProduct_right(p))
+#define solLL1ParserProduct_right_last(p) solDlList_tail(solLL1ParserProduct_right(p))
+#define solLL1ParserProduct_right_next(n) solDlListNode_next(n)
+#define solLL1ParserProduct_right_symbol(n) solDlListNode_val(n)
+#define solLL1ParserProduct_len(p) solDlList_len(solLL1ParserProduct_right(p))
+#define solLL1ParserProduct_set_nullable(p) ((p)->f = (p)->f | SolLL1ParserProductFlag_NULLABLE)
+#define solLL1ParserProduct_is_nullable(p) ((p)->f & SolLL1ParserProductFlag_NULLABLE > 0)
 
 int solLL1ParserProduct_add_symbol(SolLL1ParserProduct*, SolLL1ParserSymbol*);
 void _solLL1ParserProduct_free(void*);
@@ -112,14 +121,6 @@ int _solLL1Parser_rbnode_check(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1Parser_read_symbol(p, g) (*(p)->f_read)(g)
 #define solLL1Parser_output(p, x, product, symbol, ignore) (*(p)->f_out)(x, product, symbol, ignore)
 
-#define solLL1ParserProduct_left_symbol(f) solDlListNode_val(solDlList_head(f))
-
-#define solLL1ParserProduct_set_symbol(f, symbol) (f)->s = symbol
-#define solLL1ParserProduct_set_next(f, next) (f)->n = next
-
-#define solLL1ParserProduct_symbol(f) (f)->s
-#define solLL1ParserProduct_next(f) (f)->n
-
 #define solLL1ParserSymbol_set_symbol(symbol, d) (symbol)->s = d
 #define solLL1ParserSymbol_set_type(symbol, type) (symbol)->f = (symbol)->f | type
 #define solLL1ParserSymbol_set_first(symbol, f) (symbol)->first = f
@@ -147,7 +148,7 @@ int _solLL1Parser_rbnode_check(SolRBTree*, SolRBTreeNode*, void*);
 #define solLL1ParserSymbol_set_nullable_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_NULL)
 #define solLL1ParserSymbol_set_first_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FIRST)
 #define solLL1ParserSymbol_set_follow_computed(symbol) (symbol)->f = ((symbol)->f | SolLL1ParserSymbolFlag_Computed_FOLLOW)
-#define solLL1ParserSymbol_set_nullable_product(symbol, p) (symbol)->np = p
+//#define solLL1ParserSymbol_set_nullable_product(symbol, p) (symbol)->np = p
 
 #define solLL1ParserEntry_set_symbol(e, symbol) (e)->s = symbol
 #define solLL1ParserEntry_set_product(e, product) (e)->p = product
