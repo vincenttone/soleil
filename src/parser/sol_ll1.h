@@ -73,7 +73,7 @@ void solLL1ParserProduct_free(SolLL1ParserProduct*);
 #define solLL1ParserProduct_right_first(p) solDlList_head(solLL1ParserProduct_right(p))
 #define solLL1ParserProduct_right_last(p) solDlList_tail(solLL1ParserProduct_right(p))
 #define solLL1ParserProduct_right_next(n) solDlListNode_next(n)
-#define solLL1ParserProduct_right_symbol(n) solDlListNode_val(n)
+#define solLL1ParserProductNode_symbol(n) solDlListNode_val(n)
 #define solLL1ParserProduct_len(p) solDlList_len(solLL1ParserProduct_right(p))
 #define solLL1ParserProduct_set_nullable(p) ((p)->f = (p)->f | SolLL1ParserProductFlag_NULLABLE)
 #define solLL1ParserProduct_is_nullable(p) ((p)->f & SolLL1ParserProductFlag_NULLABLE > 0)

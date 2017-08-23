@@ -60,7 +60,7 @@ void inspect_product(SolLL1ParserProduct *f)
     printf("%s.%d\t=>\t", cc[v-1], v);
     SolLL1ParserProductNode *n = solLL1ParserProduct_right_first(f);
     do {
-        s = solLL1ParserProduct_right_symbol(n);
+        s = solLL1ParserProductNode_symbol(n);
         int v = *(int*)(solLL1ParserSymbol_symbol(s));
         //printf(" %d", v);
         printf(" %s.%d ", cc[v-1], v);

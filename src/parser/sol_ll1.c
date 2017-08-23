@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <assert.h>
 #include "sol_ll1.h"
 #include "sol_rbtree_iter.h"
@@ -124,7 +125,7 @@ int solLL1Parser_symbol_compute_nullable(SolLL1Parser *p, SolLL1ParserSymbol *s)
         status = 0;
         ns = solLL1ParserProduct_right_first(sp);
         do {
-            s1 = solLL1ParserProduct_right_symbol(ns);
+            s1 = solLL1ParserProductNode_symbol(ns);
             if (solLL1ParserSymbol_is_nullable(s1)) {
                 continue;
             } else if (solLL1ParserSymbol_is_nonterminal(s1)
@@ -162,7 +163,7 @@ int solLL1Parser_symbol_compute_first(SolLL1Parser *p, SolLL1ParserSymbol *s)
         ns = solLL1ParserProduct_right_first(sp);
         assert(solLL1ParserProduct_left(sp) == s && "left symbol not match!");
         do {
-            s1 = solLL1ParserProduct_right_symbol(ns);
+            s1 = solLL1ParserProductNode_symbol(ns);
             if (solLL1ParserSymbol_is_terminal(s1)) {
                 solLL1ParserSymbol_add_first(s, s1, sp);
                 break;
@@ -191,49 +192,49 @@ int solLL1Parser_symbol_compute_follow(SolLL1Parser *p, SolLL1ParserSymbol *s)
     if (solLL1ParserSymbol_is_terminal(s)) return -4;
     if (solLL1ParserSymbol_is_follow_computed(s)) return 0;
     SolListNode *np = solList_head(solLL1Parser_product_list(p));
-    SolLL1ParserSymbol *s1;
     SolLL1ParserSymbol *s2;
     SolLL1ParserProduct *sp;
     SolLL1ParserProductNode *ns;
     int status = 1;
     do {
-        status = 2;
         sp = solListNode_val(np);
-        s1 = solLL1ParserProduct_left(sp);
         ns = solLL1ParserProduct_right_first(sp);
+        status = 2; // start status
         do {
-            s2 = solLL1ParserProduct_right_symbol(ns);
+            s2 = solLL1ParserProductNode_symbol(ns);
             if (s == s2) {
-                status = 3;
+                status = 3; // begin compute follow
             } else if (status == 3) {
-                if (solLL1ParserSymbol_is_terminal(s2)) {
+                if (solLL1ParserSymbol_is_terminal(s2)) { // terminal, is follow
+                    if (solLL1ParserSymbol_is_nullable(s2)) {
+                        continue;
+                    }
                     if (solLL1ParserSymbol_add_follow(s, s2, sp) != 0) {
                         return -7;
                     }
-                } else { // no terminal
+                } else { // no terminal, add first to follow if not nullable
                     if (solLL1Parser_symbol_compute_first(p, s2) != 0) {
                         return -5;
                     }
                     if (solLL1ParserSymbol_dup_follow(s, solLL1ParserSymbol_first(s2), sp) != 0) {
                         return -6;
                     }
+                    if (solLL1Parser_symbol_compute_nullable(p, s2) == 0) {
+                        continue;
+                    }
                 }
-                if (solLL1Parser_symbol_compute_nullable(p, s2) == 0) {
-                    continue;
-                }
-                status = 4;
-                break;
+                status = 4; // find follow before
             }
         } while ((ns = solLL1ParserProduct_right_next(ns)));
-        if (status == 3) { // after s are all nullable
-            if (s == s1) {
+        if (status == 3) { // symbols are Nullable behind target symbol
+            if (s == solLL1ParserProduct_left(sp)) {
                 continue;
             }
-            if (solLL1Parser_symbol_compute_follow(p, s1) != 0) {
+            if (solLL1Parser_symbol_compute_follow(p, solLL1ParserProduct_left(sp)) != 0) {
                 return -8;
             }
-            if (solLL1ParserSymbol_follow(s1)) {
-                if (solLL1ParserSymbol_dup_follow(s, solLL1ParserSymbol_follow(s1), sp) != 0) {
+            if (solLL1ParserSymbol_follow(solLL1ParserProduct_left(sp))) {
+                if (solLL1ParserSymbol_dup_follow(s, solLL1ParserSymbol_follow(solLL1ParserProduct_left(sp)), sp) != 0) {
                     return -6;
                 }
             }
@@ -511,6 +512,7 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
             solLL1Parser_output(p, x, solLL1ParserEntry_product(e2), NULL, NULL);
             n = solLL1ParserProduct_right_last(solLL1ParserEntry_product(e2));
             do {
+                // printf("push %d\n", *(int*)solLL1ParserSymbol_symbol((SolLL1ParserSymbol*)solDlListNode_val(n)));
                 solStack_push(solLL1Parser_stack(p), solDlListNode_val(n));
                 n = solDlListNode_pre(n);
             } while ((n != solLL1ParserProduct_right_first(solLL1ParserEntry_product(e2))) && n);
