@@ -129,7 +129,7 @@ SolLL1ParserSymbol* read_str(void *g)
     SolLL1ParserSymbol *s = (SolLL1ParserSymbol*)(solListIter_current_val((SolListIter*)g));
     if (s) {
         int v = *(int*)(solLL1ParserSymbol_symbol(s));
-        printf("Read: %s.%d\n", cc[v-1], v);
+        printf("[<] Read: %s.%d\n", cc[v-1], v);
     }
     solListIter_next((SolListIter*)g);
     return s;
@@ -137,29 +137,33 @@ SolLL1ParserSymbol* read_str(void *g)
 
 int _output(void *x, SolLL1ParserProduct *p, SolLL1ParserSymbol *s, SolLL1ParserSymbol *i)
 {
+    /*
+    SolDlListNode *n = solDlList_tail(((SolLL1Parser*)x)->s);
+    if (n) {
+        printf("= STACK =\n");
+        do {
+            int v = *(int*)(solLL1ParserSymbol_symbol((SolLL1ParserSymbol*)solDlListNode_val(n)));
+            printf("|%s.%d|\n", cc[v-1], v);
+        } while ((n = solDlListNode_pre(n)));
+        printf("-----\n");
+    } else {
+        printf("= Empty STACK =\n");
+    }
+    */
     if (p) {
-        printf("output product\t");
+        printf("[>] Output product\t");
         inspect_product(p);
     } else if (s) {
-        printf("output symbol: \t");
+        printf("[>] Output symbol: \t");
         print_symbol(s);
         printf("\n");
     } else if (i) {
-        printf("ignore symbol: \t");
+        printf("[-] Ignore symbol: \t");
         print_symbol(i);
         printf("\n");
     }else {
-        printf("output nothing\n");
+        printf("[>] Output nothing\n");
     }
-    SolDlListNode *n = solDlList_head(((SolLL1Parser*)x)->s);
-    printf("======stack=====\n");
-    if (n) {
-        do {
-            int v = *(int*)(solLL1ParserSymbol_symbol((SolLL1ParserSymbol*)solDlListNode_val(n)));
-            printf("Read: %s.%d\n", cc[v-1], v);
-        } while ((n = solDlListNode_next(n)));
-    }
-    printf("======end stack=====\n");
     return 0;
 }
 

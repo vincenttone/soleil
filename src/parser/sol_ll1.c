@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <assert.h>
 #include "sol_ll1.h"
 #include "sol_rbtree_iter.h"
@@ -496,7 +495,7 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
             solLL1Parser_output(p, x, NULL, sbl2, NULL);
             continue;
         }
-        if (solLL1ParserSymbol_first(sbl2) == NULL) break;
+        assert(solLL1ParserSymbol_first(sbl2) && "first is empty");
         solLL1ParserEntry_set_symbol(e1, sbl1);
         if (solRBTree_count(solLL1ParserSymbol_first(sbl2))) {
             rbn = solRBTree_search_node(solLL1ParserSymbol_first(sbl2), e1);
@@ -512,10 +511,8 @@ int solLL1Parser_parse(SolLL1Parser *p, void *g, void *x)
             solLL1Parser_output(p, x, solLL1ParserEntry_product(e2), NULL, NULL);
             n = solLL1ParserProduct_right_last(solLL1ParserEntry_product(e2));
             do {
-                // printf("push %d\n", *(int*)solLL1ParserSymbol_symbol((SolLL1ParserSymbol*)solDlListNode_val(n)));
                 solStack_push(solLL1Parser_stack(p), solDlListNode_val(n));
-                n = solDlListNode_pre(n);
-            } while ((n != solLL1ParserProduct_right_first(solLL1ParserEntry_product(e2))) && n);
+            } while ((n = solDlListNode_pre(n)));
             goto parse;
         }
     check_nullable:
