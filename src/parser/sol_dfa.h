@@ -26,8 +26,8 @@ typedef struct _SolDfa {
     sol_f_hash_ptr f_s_hash2; // state hash func2
     sol_f_hash_ptr f_c_hash1; // character hash func1
     sol_f_hash_ptr f_c_hash2; // character hash func2
-    sol_f_match_ptr f_sm; // func state match
-    sol_f_match_ptr f_cm; // func character match
+    sol_f_cmp_ptr f_sm; // func state match
+    sol_f_cmp_ptr f_cm; // func character match
 } SolDfa;
 
 #define solDfaState_set_state(ds, s) (ds)->s = s
@@ -102,8 +102,8 @@ void solDfaState_merge_mark(SolDfaState*, SolDfaState*);
 SolDfaStateMark* solDfaStateMark_new();
 void solDfaStateMark_free(SolDfaStateMark*);
 
-SolDfa* solDfa_new(sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr,
-                   sol_f_hash_ptr, sol_f_hash_ptr, sol_f_match_ptr);
+SolDfa* solDfa_new(sol_f_hash_ptr, sol_f_hash_ptr, sol_f_cmp_ptr,
+                   sol_f_hash_ptr, sol_f_hash_ptr, sol_f_cmp_ptr);
 void solDfa_free(SolDfa*);
 int solDfa_set_starting_state(SolDfa*, void*);
 int solDfa_add_accepting_state(SolDfa*, void*);

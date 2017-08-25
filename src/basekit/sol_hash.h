@@ -11,9 +11,7 @@
 
 #define solHash_record_at_offset(r, o) (SolHashRecord*)(r + o)
 #define solHash_grow(h) solHash_resize(h, h->size * 2)
-#define solHash_record_extend(r) //
-
-typedef size_t (*sol_f_hash_ptr)(void*);
+#define solHash_add_record_extend(r) //
 
 typedef struct _SolHashRecord {
     void *k;
@@ -27,7 +25,7 @@ typedef struct _SolHash {
     SolHashRecord *records;
     sol_f_hash_ptr f_hash1;
     sol_f_hash_ptr f_hash2;
-    sol_f_match_ptr f_match;
+    sol_f_cmp_ptr f_match;
     sol_f_dup_ptr f_dup_k;
     sol_f_dup_ptr f_dup_v;
     sol_f_free_ptr f_free_k;

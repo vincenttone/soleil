@@ -43,11 +43,12 @@ void solDlList_free(SolDlList*);
 
 #define solDlListNode_val(n) (n)->val
 #define solDlListNode_next(n) (n)->next
+#define solDlListNode_pre(n) (n)->pre
 #define solDlListNodeVal_free(l, n) if (l->f_free) {(*l->f_free)(n->val);}
 
 SolDlListNode* solDlList_add(SolDlList*, void*, enum _SolDlListDir);
 void solDlList_del_node(SolDlList*, SolDlListNode*);
-int solDlList_merge(SolDlList*, SolDlList*);
+int solDlList_attach(SolDlList*, SolDlList*);
 
 #define solDlList_add_fwd(l, v) solDlList_add(l, v, _SolDlListDirFwd)
 #define solDlList_add_bak(l, v) solDlList_add(l, v, _SolDlListDirBak)

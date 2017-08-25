@@ -11,11 +11,16 @@ typedef struct _SolListNode {
 typedef struct _SolList {
     SolListNode *head;
     SolListNode *tail;
-    unsigned long len;
+    size_t len;
     void *(*f_dup)(void*);
     void (*f_free)(void*);
     int (*f_match)(void*, void*);
 } SolList;
+
+typedef struct _SolListIter {
+    SolList *l;
+    SolListNode *n;
+} SolListIter;
 
 #define solList_set_head(l, n) (l)->head = n
 #define solList_set_tail(l, n) (l)->tail = n
@@ -49,9 +54,19 @@ SolListNode* solList_add(SolList*, void*);
 int solList_del_node(SolList*, SolListNode*);
 int solList_remove(SolList*, void*);
 int solList_has(SolList*, void*);
+int solList_attach(SolList*, SolList*);
 int solList_merge(SolList*, SolList*);
+SolList* solList_dup(SolList*);
+int solList_uniq(SolList*);
 
 SolListNode* solListNode_new();
 void solListNode_free(SolList*, SolListNode*);
+
+SolListIter* solListIter_new(SolList*);
+void solListIter_free(SolListIter*);
+SolListNode* solListIter_current(SolListIter*);
+void* solListIter_current_val(SolListIter*);
+SolListNode* solListIter_next(SolListIter*);
+void* solListIter_next_val(SolListIter*);
 
 #endif

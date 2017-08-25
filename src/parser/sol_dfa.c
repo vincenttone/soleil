@@ -104,8 +104,8 @@ SolDfaState* solDfaState_next(SolDfaState *ds, void *c)
     return NULL;
 }
 
-SolDfa* solDfa_new(sol_f_hash_ptr fsh1, sol_f_hash_ptr fsh2, sol_f_match_ptr fsm,
-                   sol_f_hash_ptr fch1, sol_f_hash_ptr fch2, sol_f_match_ptr fcm)
+SolDfa* solDfa_new(sol_f_hash_ptr fsh1, sol_f_hash_ptr fsh2, sol_f_cmp_ptr fsm,
+                   sol_f_hash_ptr fch1, sol_f_hash_ptr fch2, sol_f_cmp_ptr fcm)
 {
     SolDfa *d = sol_calloc(1, sizeof(SolDfa));
     if (d == NULL) {

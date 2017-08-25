@@ -220,7 +220,7 @@ SolPattern* solPattern_concatenate(SolPattern *p1, SolPattern *p2)
     solDfa_set_starting_state(solPattern_dfa(p1), solDfa_starting_state(solPattern_dfa(p2)));
     solPattern_set_reading_literal_func(p1, solPattern_reading_literal_func(p2));
     if (solPattern_capture_list(p1)) {
-        solList_merge(solPattern_capture_list(p1), solPattern_capture_list(p2));
+        solList_attach(solPattern_capture_list(p1), solPattern_capture_list(p2));
     } else if (solPattern_capture_list(p2)) {
         solPattern_set_capture_list(p1, solPattern_capture_list(p2));
     }
@@ -274,7 +274,7 @@ SolPattern* solPattern_choose(SolPattern *p1, SolPattern *p2)
     }
     solDfa_merge_accepting_states(solPattern_dfa(p1), solPattern_dfa(p2));
     if (solPattern_capture_list(p1)) {
-        solList_merge(solPattern_capture_list(p1), solPattern_capture_list(p2));
+        solList_attach(solPattern_capture_list(p1), solPattern_capture_list(p2));
     } else if (solPattern_capture_list(p2)) {
         solPattern_set_capture_list(p1, solPattern_capture_list(p2));
     }

@@ -101,3 +101,12 @@ define pset
   end
   precords ((SolSet*)$arg0)->hash->size ((SolSet*)$arg0)->hash->records $f 1
 end
+
+define plist
+  set $n = ((SolList*)$arg0)->head
+  while ($n)
+    p $n
+    ppp $n->val
+    set $n = $n->next
+  end
+end
