@@ -163,25 +163,27 @@ int solHash_put_key_and_val(SolHash *hash, void *k, void *v)
     SolHashRecord* r;
     r = solHash_record1_of_key(hash, k);
     if (r->k == NULL) {
-        solHash_record_extend(r);
+        solHash_add_record_extend(r);
         r->k = k;
         r->v = v;
         hash->count++;
         return 0;
     }
     if (solHash_match(hash, k, r->k) == 0) {
+        solHash_add_record_extend(r);
         r->v = v;
         return 0;
     }
     r = solHash_record2_of_key(hash, k);
     if (r->k == NULL) {
-        solHash_record_extend(r);
+        solHash_add_record_extend(r);
         r->k = k;
         r->v = v;
         hash->count++;
         return 0;
     }
     if (solHash_match(hash, k, r->k) == 0) {
+        solHash_add_record_extend(r);
         r->v = v;
         return 0;
     }
@@ -201,7 +203,7 @@ int solHash_try_to_put(SolHash *hash, void *k, void *v)
         r = solHash_record1_of_key(hash, k);
         // try to put record
         if (r->k == NULL) {
-            solHash_record_extend(r);
+            solHash_add_record_extend(r);
             r->k = k;
             r->v = v;
             hash->count++;
@@ -213,7 +215,7 @@ int solHash_try_to_put(SolHash *hash, void *k, void *v)
         // second hash step
         r = solHash_record2_of_key(hash, rs.k);
         if (r->k == NULL) {
-            solHash_record_extend(r);
+            solHash_add_record_extend(r);
             r->k = rs.k;
             r->v = rs.v;
             hash->count++;
