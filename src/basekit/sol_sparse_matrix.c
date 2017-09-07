@@ -74,7 +74,7 @@ int solSparseMatrix_load(SolSparseMatrix *m, SolSparseMatrixRecord **a, size_t r
     SolSparseMatrixRecord *r1;
     SolSparseMatrixRecord *r2;
     size_t *ro;
-    size_t *rc;
+    size_t *rc = 0;
     for (r = 0; r < rs; r++) {
         ro = solSparseMatrix_offset(m, r);
         *ro = solSparseMatrix_count(m);
@@ -85,6 +85,8 @@ int solSparseMatrix_load(SolSparseMatrix *m, SolSparseMatrixRecord **a, size_t r
                     rc = solSparseMatrix_column(m, solSparseMatrix_count(m));
                     *rc = c;
                     solSparseMatrix_incr_count(m);
+                    if (m->mc < c) m->mc = c;
+                    m->mr = r;
                 }
             } else if (r2) {
                 r1 = solSparseMatrix_record(m, solSparseMatrix_count(m));
@@ -92,6 +94,8 @@ int solSparseMatrix_load(SolSparseMatrix *m, SolSparseMatrixRecord **a, size_t r
                 rc = solSparseMatrix_column(m, solSparseMatrix_count(m));
                 *rc = c;
                 solSparseMatrix_incr_count(m);
+                if (m->mc < c) m->mc = c;
+                m->mr = r;
             }
         }
     }
@@ -143,13 +147,24 @@ int solSparseMatrix_set(SolSparseMatrix *m, size_t row, size_t col, SolSparseMat
 {
     if (row > solSparseMatrix_row_size(m) - 1) return -1;
     if (col > solSparseMatrix_col_size(m) - 1) return -1;
-    size_t o1 = *(size_t*)(solSparseMatrix_offsets(m) + row);
-    size_t o2 = *(size_t*)(solSparseMatrix_offsets(m) + row + 1);
-    size_t *c1;
-    size_t *c2;
+    size_t o1, o2;
+    size_t *c1, *c2;
     size_t oc = solSparseMatrix_count(m) + 1;
+    size_t *o;
+    if (m->mr < row) {
+        *(solSparseMatrix_offset(m, row + 1)) = *(solSparseMatrix_offset(m, m->mr + 1));
+        o1 = m->mr + 1;
+        for (; o1 < row; o1++) {
+            o = solSparseMatrix_offset(m, o1 + 1);
+            *o = *(solSparseMatrix_offset(m, m->mr + 1));
+        }
+        m->mr = row;
+    }
+    if (m->mc < col) m->mc = col;
     SolSparseMatrixRecord *r1;
     SolSparseMatrixRecord *r2;
+    o1 = *(size_t*)(solSparseMatrix_offsets(m) + row);
+    o2 = *(size_t*)(solSparseMatrix_offsets(m) + row + 1);
     if (o1 != o2) {
         for (; o1 < o2; o1++) {
             c1 = solSparseMatrix_columns(m) + o1;
@@ -171,8 +186,7 @@ int solSparseMatrix_set(SolSparseMatrix *m, size_t row, size_t col, SolSparseMat
     r1 = solSparseMatrix_record(m, o1);
     *r1 = r;
     solSparseMatrix_incr_count(m);
-    size_t *o;
-    for (; row < solSparseMatrix_row_size(m); row++) {
+    for (; row <= m->mr; row++) {
         o = solSparseMatrix_offset(m, row + 1);
         (*o)++;
     }

@@ -77,7 +77,6 @@ int main()
     size_t r = 10;
     size_t c = 10;
     SolSparseMatrix *m = solSparseMatrix_new(r, c, SolSparseMatrixRecordType_Char);
-    /*
     SolSparseMatrixRecord x = sm_new_char('x');
     SolSparseMatrixRecord y = sm_new_char('y');
     SolSparseMatrixRecord z = sm_new_char('z');
@@ -90,7 +89,6 @@ int main()
     debug_info(m);
     echo(m, r, c);
     solSparseMatrix_traverse(m, &echo_t);
-    */
     sm_set_char_value(m, 2, 3, 'a');
     debug_info(m);
     sm_set_char_value(m, 5, 6, 'b');
