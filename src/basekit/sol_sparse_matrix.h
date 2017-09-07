@@ -67,8 +67,8 @@ SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix*, size_t, size_t);
 #define solSparseMatrix_offset(m, o) (m->offsets + o)
 #define solSparseMatrix_column(m, o) (m->cols + o)
 
-#define solSparseMatrix_records_size(m) (solSparseMatrix_size(m))
-#define solSparseMatrix_columns_size(m) (solSparseMatrix_size(m))
-#define solSparseMatrix_offsets_size(m) (solSparseMatrix_row_size(m) + 1)
+#define solSparseMatrix_record_size(m) (solSparseMatrix_size(m))
+#define solSparseMatrix_column_size(m) (solSparseMatrix_size(m))
+#define solSparseMatrix_offset_size(m) (solSparseMatrix_row_size(m) + 1)
 
 #endif
