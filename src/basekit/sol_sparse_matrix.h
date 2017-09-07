@@ -29,6 +29,7 @@ typedef struct _SolSparseMatrix {
 
 SolSparseMatrix* solSparseMatrix_new(size_t, size_t, enum _SolSparseMatrixRecordType);
 void solSparseMatrix_free(SolSparseMatrix*);
+int solSparseMatrix_set_size(SolSparseMatrix*, size_t);
 
 int solSparseMatrix_load(SolSparseMatrix*, SolSparseMatrixRecord**, size_t, size_t);
 int solSparseMatrix_traverse(SolSparseMatrix *m, int (*f_out)(SolSparseMatrixRecord*, size_t, size_t));
@@ -36,7 +37,6 @@ int solSparseMatrix_traverse(SolSparseMatrix *m, int (*f_out)(SolSparseMatrixRec
 int solSparseMatrix_set(SolSparseMatrix*, size_t, size_t, SolSparseMatrixRecord);
 SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix*, size_t, size_t);
 
-#define solSparseMatrix_set_size(m, size) (m)->s = size
 #define solSparseMatrix_size(m) (m)->s
 
 #define solSparseMatrix_set_count(m, count) (m)->c = count
@@ -64,5 +64,9 @@ SolSparseMatrixRecord* solSparseMatrix_get(SolSparseMatrix*, size_t, size_t);
 #define solSparseMatrix_record(m, o) (m->r + o)
 #define solSparseMatrix_offset(m, o) (m->offsets + o)
 #define solSparseMatrix_column(m, o) (m->cols + o)
+
+#define solSparseMatrix_records_size(m) (solSparseMatrix_size(m))
+#define solSparseMatrix_columns_size(m) (solSparseMatrix_size(m))
+#define solSparseMatrix_offsets_size(m) (solSparseMatrix_row_size(m) + 1)
 
 #endif

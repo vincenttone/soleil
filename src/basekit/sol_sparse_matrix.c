@@ -1,3 +1,4 @@
+#include <string.h>
 #include "sol_sparse_matrix.h"
 
 SolSparseMatrix* solSparseMatrix_new(size_t row_size, size_t col_size, enum _SolSparseMatrixRecordType t)
@@ -9,18 +10,29 @@ SolSparseMatrix* solSparseMatrix_new(size_t row_size, size_t col_size, enum _Sol
     solSparseMatrix_set_row_size(m, row_size);
     solSparseMatrix_set_col_size(m, col_size);
     solSparseMatrix_set_record_type(m, t);
-    solSparseMatrix_set_size(m, row_size + col_size);
-    solSparseMatrix_set_records(m, sol_calloc(1, sizeof(SolSparseMatrixRecord) * (solSparseMatrix_size(m))));
-    solSparseMatrix_set_columns(m, sol_calloc(1, sizeof(size_t) * (solSparseMatrix_size(m))));
-    solSparseMatrix_set_offsets(m, sol_calloc(1, sizeof(size_t) * (solSparseMatrix_row_size(m) + 1)));
-    if (solSparseMatrix_records(m) == NULL
-        ||solSparseMatrix_columns(m) == NULL
-        || solSparseMatrix_offsets(m) == NULL
-        ) {
+    if (solSparseMatrix_set_size(m, row_size + col_size) != 0) {
         solSparseMatrix_free(m);
         return NULL;
     }
     return m;
+}
+
+int solSparseMatrix_set_size(SolSparseMatrix *m, size_t s)
+{
+    m->s = s;
+    solSparseMatrix_set_records(m, sol_calloc(1, sizeof(SolSparseMatrixRecord) * solSparseMatrix_records_size(m)));
+    solSparseMatrix_set_columns(m, sol_calloc(1, sizeof(size_t) * solSparseMatrix_columns_size(m)));
+    solSparseMatrix_set_offsets(m, sol_calloc(1, sizeof(size_t) * solSparseMatrix_offsets_size(m)));
+    if (solSparseMatrix_records(m) == NULL
+        || solSparseMatrix_columns(m) == NULL
+        || solSparseMatrix_offsets(m) == NULL
+        ) {
+        if (solSparseMatrix_records(m)) sol_free(solSparseMatrix_records(m));
+        if (solSparseMatrix_columns(m)) sol_free(solSparseMatrix_columns(m));
+        if (solSparseMatrix_offsets(m)) sol_free(solSparseMatrix_offsets(m));
+        return 1;
+    }
+    return 0;
 }
 
 void solSparseMatrix_free(SolSparseMatrix *m)
@@ -29,6 +41,29 @@ void solSparseMatrix_free(SolSparseMatrix *m)
     if (solSparseMatrix_columns(m)) sol_free(solSparseMatrix_columns(m));
     if (solSparseMatrix_offsets(m)) sol_free(solSparseMatrix_offsets(m));
     sol_free(m);
+}
+
+int solSparseMatrix_resize(SolSparseMatrix *m)
+{
+    SolSparseMatrixRecord *r = solSparseMatrix_records(m);
+    size_t *c = solSparseMatrix_columns(m);
+    size_t *o = solSparseMatrix_offsets(m);
+    size_t rs = solSparseMatrix_records_size(m);
+    size_t cs = solSparseMatrix_columns_size(m);
+    size_t os = solSparseMatrix_offsets_size(m);
+    if (solSparseMatrix_set_size(m, solSparseMatrix_size(m) * 2) != 0) {
+        solSparseMatrix_set_records(m, r);
+        solSparseMatrix_set_columns(m, c);
+        solSparseMatrix_set_offsets(m, o);
+        return 1;
+    }
+    memcpy(solSparseMatrix_records(m), r, rs);
+    memcpy(solSparseMatrix_columns(m), c, cs);
+    memcpy(solSparseMatrix_offsets(m), o, os);
+    sol_free(r);
+    sol_free(c);
+    sol_free(o);
+    return 0;
 }
 
 int solSparseMatrix_load(SolSparseMatrix *m, SolSparseMatrixRecord **a, size_t rs, size_t cs)
