@@ -9,12 +9,10 @@
 #define SOL_TRIPLE_RESIZE_LIMIT 64
 
 typedef struct _SolTripleRecord {
-    struct v1 {
-        void *v;
-        SolListNode *n;
-    };
+    void *v1;
     void *v2;
     void *v3;
+    void *n;
 } SolTripleRecord;
 
 typedef struct _SolTriple {
@@ -56,16 +54,15 @@ void solTripleRecord_free();
 
 #define solTriple_count_incr(t) t->count++
 
-#define solTripleRecord_set_v1(r, val) r->v1->v = val
+#define solTripleRecord_set_v1(r, val) r->v1 = val
 #define solTripleRecord_set_v2(r, val) r->v2 = val
 #define solTripleRecord_set_v3(r, val) r->v3 = val
+#define solTripleRecord_set_next(r, val) r->n = val
 
-#define solTripleRecord_v1(r) r->v1->v
+#define solTripleRecord_v1(r) r->v1
 #define solTripleRecord_v2(r) r->v2
 #define solTripleRecord_v3(r) r->v3
-
-#define solTripleRecord_set_v1_node(r, node) r->v1->n = node
-#define solTripleRecord_v1_node(r) r->v1->n
+#define solTripleRecord_next(r) r->n
 
 #define solTriple_v1_hash1(h) (*h->f_v1_hash1)
 #define solTriple_v1_hash2(h) (*h->f_v1_hash2)

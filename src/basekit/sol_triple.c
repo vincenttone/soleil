@@ -160,14 +160,16 @@ inline int solTriple_add_records(SolTriple *t, SolTripleRecord *records, size_t 
 
 inline SolHashRecord* solTriple_record1_of_val(SolTriple *t, void *v1, void *v2)
 {
-    size_t o = solTriple_v1_hash1(t, v1) + solTriple_v2_hash1(t, v2);
-    o = o & solTriple_mask(t);
+    size_t o1 = solTriple_v1_hash1(t, v1);
+    size_t o2 = solTriple_v2_hash1(t, v2);
+    o = (o1 & solTriple_mask(t) + o2 & solTriple_mask(t)) & solTriple_mask(t);
     return solTriple_record_at_offset(solTriple_records(t), o);
 }
 
 inline SolHashRecord* solTriple_record2_of_val(SolTriple *t, void *v1, void *v2)
 {
-    size_t o = solTriple_v1_hash2(t, v1) + solTriple_v2_hash2(t, v2);
-    o = o & solTriple_mask(t);
+    size_t o1 = solTriple_v1_hash2(t, v1);
+    size_t o2 = solTriple_v2_hash2(t, v2);
+    o = (o1 & solTriple_mask(t) + o2 & solTriple_mask(t)) & solTriple_mask(t);
     return solTriple_record_at_offset(solTriple_records(t), o);
 }
