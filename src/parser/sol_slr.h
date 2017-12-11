@@ -17,6 +17,7 @@ typedef struct _SolLRSymbol {
     int f;   // flag
     void *s; // symbol
     SolList *p; // productions
+    void *ext; // extra
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
@@ -32,8 +33,8 @@ typedef struct _SolLRItem {
 
 typedef struct _SolLRItemCol { // items collection
     size_t s; // state
-    SolLRItem *is; // items
-} SolLRCol;
+    SolList *is; // items
+} SolLRItemCol;
 
 typedef struct _SolLRGoto {
     size_t pos;
