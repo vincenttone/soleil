@@ -11,11 +11,7 @@ int solSLRParser_prepare(SolSLRParser *p)
         ) {
         return -2;
     }
-    SolLRItemCol *c = solSLRParser_generate_items_collection();
-    if (c == NULL) {
-        return -3;
-    }
-    if (solSLRParser_compute_items_collection(p, c, p->s) != 0) {
+    if (solSLRParser_compute_items_collection(p, p->s) != 0) {
         return 1;
     }
     if (solSLRParser_compute_goto(p) != 0) {
@@ -35,7 +31,7 @@ SolLRItemCol* solSLRParser_generate_items_collection()
     return c;
 }
 
-int solSLRParser_compute_items_collection(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *s)
+int solSLRParser_compute_items_collection(SolSLRParser *p, SolLRSymbol *s)
 {
     if (p == NULL || s == NULL || s->p == NULL) {
         return -1;
@@ -44,60 +40,49 @@ int solSLRParser_compute_items_collection(SolSLRParser *p, SolLRItemCol *c, SolL
         return -2;
     }
     SolListNode *n = solList_head(s->p);
-    SolLRProduct *cp = (SolLRProduct*)(solListNode_val(n));
+    SolLRProduct *product = (SolLRProduct*)(solListNode_val(n));
     size_t i = 0;
     size_t j = 0;
+    SolLRItemCol *c;
     SolLRItem *item;
     do {
+        c = solSLRParser_generate_items_collection();
+        // kernel items
         item = sol_alloc(sizeof(SolLRItem));
         if (item == NULL) {
             return -2;
         }
-        item->p = p;
-        item->pos = pos;
-        if (solList_add(c->is, item) == NULL) {
+        item->p = product;
+        item->pos = j;
+        if (solList_add(c->is, i) == NULL) {
             return -2;
         }
-    } while (++j < solLRProduct_size(cp));
-    n = solList_head(c->is);
-    SolLRSymbol *sym;
-    do {
-        item = (SolLRItem*)(solListNode_val(n));
+        // nonkernel items
         s = solLRProduct_find_symbol(item->p, item->pos);
-        // kernel items, add to checking list
-        // nonkenel items
         if (solLRSymbol_is_nonterminal(s)) {
-            cp = (SolLRProduct*)(solListNode_val(solList_head(s->p)));
-            j = 0;
-            do {
-                // add to checking list
-            } while (++j < solLRProduct_size(cp));
+            solSLRParser_process_nonkernel_items(p, c, s);
+            while ((s = solStack_pop(p->_stk))) {
+                s->ext = NULL;
+            }
         }
-    } while ((n = solListNode_next(n)));
+    } while (++j < solLRProduct_size(product));
     return 0;
-}
-
-int solSLRParser_register_items_collection(SolSLRParser *p, SolLRItemCol *c, SolLRProduct *p, size_t pos)
-{
-    SolLRSymbol *s = solLRProduct_find_symbol(p, pos);
-    if (solLRSymbol_is_nonterminal(s)) {
-        solSLRParser_process_nonkernel_items(p, c, s);
-    }
-    return 0;
-}
-
-int solSLRParser_process_kernel_items(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *s)
-{
-    SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(s->p)));
-    SolLRSymbol *sym = solLRProduct_right(product);
-    
 }
 
 int solSLRParser_process_nonkernel_items(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *s)
 {
-    SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(s->p)));
-    SolLRSymbol *sym = solLRProduct_right(product);
-    
+    SolListNode *n = solList_head(s->p);
+    SolLRProduct *product;
+    SolLRSymbol *sym;
+    do {
+        product = (SolLRProduct*)(solListNode_val(n));
+        sym = solLRProduct_right(product);
+        if (solLRSymbol_is_nonterminal(s) && s->ext == NULL) {
+            s->ext = p;
+            solStack_push(p->_stk, s);
+            solSLRParser_process_nonkernel_items(p, c, sym);
+        }
+    } while ((n = solListNode_next(n)));
 }
 
 int solSLRParser_checking_items(SolSLRParser *p, SolList *src)

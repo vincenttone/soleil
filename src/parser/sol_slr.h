@@ -34,6 +34,7 @@ typedef struct _SolLRItem {
 typedef struct _SolLRItemCol { // items collection
     size_t s; // state
     SolList *is; // items
+    void *ext; // for extend
 } SolLRItemCol;
 
 typedef struct _SolLRGoto {
