@@ -211,6 +211,22 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
     solRBTree_count_inc(tree);
     return node;
 }
+/**
+ * search node
+ * @params SolRBTree*
+ * @params void*
+ * @return void*
+ * @return NULL
+ */
+void* solRBTree_search(SolRBTree *tree, void *val)
+{
+    SolRBTreeNode *n;
+    n = solRBTree_search_node(tree, val);
+    if (solRBTree_node_is_nil(tree, n)) {
+        return NULL;
+    }
+    return solRBTreeNode_val(n);
+}
 
 /**
  * search the needle key node
