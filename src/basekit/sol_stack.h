@@ -11,7 +11,7 @@ typedef SolDlList SolStack;
 #define solStack_free(s) solDlList_free(s)
 #define solStack_empty(s) (solDlList_len(s) == 0)
 #define solStack_size(s) solDlList_len(s)
-#define solStack_push(s, d) solDlList_add(s, d, _SolDlListDirFwd)
 void* solStack_pop(SolStack*);
+int solStack_push(SolStack*, void*);
 
 #endif
