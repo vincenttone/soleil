@@ -2,6 +2,93 @@
 #include "sol_slr.h"
 #include "sol_hash.h"
 
+/**
+ * create a new slr parser
+ * @return SolSLRParser *
+ */
+SolSLRParser* solSLRParser_new()
+{
+    SolSLRParser *p = sol_alloc(sizeof(SolSLRParser));
+    if (p == NULL) {
+        return NULL;
+    }
+    p->ig = 0;
+    p->ics = SolSLRParserItemCol_INIT_SIZE;
+    p->_stk = solStack_new();
+    p->_ss = solRBTree_new();
+    p->_ic = sol_calloc(SolSLRParserItemCol_INIT_SIZE, sizeof(SolLRItemCol));
+    p->s = solSymbol_new(p, SolLRSymbolFlag_ORIGIN);
+    return p;
+}
+/**
+ * free paraser
+ * @params SolSLRParser *
+ * @return void
+ */
+void solSLRParser_free(SolSLRParser *p)
+{
+    if (p->_stk) {
+        solStack_free(p->_stk);
+    }
+    solRBTree_free(p->_ss);
+    size_t i;
+    SolLRItemCol *c;
+    for (i = 0; i < p->ics; i++) {
+        c = solSLRParser_find_items_collection(p, i);
+        if (c) {
+            solLRItemCol_free(c);
+        }
+    }
+    sol_free(p->_ic);
+    sol_free(p);
+}
+
+SolLRItem* solLRItem_new(SolLRProduct *product, size_t pos, char is_kernel)
+{
+    SolLRItem *i = sol_alloc(sizeof(SolLRItem));
+    if (i == NULL) {
+        return NULL;
+    }
+    i->p = product;
+    i->pos = pos;
+    i->k = is_kernel;
+    return i;
+}
+
+void solLRItem_free(SolLRItem *item)
+{
+    sol_free(item);
+}
+
+SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
+{
+    if (s == NULL || solLRSymbol_is_terminal(s)) {
+        return NULL;
+    }
+    SolLRProduct *p = sol_alloc(sizeof(SolLRProduct));
+    p->s = s;
+    p->len = len;
+    p->r = sol_alloc(sizeof(SolLRSymbol) * len);
+    SolLRSymbol *sym;
+    size_t i;
+    va_list al;
+    va_start(al, s);
+    for (i = 0; i < len; i++) {
+        s = va_arg(al, SolLRProduct*);
+        sym = solLRProduct_find_symbol(p, i);
+        *sym = *s;
+    }
+    va_end(al);
+    solList_add(s->p, p);
+    return p;
+}
+
+void solLRProduct_free(SolLRProduct *p)
+{
+    sol_free(p->r);
+    sol_free(p);
+}
+
 int solSLRParser_prepare(SolSLRParser *p)
 {
     if (p == NULL || p->s == NULL) {
@@ -23,6 +110,9 @@ int solSLRParser_prepare(SolSLRParser *p)
     }
     if (solSLRParser_compute_goto(p) != 0) {
         return 2;
+    }
+    if (solSLRParser_compute_follow(p) != 0) {
+        return 3;
     }
     return 0;
 }
@@ -72,7 +162,7 @@ int solSLRParser_compute_items_collections(SolSLRParser *p, SolLRItemCol *c)
         n = solList_head(col->items);
         do {
             item = (SolLRItem*)(solListNode_val(n));
-            if (item->pos > item->p->size) {
+            if (item->pos > item->p->len) {
                 continue;
             }
             item1 = sol_alloc(sizeof(SolLRItem));
@@ -84,7 +174,12 @@ int solSLRParser_compute_items_collections(SolSLRParser *p, SolLRItemCol *c)
             if (solList_add(col->items, item1) == NULL) {
                 return -3;
             }
+            if (item->k == SolLRItem_NONKERNEL) {
+                solLRItem_free(item);
+                solListNode_set_val(n, NULL);
+            }
         } while ((n = solListNode_next(n)));
+        solList_remove(col->items, NULL); // clean up
         if (solSLRParser_compute_items_collections(p, col) != 0) {
             return 1;
         }
@@ -145,6 +240,33 @@ int solSLRParser_checking_items(SolSLRParser *p, SolList *src)
             }
         } while ((n2 = solListNode_next(s->p)));
     } while ((n1 = solListNode_next(n1)));
+}
+
+int solSLRParser_compute_goto(SolSLRParser *p)
+{
+    if (p == NULL || p->_ic == NULL) {
+        return -1;
+    }
+    size_t i;
+    SolLRItemCol *c1;
+    SolLRItemCol *c2;
+    SolRBTreeIter* rbti;
+    for (i = 0; i < p->ics; i++) {
+        c1 = p->_ic + i;
+        rbti = solRBTreeIter_new(c1->nc, solRBTree_root(c1->nc), SolRBTreeIterTT_inorder);
+        do {
+            c2 = (SolLRItemCol*)(solRBTreeIter_current_val(n));
+            if (solSLRParser_add_to_goto(p, c1->s, c2->sym, c2->s) != 0) {
+                return 1;
+            }
+        } while (solRBTreeIter_next(rbti));
+    }
+    return 0;
+}
+
+int solSLRParser_add_to_goto(SolSLRParser *p, size_t s1, SolLRSymbol *symbol, size_t s2)
+{
+    
 }
 
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser *p, size_t s)

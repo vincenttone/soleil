@@ -1,10 +1,13 @@
 #ifndef _SOL_SLR_
 #define _SOL_SLR_ 1
 
+#include <stdarg.h>
 #include "sol_common.h"
 #include "sol_list.h"
 #include "sol_stack.h"
 #include "sol_rbtree.h"
+
+#define SolSLRParserItemCol_INIT_SIZE 32
 
 #define SolLRSymbolFlag_ORIGIN       0x1
 #define SolLRSymbolFlag_START        0x2
@@ -24,7 +27,7 @@ typedef struct _SolLRSymbol {
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
-    size_t size; // size
+    size_t len; // len
     SolLRSymbol *s;
     SolLRSymbol *r; // right
 } SolLRProduct;
@@ -42,32 +45,29 @@ typedef struct _SolLRItemCol { // items collection
     SolLRSymbol *sym; // pre symbol
 } SolLRItemCol;
 
-typedef struct _SolLRGoto {
-    size_t pos;
-    int cs; // current state
-    int ns; // next state
-    SolLRSymbol *s;
-    SolLRProduct *p;
-} SolLRGoto;
-
 typedef struct _SolSLRParser {
     size_t ig; // state generate
     size_t ics; // items collection size
     SolStack *_stk; // stack
-    SolRBTree *_nts; // nonterminals
-    SolList *_ts; // terminals
+    SolRBTree *_ss; // symbols
     SolLRItemCol *_ic; // items collection
-    SolLRGoto *_gt; // goto list
     SolLRSymbol *s; // start symbol
 } SolSLRParser;
 
 SolSLRParser* solSLRParser_new();
 void solSLRParser_free(SolSLRParser*);
+int solSLRParser_prepare(SolSLRParser*);
 
-int solSLRParser_generate_items(SolSLRParser*);
-int solSLRParser_generate_goto(SolSLRParser*);
+int solSLRParser_generate_items_collection();
+int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
+int solSLRParser_add_to_goto(SolSLRParser*, size_t, SolLRSymbol*, size_t);
 
-SolLRProduct* solLRProduct_new();
+void solLRItemCol_free(SolLRItemCol*);
+
+SolLRItem* solLRItem_new(SolLRProduct*, size_t, char);
+void solLRItem_free(SolLRItem*);
+
+SolLRProduct* solLRProduct_new(size_t, SolLRSymbol*, ...);
 void solLRProduct_free(SolLRProduct*);
 
 #define solSLRParser_generate_state(p) (++((p)->ig))
