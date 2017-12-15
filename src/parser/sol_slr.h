@@ -20,6 +20,8 @@
 #define SolLRItem_KERNEL    0
 #define SolLRItem_NONKERNEL 1
 
+#define SolLRItemCol_FLAG_END  0x1
+
 typedef struct _SolLRSymbol {
     int f;   // flag
     void *s; // symbol
@@ -35,22 +37,23 @@ typedef struct _SolLRProduct {
 typedef struct _SolLRItem {
     size_t pos;
     SolLRProduct *p;
-    char k;
 } SolLRItem;
 
 typedef struct _SolLRItemCol { // items collection
-    size_t s; // state
+    size_t state; // state
+    size_t flag; // flag
     SolList *items; // items
     SolRBTree *nc; // next items collection
     SolLRSymbol *sym; // pre symbol
 } SolLRItemCol;
 
 typedef struct _SolSLRParser {
-    size_t ig; // state generate
-    size_t ics; // items collection size
-    SolStack *_stk; // stack
-    SolRBTree *_ss; // symbols
-    SolLRItemCol *_ic; // items collection
+    size_t state; // current state
+    size_t gen; // state generate
+    size_t size_col; // items collection size
+    SolStack *stk; // stack
+    SolRBTree *symbols; // symbols
+    SolLRItemCol *collections; // items collection
     SolLRSymbol *s; // start symbol
 } SolSLRParser;
 
@@ -70,15 +73,15 @@ void solLRItem_free(SolLRItem*);
 SolLRProduct* solLRProduct_new(size_t, SolLRSymbol*, ...);
 void solLRProduct_free(SolLRProduct*);
 
-#define solSLRParser_generate_state(p) (++((p)->ig))
+#define solSLRParser_generate_state(p) (++((p)->gen))
 
 #define solLRSymbol_is_terminal(s)   ((s)->flag & SolLRSymbolFlag_TERMINAL != 0)
 #define solLRSymbol_is_nonterminal(s) ((s)->flag & SolLRSymbolFlag_NONTERMINAL != 0)
 #define solLRSymbol_is_origin(s)   ((s)->flag & SolLRSymbolFlag_ORIGIN != 0)
 #define solLRSymbol_is_computing(s) ((s)->flag & SolLRSymbolFlag_COMPUTING != 0)
-#define solLRSymbol_is_free(s) ((s)->flag & SolLRSymbolFlag_COMPUTING == 0)
-#define solLRSymbol_set_computing(s) (s)->flag |= SolLRSymbolFlag_COMPUTING
-#define solLRSymbol_set_free(s) (s)->flag = ((s)->flag) & (~SolLRSymbolFlag_COMPUTING)
+#define solLRSymbol_is_idle(s) ((s)->flag & SolLRSymbolFlag_COMPUTING == 0)
+#define solLRSymbol_set_busy(s) (s)->flag |= SolLRSymbolFlag_COMPUTING
+#define solLRSymbol_set_is_idle(s) (s)->flag = ((s)->flag) & (~SolLRSymbolFlag_COMPUTING)
 
 #define solLRProduct_left(p) (p)->s
 #define solLRProduct_right(p) (p)->r
