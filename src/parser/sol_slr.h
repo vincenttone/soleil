@@ -63,7 +63,7 @@ int solSLRParser_prepare(SolSLRParser*);
 
 int solSLRParser_generate_items_collection();
 int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
-int solSLRParser_add_to_goto(SolSLRParser*, size_t, SolLRSymbol*, size_t);
+int solSLRParser_record_goto(SolSLRParser*, size_t, SolLRSymbol*, size_t);
 
 void solLRItemCol_free(SolLRItemCol*);
 
