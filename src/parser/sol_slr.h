@@ -15,7 +15,10 @@
 #define SolLRSymbolFlag_TERMINAL     0x8
 #define SolLRSymbolFlag_NONTERMINAL  0x10
 #define SolLRSymbolFlag_NULL         0x20
+#define SolLRSymbolFlag_NULLABLE     0x30
 #define SolLRSymbolFlag_COMPUTING    0x100
+#define SolLRSymbolFlag_NULLABLE_COMPUTED    0x200
+#define SolLRSymbolFlag_FIRST_COMPUTED       0x300
 
 #define SolLRItem_KERNEL    0
 #define SolLRItem_NONKERNEL 1
@@ -82,6 +85,12 @@ void solLRProduct_free(SolLRProduct*);
 #define solLRSymbol_is_idle(s) ((s)->flag & SolLRSymbolFlag_COMPUTING == 0)
 #define solLRSymbol_set_busy(s) (s)->flag |= SolLRSymbolFlag_COMPUTING
 #define solLRSymbol_set_is_idle(s) (s)->flag = ((s)->flag) & (~SolLRSymbolFlag_COMPUTING)
+#define solLRSymbol_is_nullable(s) ((s)->flag & SolLRSymbolFlag_NULLABLE != 0)
+#define solLRSymbol_set_nullable(s) ((s)->flag |= SolLRSymbolFlag_NULLABLE)
+#define solLRSymbol_set_nullable_computed(s) ((s)->flag |= SolLRSymbolFlag_NULLABLE_COMPUTED)
+#define solLRSymbol_nullable_computed(s) ((s)->flag & SolLRSymbolFlag_NULLABLE_COMPUTED != 0)
+#define solLRSymbol_set_first_computed(s) ((s)->flag |= SolLRSymbolFlag_FIRST_COMPUTED)
+#define solLRSymbol_first_computed(s) ((s)->flag & SolLRSymbolFlag_FIRST_COMPUTED != 0)
 
 #define solLRProduct_left(p) (p)->s
 #define solLRProduct_right(p) (p)->r

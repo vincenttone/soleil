@@ -277,13 +277,92 @@ int solSLRParser_record_goto(SolSLRParser *p, size_t state1, SolLRSymbol *symbol
     
 }
 
-int solSLRParser_compute_nullable(SolSLRParser *p, SolSymbol *symbol)
+int solLRSymbol_compute_nullable(SolLRSymbol *symbol)
 {
+	if (symbol == NULL || symbol->p == NULL) {
+		return -1;
+	}
+	if (solLRSymbol_is_terminal(symbol) || solLRSymbol_nullable_computed(symbol)) {
+		return 0;
+	}
+	SolListNode *n = solList_head(symbol->p);
+	SolLRProduct *product;
+	SolLRSymbol *s;
+	size_t i;
+	char nullable;
+	do {
+		product = solListNode_val(n);
+		if (product->len == 0 || product->r == NULL) {
+			return -2;
+		}
+		nullable = 0;
+		for (i = 0; i < product->len; i++) {
+			s = (product->r + i);
+			if (symbol == s) {
+				nullable = 1;
+				break;
+			}
+			if (solLRSymbol_is_nonterminal(s) && !solLRSymbol_nullable_computed(s)) {
+				if (solLRSymbol_compute_nullable(s) != 0) {
+					return 1;
+				}
+			}
+			if (!solLRSymbol_is_nullable(s)) {
+				nullable = 1;
+				break;
+			}
+		}
+		if (nullable == 0) {
+			solLRSymbol_set_nullable(s);
+			break;
+		}
+	} while ((n = solListNode_next(n)));
+	solLRSymbol_set_nullable_computed(s);
     return 0;
 }
 
 int solSLRParser_compute_first(SolSLRParser *p, SolSymbol *symbol)
 {
+	if (symbol == NULL || symbol->p == NULL) {
+		return -1;
+	}
+	if (solLRSymbol_first_computed(symbol)) {
+		return 0;
+	}
+	if (solLRSymbol_is_nonterminal(symbol)) {
+		SolListNode *n = solList_head(symbol->p);
+		SolLRProduct *product;
+		SolLRSymbol *s;
+		size_t i;
+		do {
+			product = solListNode_val(n);
+			if (product->len == 0 || product->r == NULL) {
+				return -2;
+			}
+			for (i = 0; i < product->len; i++) {
+				s = (product->r + i);
+				if (solLRSymbol_is_terminal(s)) {
+					if (solSLRParser_record_first(p, symbol, s) != 0) {
+						return -3;
+					}
+				} else if (solSLRParser_compute_first(p, s) != 0) {
+					if (solSLRParser_add_first_to_first(p, symbol, s) != 0) {
+						return -4;
+					}
+				}
+				if (solLRSymbol_compute_nullable(s) != 0) {
+					return 1;
+				}
+				if (!solLRSymbol_is_nullable(s)) {
+					break;
+				}
+				if (i + 1 == product->len) {
+					solSLRParser_add_empty_to_first(p, symbol);
+				}
+			}
+		} while ((n = solListNode_next(n)));
+	}
+	solLRSymbol_set_first_computed(s);
     return 0;
 }
 
