@@ -65,3 +65,34 @@ void* solTriple_get(SolTriple *t, void *v1, void *v2)
 	t->tmp_k->v2 = v2;
 	return solHash_get(t->h2, t->tml_k);
 }
+
+int solTriple_remove_by_v1(SolTriple *t, void *v1)
+{
+	if (t == NULL) {
+		return -1;
+	}
+	SolList *l = solHash_get(t->h1, v1);
+	if (l == NULL) {
+		return 0;
+	}
+	SolTripleK *k;
+	SolListNode *n = solList_head(l);
+	do {
+		k = (SolTripleK*)(solListNode_val(n));
+		solHash_remove(t->h2, k);
+	} while ((n = solListNode_next(n)));
+	solList_free(l);
+	solHash_remove(t->h1, v1);
+	return 0;
+}
+
+int solTriple_remove(SolTriple *t, void *v1, void *v2)
+{
+	if (t == NULL) {
+		return -1;
+	}
+	t->tmp_k->v1 = v1;
+	t->tmp_k->v2 = v2;
+	solHash_remove(t->h2, t);
+	return 0;
+}
