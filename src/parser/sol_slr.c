@@ -110,9 +110,6 @@ int solSLRParser_prepare(SolSLRParser *p)
     if (solSLRParser_compute_parsing_table(p) != 0) {
         return 2;
     }
-    if (solSLRParser_compute_follow(p) != 0) {
-        return 3;
-    }
     return 0;
 }
 
@@ -265,7 +262,7 @@ int solSLRParser_record_reduce(SolSLRParser *p, size_t state, SolLRSymbol *symbo
     if (solSLRParser_compute_follow(p, symbol) != 0) {
         return 1;
     }
-    solSLRParser_follow(p, symbol);
+    //symbol->follows
 }
 
 int solSLRParser_record_shift(SolSLRParser *p, size_t state1, SolLRSymbol *symbol, size_t state2)
@@ -342,22 +339,26 @@ int solSLRParser_compute_first(SolSLRParser *p, SolSymbol *symbol)
 			for (i = 0; i < product->len; i++) {
 				s = (product->r + i);
 				if (solLRSymbol_is_terminal(s)) {
-					if (solSLRParser_record_first(p, symbol, s) != 0) {
-						return -3;
+					if (solLRSymbol_record_first(symbol, s) != 0) {
+						return 1;
 					}
 				} else if (solSLRParser_compute_first(p, s) != 0) {
-					if (solSLRParser_add_first_to_first(p, symbol, s) != 0) {
-						return -4;
+					if (s->firsts) {
+						if (solLRSymbol_copy_firsts(s-firsts, symbol) != 0) {
+							return 2;
+						}
 					}
 				}
 				if (solLRSymbol_compute_nullable(s) != 0) {
-					return 1;
+					return 3;
 				}
 				if (!solLRSymbol_is_nullable(s)) {
 					break;
 				}
 				if (i + 1 == product->len) {
-					solSLRParser_add_empty_to_first(p, symbol);
+					if (solLRSymbol_record_first(p, symbol, p->e) != 0) {
+						return 4;
+					}
 				}
 			}
 		} while ((n = solListNode_next(n)));
@@ -384,21 +385,46 @@ int solSLRParser_compute_follow(SolSLRParser *p, SolLRSymbol *symbol)
             for (i = 0; i< product->len; i++) {
                 s = (SolLRSymbol*)(product + i);
                 if (s == symbol) {
-                    if (product->len == (i + 1)) { // compute first(product->s)
-                        solSLRParser_compute_first(p, product->s);
-                        solSLRParser_add_first_to_follow(p, symbol, product->s);
+                    if (product->len == (i + 1)) { // is the last of product
+						// compute product nonterminal's follow
+                        if (solSLRParser_compute_follow(p, product->s) != 0 ) {
+							return 1;
+						}
+						if (product->s->follows) {
+							if (solLRSymbol_copy_follows(product->s->follows, symbol) != 0) {
+								return 2;
+							}
+						}
                     } else {
                         s = (SolLRSymbol*)(product + i + 1);
                         if (solLRSymbol_is_terminal(s)) { // is terminal, record
-                            solSLRParser_record_follow(p, s);
+                            if (solLRSymbol_record_follow(p, s) != 0) {
+								return 3;
+							}
                         } else if (solLRSymbol_is_nonterminal(s)) { // nonterminal
-                            // compute first(s), add to follow
-                            solSLRParser_compute_first(p, s);
-                            solSLRParser_merge_first_to_follow(p, symbol, s);
-                            solSLRParser_compute_nullable(p, s);
+                            // compute s's firsts, add to follow
+                            if (solSLRParser_compute_first(p, s) != 0) {
+								return 1;
+							}
+							// add s's first to symbol's follow
+							if (s->firsts) {
+								if (solLRSymbol_copy_follows(s->firsts, symbol) != 0) {
+									return 2;
+								}
+							}
+                            if (solSLRParser_compute_nullable(p, s) != 0) {
+								return 3;
+							}
                             if (solLRSymbol_is_nullable(s) == 0) {
-                                solSLRParser_compute_follow(p, s);
-                                solSLRParser_add_follow_to_follow(p, symbol, s);
+                                if (solSLRParser_compute_follow(p, s) != ) {
+									return 4;
+								}
+								// add s's follows to symbol's follow
+								if (s->follows) {
+									if (solLRSymbol_copy_follows(s->follows, symbol) != 0) {
+										return 2;
+									}
+								}
                             }
                         }
                     }
@@ -409,23 +435,11 @@ int solSLRParser_compute_follow(SolSLRParser *p, SolLRSymbol *symbol)
     return 0;
 }
 
-int solLRSymbol_is_nullable(SolSymbol *symbol)
-{
-    return 0;
-}
-
-int solSLRParser_add_follow_to_follow(SolSLRParser *p, SolSymbol *dest, SolSymbol *src)
-{
-    return 0;
-}
-
-int solSLRParser_add_follow_to_follow(SolSLRParser *p, SolSymbol *dest, SolSymbol *src)
-{
-    return 0;
-}
-
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser *p, size_t s)
 {
+	if (p == NULL) {
+		return NULL;
+	}
     if (s > p->size_cols) {
         SolLRItemCol *ic = p->collections;
         p->collections = sol_calloc(p->size_cols * 2, sizeof(SolLRItemCol));
@@ -438,4 +452,60 @@ SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser *p, size_t s)
         sol_free(ic);
     }
     return p->collections + s;
+}
+/**
+ * @desc record symbol's first
+ * @param symbol
+ * @param first (of symbol)
+ * @return 0 when success, others when failed
+ */
+int solLRSymbol_record_first(SolLRSymbol *symbol, SolLRSymbol *first)
+{
+	if (symbol == NULL || first == NULL) {
+		return -1;
+	}
+	if (symbol->firsts == NULL) {
+		symbol->firsts = solRBTree_new();
+		if (symbol->firsts == NULL) {
+			return -2;
+		}
+	}
+	if (solRBTree_insert(symbol->firsts, first)) {
+		return 0;
+	}
+	return 1;
+}
+/**
+ * @desc record symbol's follow
+ * @param symbol
+ * @param follow (of symbol)
+ * @return 0 when success, others when failed
+ */
+int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow)
+{
+	if (symbol == NULL || follow == NULL) {
+		return -1;
+	}
+	if (symbol->follows == NULL) {
+		symbol->follows = solRBTree_new();
+		if (symbol->follows == NULL) {
+			return -2;
+		}
+	}
+	if (solRBTree_insert(symbol->follows, follows)) {
+		return 0;
+	}
+	return 1;
+}
+
+int solLRSymbol_share_firsts(SolRBTree *firsts, SolRBTreeNode *node, void *symbol)
+{
+	SolLRSymbol *s = (SolLRSymbol*)solRBTreeNode_val(node);
+	return solLRSymbol_record_first((SolLRSymbol*)symbol, s);
+}
+
+int solLRSymbol_share_follows(SolRBTree *follows, SolRBTreeNode *node, void *symbol)
+{
+	SolLRSymbol *s = (SolLRSymbol*)solRBTreeNode_val(node);
+	return solLRSymbol_record_follow((SolLRSymbol*)symbol, s);
 }

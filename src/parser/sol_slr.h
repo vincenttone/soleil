@@ -29,6 +29,8 @@ typedef struct _SolLRSymbol {
     int f;   // flag
     void *s; // symbol
     SolList *p; // productions
+	SolRBTree *firsts;
+	SolRBTree *follows;
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
@@ -58,14 +60,28 @@ typedef struct _SolSLRParser {
     SolRBTree *symbols; // symbols
     SolLRItemCol *collections; // items collection
     SolLRSymbol *s; // start symbol
+	SolLRSymbol *e; // empty symbol
 } SolSLRParser;
 
 SolSLRParser* solSLRParser_new();
 void solSLRParser_free(SolSLRParser*);
+
 int solSLRParser_prepare(SolSLRParser*);
 
 int solSLRParser_generate_items_collection();
 int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
+int solSLRParser_compute_nonkernel_items(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
+
+int solSLRParser_compute_parsing_table(SolSLRParser*);
+// state1  read symbol -> do action -> state2
+// solSLRParser_record_state_switch(SolSLRParser*, size_t, SolLRSymbol, action, size_t);
+// state1 -> symbol1 -> action1 state2
+// state1 -> symbol2 -> action1 state3
+// state2 -> symbol3 -> action2 state3
+// state3 -> symbol4 -> action3
+int solSLRParser_record_accept(SolSLRParser*, size_t);
+int solSLRParser_record_reduce(SolSLRParser*, size_t, SolLRSymbol*);
+int solSLRParser_record_shift(SolSLRParser*, size_t, SolLRSymbol*, size_t);
 int solSLRParser_record_goto(SolSLRParser*, size_t, SolLRSymbol*, size_t);
 
 void solLRItemCol_free(SolLRItemCol*);
@@ -75,6 +91,17 @@ void solLRItem_free(SolLRItem*);
 
 SolLRProduct* solLRProduct_new(size_t, SolLRSymbol*, ...);
 void solLRProduct_free(SolLRProduct*);
+
+SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
+
+int solLRSymbol_compute_nullable(SolLRSymbol*);
+int solSLRParser_compute_first(SolSLRParser*, SolSymbol*);
+int solSLRParser_compute_follow(SolSLRParser*, SolLRSymbol*);
+
+int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*);
+int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*);
+int solLRSymbol_share_firsts(SolRBTree*, SolRBTreeNode*, void*);
+int solLRSymbol_share_follows(SolRBTree*, SolRBTreeNode*, void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 
@@ -91,6 +118,15 @@ void solLRProduct_free(SolLRProduct*);
 #define solLRSymbol_nullable_computed(s) ((s)->flag & SolLRSymbolFlag_NULLABLE_COMPUTED != 0)
 #define solLRSymbol_set_first_computed(s) ((s)->flag |= SolLRSymbolFlag_FIRST_COMPUTED)
 #define solLRSymbol_first_computed(s) ((s)->flag & SolLRSymbolFlag_FIRST_COMPUTED != 0)
+
+#define solLRSymbol_copy_firsts(f, symbol) solRBTree_travelsal_inorder(f, \
+																	   solRBTree_root(f), \
+																	   &solLRSymbol_share_firsts, \
+																	   symbol)
+#define solLRSymbol_copy_follows(f, symbol) solRBTree_travelsal_inorder(f, \
+																		solRBTree_root(f), \
+																		&solLRSymbol_share_follows, \
+																		symbol)
 
 #define solLRProduct_left(p) (p)->s
 #define solLRProduct_right(p) (p)->r
