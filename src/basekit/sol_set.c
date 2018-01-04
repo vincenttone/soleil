@@ -17,7 +17,7 @@ void solSet_free(SolSet *s)
     sol_free(s);
 }
 
-inline void* solSet_current(SolSet *s)
+void* solSet_current(SolSet *s)
 {
     SolHashRecord *r = solHashIter_current_record(s->iter);
     if (r == NULL) {
