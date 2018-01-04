@@ -69,6 +69,18 @@ SolHash* solHash_new()
     return hash;
 }
 
+SolHash* solHash_new_with_size(size_t s)
+{
+    SolHash *hash = sol_calloc(1, sizeof(SolHash));
+    if (hash == NULL) {
+        return NULL;
+    }
+    if (solHash_set_size(hash, s)) {
+        return NULL;
+    }
+    return hash;
+}
+
 void solHash_free(SolHash *hash)
 {
     solHash_free_records(hash->records, hash->size, hash->f_free_k, hash->f_free_v);
