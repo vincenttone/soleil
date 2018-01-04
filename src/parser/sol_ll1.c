@@ -45,10 +45,10 @@ int solLL1Parser_reg_symbol(SolLL1Parser *p, SolLL1ParserSymbol *s)
         ) {
         return -1;
     }
-    if (solRBTree_insert(solLL1Parser_symbol_list(p), s)) {
-        return 0;
+    if (solRBTree_insert(solLL1Parser_symbol_list(p), s) != 0) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 SolLL1ParserSymbol* solLL1Parser_terminal(SolLL1Parser *p, void *s)
@@ -369,10 +369,10 @@ int solLL1ParserSymbol_add_first_entry(SolLL1ParserSymbol *s, SolLL1ParserEntry 
     if (solLL1ParserSymbol_first(s) == NULL) return -4;
     SolRBTreeNode *n = solRBTree_search_node(solLL1ParserSymbol_first(s), e);
     assert(solRBTree_node_is_nil(solLL1ParserSymbol_first(s), n) && "ambiguity is first.");
-    if (solRBTree_insert(solLL1ParserSymbol_first(s), e)) {
-        return 0;
+    if (solRBTree_insert(solLL1ParserSymbol_first(s), e) != 0) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 int solLL1ParserSymbol_dup_first(SolLL1ParserSymbol *s, SolRBTree *t, SolLL1ParserProduct *p)
@@ -408,10 +408,10 @@ int solLL1ParserSymbol_add_follow(SolLL1ParserSymbol *s1, SolLL1ParserSymbol *s2
     }
     SolLL1ParserEntry *e = solLL1ParserEntry_new(s2, p);
     if (e == NULL) return -5;
-    if (solRBTree_insert(solLL1ParserSymbol_follow(s1), e)) {
-        return 0;
+    if (solRBTree_insert(solLL1ParserSymbol_follow(s1), e) != 0) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 int solLL1ParserSymbol_dup_follow(SolLL1ParserSymbol *s, SolRBTree *t, SolLL1ParserProduct *p)
