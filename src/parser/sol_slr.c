@@ -149,14 +149,18 @@ int solSLRParser_compute_items_collections(SolSLRParser *p, SolLRItemCol *c)
             col = solSLRParser_generate_items_collection();
             col->flag |= SolLRItemCol_FLAG_END;
             col->sym = item->p->s; // record product nonterminal symbol when reach end
-            solRBTree_insert(c->nc, col);
+            if (solRBTree_insert(c->nc, col) != 0) {
+				return 1;
+			}
         } else {
             s = solLRProduct_find_symbol(item->p, item->pos);
             col = solRBTree_search(c->nc, s);
             if (col == NULL) {
                 col = solSLRParser_generate_items_collection();
                 col->sym = s;
-                solRBTree_insert(c->nc, col);
+                if (solRBTree_insert(c->nc, col) != 0) {
+					return 1;
+				}
             }
             item = solLRItem_new(item->p, (item->pos) + 1);
             solList_add(col->items, item);
@@ -191,7 +195,9 @@ int solSLRParser_compute_nonkernel_items(SolSLRParser *p, SolLRItemCol *c, SolLR
         if (col == NULL) {
             col = solSLRParser_generate_items_collection();
             col->sym = s;
-            solRBTree_insert(c->nc, col);
+            if (solRBTree_insert(c->nc, col) != 0) {
+				return 1;
+			}
         }
         item = solLRItem_new(product, 1);
         solList_add(col->items, item);
@@ -470,10 +476,10 @@ int solLRSymbol_record_first(SolLRSymbol *symbol, SolLRSymbol *first)
 			return -2;
 		}
 	}
-	if (solRBTree_insert(symbol->firsts, first)) {
-		return 0;
+	if (solRBTree_insert(symbol->firsts, first) != 0) {
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 /**
  * @desc record symbol's follow
@@ -492,10 +498,10 @@ int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow)
 			return -2;
 		}
 	}
-	if (solRBTree_insert(symbol->follows, follows)) {
-		return 0;
+	if (solRBTree_insert(symbol->follows, follows) != 0) {
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 int solLRSymbol_share_firsts(SolRBTree *firsts, SolRBTreeNode *node, void *symbol)
