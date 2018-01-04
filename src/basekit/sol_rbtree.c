@@ -212,6 +212,14 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
     return node;
 }
 
+void* solRBTree_search(SolRBTree *tree, void *val)
+{
+	SolRBTreeNode *n = solRBTree_search_node(tree, val);
+	if (n) {
+		return solRBTreeNode_val(n);
+	}
+	return NULL;
+}
 /**
  * search the needle key node
  * @params v_br_tree *tree
