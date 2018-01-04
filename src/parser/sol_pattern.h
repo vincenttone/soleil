@@ -101,8 +101,4 @@ int _solPattern_char_equal(void *c1, void *c2);
 int _solPattern_state_equal(void *s1, void *s2);
 void _solPattern_debug_relations(SolPattern *p);
 
-inline void solPatternCapture_update_mark(SolDfaStateMark*, size_t);
-inline void solPattern_reset_capture_mark(SolPattern*);
-inline void solPattern_reset_unmatched_capture_mark(SolPattern*);
-
 #endif

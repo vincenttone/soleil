@@ -41,7 +41,7 @@ SolSet* solSet_get_intersection(SolSet*, SolSet*);
 #define solSet_rewind(s) solHashIter_rewind(s->iter)
 #define solSet_next(s) solHashIter_next(s->iter)
 #define solSetIter_current_count(s) s->iter->c
-inline void* solSet_current(SolSet*);
+void* solSet_current(SolSet*);
 
 void solSet_wipe(SolSet*);
 int solSet_dup(SolSet*, SolSet*);

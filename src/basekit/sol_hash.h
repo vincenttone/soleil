@@ -93,10 +93,4 @@ SolHashRecord* solHashIter_get(SolHashIter *iter);
 #define solHash_free_k(h, k) (*h->f_free_k)(k)
 #define solHash_free_v(h, v) (*h->f_free_v)(v)
 
-inline void solHash_free_records(SolHashRecord*, size_t, sol_f_free_ptr, sol_f_free_ptr);
-inline SolHashRecord* solHash_record1_of_key(SolHash*, void*);
-inline SolHashRecord* solHash_record2_of_key(SolHash*, void*);
-inline void solHash_record_switch(SolHashRecord*, SolHashRecord*);
-inline int solHash_add_records(SolHash*, SolHashRecord*, size_t);
-
 #endif
