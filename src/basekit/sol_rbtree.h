@@ -22,14 +22,14 @@ typedef struct _SolRBTree {
     SolRBTreeNode *root;
     sol_f_cmp_ptr f_compare;
     sol_f_free_ptr f_free; // free node val func
-    int (*f_insert)(struct _SolRBTree*, SolRBTreeNode*);
+    int (*f_insert_conflict_fix)(SolRBTreeNode*, SolRBTreeNode*);
 } SolRBTree;
 
 typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*, void*);
 
 SolRBTree* solRBTree_new();
 void solRBTree_free(SolRBTree*);
-SolRBTreeNode* solRBTree_insert(SolRBTree*, void*);
+int solRBTree_insert(SolRBTree*, void*);
 int solRBTree_delete_node(SolRBTree*, SolRBTreeNode*);
 int solRBTree_del(SolRBTree*, void*);
 int solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
@@ -67,9 +67,9 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 #define solRBTree_node_val_free_func(t) (t)->f_free
 #define solRBTree_node_val_free(v) (*(t)->f_free)(v)
 
-#define solRBTree_set_insert_func(t, f) (t)->f_insert = f
-#define solRBTree_insert_func(t) (t)->f_insert
-#define solRBTree_insert_val(v) (*(t)->f_insert)(v)
+#define solRBTree_set_insert_conflict_fix_func(t, f) (t)->f_insert_conflict_fix = f
+#define solRBTree_insert_conflict_fix_func(t) (t)->f_insert_conflict_fix
+#define solRBTree_insert_conflict_fix(t, n1, n2) (*(t)->f_insert_conflict_fix)(n1, n2)
 
 #define solRBTree_set_compare_func(t, f) (t)->f_compare = f
 #define solRBTree_node_val_compare_func(t) (t)->f_compare
