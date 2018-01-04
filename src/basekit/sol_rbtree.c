@@ -167,12 +167,12 @@ void solRBTree_insert_fixup(SolRBTree *tree, SolRBTreeNode *node)
     solRBTreeNode_dye_black(solRBTree_root(tree));
 }
 
-SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
+int solRBTree_insert(SolRBTree *tree, void *val)
 {
     SolRBTreeNode *node;
     node = sol_alloc(sizeof(SolRBTreeNode));
     if (node == NULL) {
-        return NULL;
+        return -1;
     }
     solRBTreeNode_dye_red(node);
     solRBTreeNode_set_parent(node, solRBTree_nil(tree));
@@ -188,8 +188,13 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
         w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
+			if (solRBTree_insert_conflict_fix_func(tree)) {
+				if (solRBTree_insert_conflict_fix(tree, current_node, node) !=0) {
+					return 1;
+				}
+			}
             solRBTree_node_free(tree, node);
-            return current_node;
+            return 0;
         } else if (w < 0) {
             current_node = solRBTreeNode_left(current_node);
         } else {
@@ -209,7 +214,7 @@ SolRBTreeNode* solRBTree_insert(SolRBTree *tree, void *val)
     }
     solRBTree_insert_fixup(tree, node);
     solRBTree_count_inc(tree);
-    return node;
+    return 0;
 }
 
 /**
