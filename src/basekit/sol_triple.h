@@ -2,24 +2,23 @@
 #define _SOL_TRIPLE_H_ 1
 
 #include "sol_common.h"
-#include "sol_hash.h"
-#include "sol_list.h"
+#include "sol_rbtree.h"
 
-typedef struct _SolTripleK {
+struct _SolTripleRecordF1 {
 	void *v1;
+	SolRBTree *t;
+};
+struct _SolTripleRecordF2 {
 	void *v2;
-} SolTripleK;
+	void *v3;
+};
 
 typedef struct _SolTriple {
-    SolHash *h1;
-	SolHash *h2;
-	SolTripleK *tmp_k;
-    sol_f_hash_ptr f_v1_hash1;
-    sol_f_hash_ptr f_v1_hash2;
-    sol_f_hash_ptr f_v2_hash1;
-    sol_f_hash_ptr f_v2_hash2;
-    sol_f_match_ptr f_v1_match;
-    sol_f_match_ptr f_v2_match;
+    SolRBTree *t;
+	SolRBTreeF1 *tmp_f1;
+	sol_f_cmp_ptr f_compare_v2;
+	sol_f_free_ptr f_free_v2;
+	sol_f_free_ptr f_free_v3;
 } SolTriple;
 
 SolTriple* solTriple_new();

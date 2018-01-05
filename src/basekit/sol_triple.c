@@ -7,19 +7,14 @@ SolTriple* solTriple_new()
     if (t == NULL) {
         return NULL;
     }
-	t->h1 = solHash_new();
-	t->h2 = solHash_new();
-	t->tmp_k = sol_alloc(sizeof(SolTripleK));
+	t->t = solTriple_new();
     return t;
 }
 
 void solTriple_free(SolTriple *t)
 {
-	if (t->h1) {
-		sol_free(t->h1);
-	}
-	if (t->h2) {
-		sol_free(t->h2);
+	if (t->t) {
+		solRBTree_free(t->t);
 	}
     sol_free(t);
 }
@@ -29,31 +24,30 @@ int solTriple_put(SolTriple *t, void *v1, void *v2, void *v3)
 	if (t == NULL) {
 		return -1;
 	}
-	SolTripleK *k = sol_alloc(sizeof(SolTripleK));
-	k->v1 = v1;
-	k->v2 = v2;
-	SolList *l = solHash_get(t->h1, v1);
-	if (l == NULL) {
-		l = solList_new();
-		if (solHash_put(t->h1, v1, l) != 0) {
+	struct _SolTripleRecordF2 *f2 = sol_alloc(sizeof(struct _SolTripleRecordF2));
+	f2->v2 = v2;
+	f2->v3 = v3;
+	struct _SolTripleRecordF1 *f1 = (struct _SolTripleRecordF1*)(solRBTree_search(t->h1, v1));
+	if (f1 == NULL) {
+		f1->v1 = v1;
+		f1->t = solRBTree_new();
+		if (solRBTree_insert(t->t, f1) != 0) {
 			return 1;
 		}
 	}
-	if (solList_add(l, k) == NULL) {
+	if (solRBTree_insert(f1->t, f2) == NULL) {
 		return 2;
-	}
-	if (solHash_put(t->h2, k, v3) != 0) {
-		return 3;
 	}
 	return 0;
 }
 
-SolList* solTriple_get_by_v1(SolTriple *t, void *v1)
+SolRBTree* solTriple_get_by_v1(SolTriple *t, void *v1)
 {
 	if (t == NULL) {
 		return -1;
 	}
-	return solHash_get(t->h1, v1);
+	t->tmp_f1->v1 = v1;
+	return solRBTree_search(t->t, t->tmp_f1);
 }
 
 void* solTriple_get(SolTriple *t, void *v1, void *v2)
