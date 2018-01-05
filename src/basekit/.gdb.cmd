@@ -110,3 +110,16 @@ define plist
     set $n = $n->next
   end
 end
+
+define prbtree_node
+  set $n = ((SolRBTreeNode*)$arg0)
+  if ($n)
+    ppp $n->val
+    if ($n->l)
+      prbtree_node $n->l
+    end
+    if ($n->r)
+      prbtree_node $n->r
+    end
+  end
+end

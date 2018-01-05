@@ -5,24 +5,29 @@
 #include "sol_common.h"
 #include "sol_rbtree.h"
 
-typedef struct _SolRBTuple {
+typedef struct _SolRBTupleRecord {
 	void *v;
 	SolRBTree *n;
-	struct _SolRBTuple *p; // parent
-	sol_f_free_ptr f_free_val; // free node val func
+    sol_f_free_ptr f_free_val; // free node val func
+} SolRBTupleRecord;
+
+typedef struct _SolRBTuple {
+	SolRBTree *n;
+    struct _SolRBTupleRecord *tmp;
+    sol_f_free_ptr f_free_val; // free node val func
 } SolRBTuple;
 
 SolRBTuple* solRBTuple_new();
-SolRBTuple* _solRBTuple_new(SolRBTuple*, void*);
 void solRBTuple_free(SolRBTuple*);
-void _solRBTuple_free(void *t);
+SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void*);
+void solRBTupleRecord_free(SolRBTupleRecord*);
+void _solRBTupleRecord_free(void*);
 
-SolRBTuple* solRBTuple_put(SolRBTuple*, size_t, void*, ...);
-void* solRBTuple_get(SolRBTuple*, size_t, void*, ...);
-int solRBTuple_remove(SolRBTuple*, size_t, void*, ...);
+int solRBTuple_put(SolRBTuple*, size_t, ...);
+SolRBTuple* solRBTuple_get(SolRBTuple*, size_t, ...);
+int solRBTuple_remove(SolRBTuple*, size_t, ...);
 
-#define solRBTuple_set_compare_val_func(t, f) solRBTree_set_compare_func(t->n, f)
-#define solRBTuple_set_insert_conflict_fix_func(t, f) solRBTree_set_insert_conflict_fix_func(t->n, f)
-#define solRBTuple_set_free_val_func(t, f) t->f_free_val = f
+#define solRBTuple_set_compare_val_func(t, f) solRBTree_set_compare_func((t)->n, f)
+#define solRBTupleRecord_set_free_val_func(r, f) (r)->f_free_val = f
 
 #endif

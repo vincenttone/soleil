@@ -3,88 +3,100 @@
 
 SolRBTuple* solRBTuple_new()
 {
-	SolRBTuple *t = _solRBTuple_new(NULL, NULL);
+    SolRBTuple *t = sol_calloc(1, sizeof(SolRBTuple));
 	if (t == NULL) {
 		return NULL;
 	}
+    t->n = solRBTree_new();
+    t->tmp = sol_calloc(1, sizeof(SolRBTuple));
+    solRBTree_set_val_free_func(t->n, &_solRBTupleRecord_free);
 	return t;
-}
-
-SolRBTuple* _solRBTuple_new(SolRBTuple *parent, void *v)
-{
-    SolRBTuple *t = sol_calloc(1, sizeof(SolRBTuple));
-    if (t == NULL) {
-        return NULL;
-    }
-	t->v = v;
-	if (parent) {
-		t->p = parent;
-		solRBTuple_set_free_val_func(parent, parent->f_free_val);
-		if (parent->n == NULL)  {
-			parent->n = solRBTree_new();
-			if (parent->p && parent->p->n) {
-				SolRBTree *grand = parent->p->n;
-				solRBTuple_set_compare_val_func(parent, solRBTree_node_val_compare_func(grand));
-				solRBTuple_set_insert_conflict_fix_func(parent, solRBTree_insert_conflict_fix_func(grand));
-				solRBTree_set_val_free_func(parent->n, &_solRBTuple_free);
-			}
-		}
-		solRBTree_insert(parent->n, t);
-	}
-    return t;
-}
-
-void _solRBTuple_free(void *t)
-{
-	return solRBTuple_free((SolRBTuple*)t);
 }
 
 void solRBTuple_free(SolRBTuple *t)
 {
-	if (t->v && t->f_free_val) {
-		(*t->f_free_val)(t->v);
-	}
-	if (t->n) {
-		solRBTree_free(t->n);
-	}
+    if (t->tmp) {
+        sol_free(t->tmp);
+    }
+    if (t->n) {
+        solRBTree_free(t->n);
+    }
     sol_free(t);
 }
 
-SolRBTuple* solRBTuple_put(SolRBTuple *t, size_t l, void *v, ...)
+SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void *v)
 {
-	SolRBTree *current = t->n;
-	va_list al;
-	va_start(al, v);
-	SolRBTuple *nt;
-	nt = (SolRBTuple*)(solRBTree_search(current, v));
-	if (nt == NULL) {
-		nt = _solRBTuple_new(t, v);
+    SolRBTupleRecord *r = sol_calloc(1, sizeof(SolRBTuple));
+	if (r == NULL) {
+		return NULL;
 	}
-	t = nt;
-	while (--l) {
-		v = va_arg(al, void*);
-		nt = (SolRBTuple*)(solRBTree_search(current, v));
-		if (nt == NULL) {
-			nt = _solRBTuple_new(t, v);
-		}
-		t = nt;
-	}
-	va_end(al);
-	return nt;
+    //solRBTupleRecord_set_free_val_func(cur, t->f_free_val);
+    r->v = v;
+	return r;
 }
 
-void* solTuple_get(SolRBTuple *t, size_t l, void *v, ...)
+void _solRBTupleRecord_free(void *r)
+{
+	return solRBTupleRecord_free((SolRBTupleRecord*)r);
+}
+
+void solRBTupleRecord_free(SolRBTupleRecord *r)
+{
+	if (r->v != NULL && r->f_free_val) {
+		(*r->f_free_val)(r->v);
+	}
+	if (r->n) {
+		solRBTree_free(r->n);
+	}
+    sol_free(r);
+}
+
+int solRBTuple_put(SolRBTuple *t, size_t l, ...)
+{
+	va_list al;
+	va_start(al, l);
+    SolRBTree *tree = t->n;
+    SolRBTupleRecord *pre;
+	SolRBTupleRecord *cur;
+    void *v;
+	 while (l--) {
+		v = va_arg(al, void*);
+        if (tree) {
+            t->tmp->v = v;
+            cur = (SolRBTupleRecord*)(solRBTree_search(tree, t->tmp));
+        } else {
+            cur = NULL;
+            tree = solRBTree_new();
+            if (pre->n == NULL) {
+                return 1;   
+            }
+            solRBTree_set_compare_func(tree, solRBTree_node_val_compare_func(t->n));
+            solRBTree_set_insert_conflict_fix_func(tree, solRBTree_insert_conflict_fix_func(t->n));
+            solRBTree_set_val_free_func(tree, solRBTree_node_val_free_func(t->n));
+            pre->n = tree;
+        }
+		if (cur == NULL) {
+            cur = solRBTupleRecord_new(t, v);
+            if (cur == NULL) {
+                return 1;
+            }
+            solRBTree_insert(tree, cur);
+		}
+		pre = cur;
+	}
+	va_end(al);
+	return 0;
+}
+
+SolRBTuple* solRBTuple_get(SolRBTuple *t, size_t l, ...)
 {
 	if (t == NULL) {
 		return NULL;
 	}
-	t = (SolRBTuple*)(solRBTree_search(t->n, v));
-	if (t == NULL) {
-		return NULL;
-	}
+    void *v;
 	va_list al;
-	va_start(al, v);
-	while (--l) {
+	va_start(al, l);
+	 while (--l) {
 		v = va_arg(al, void*);
 		t = (SolRBTuple*)(solRBTree_search(t->n, v));
 		if (t == NULL) {
@@ -92,21 +104,18 @@ void* solTuple_get(SolRBTuple *t, size_t l, void *v, ...)
 		}
 	}
 	va_end(al);
-	return t->v;
+	return t;
 }
 
-int solRBTuple_remove(SolRBTuple *t, size_t l, void *v, ...)
+int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
 {
 	if (t == NULL) {
 		return -1;
 	}
-	t = (SolRBTuple*)(solRBTree_search(t->n, v));
-	if (t == NULL) {
-		return 0;
-	}
 	va_list al;
-	va_start(al, v);
-	while (--l) {
+    void *v;
+	va_start(al, l);
+    while (--l) {
 		v = va_arg(al, void*);
 		t = (SolRBTuple*)(solRBTree_search(t->n, v));
 		if (t == 0) {
