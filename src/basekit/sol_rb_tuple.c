@@ -66,14 +66,14 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
             cur = (SolRBTupleRecord*)(solRBTree_search(tree, t->tmp));
         } else {
             cur = NULL;
-            tree = solRBTree_new();
+            pre->n = solRBTree_new();
             if (pre->n == NULL) {
                 return 1;   
             }
             solRBTree_set_compare_func(tree, solRBTree_node_val_compare_func(t->n));
             solRBTree_set_insert_conflict_fix_func(tree, solRBTree_insert_conflict_fix_func(t->n));
             solRBTree_set_val_free_func(tree, solRBTree_node_val_free_func(t->n));
-            pre->n = tree;
+            tree = pre->n;
         }
 		if (cur == NULL) {
             cur = solRBTupleRecord_new(t, v);
