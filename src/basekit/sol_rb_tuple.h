@@ -24,7 +24,7 @@ void solRBTupleRecord_free(SolRBTupleRecord*);
 void _solRBTupleRecord_free(void*);
 
 int solRBTuple_put(SolRBTuple*, size_t, ...);
-SolRBTuple* solRBTuple_get(SolRBTuple*, size_t, ...);
+SolRBTupleRecord* solRBTuple_get(SolRBTuple*, size_t, ...);
 int solRBTuple_remove(SolRBTuple*, size_t, ...);
 
 #define solRBTuple_set_compare_val_func(t, f) solRBTree_set_compare_func((t)->n, f)
