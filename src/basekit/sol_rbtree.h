@@ -35,6 +35,7 @@ int solRBTree_del(SolRBTree*, void*);
 int solRBTree_node_free(SolRBTree*, SolRBTreeNode*);
 int _solRBTree_node_free(SolRBTree*, SolRBTreeNode*, void*);
 
+void* solRBTree_search(SolRBTree*, void*);
 SolRBTreeNode* solRBTree_search_node(SolRBTree*, void*);
 SolRBTreeNode* solRBTree_search_min_node(SolRBTree*, SolRBTreeNode*);
 SolRBTreeNode* solRBTree_search_max_node(SolRBTree*, SolRBTreeNode*);
