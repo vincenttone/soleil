@@ -405,10 +405,14 @@ int solRBTree_delete_node(SolRBTree *tree, SolRBTreeNode *del_node)
     // find the real position to del
     // cond 1: only one child branch, del the node
     // cond 2: two child branch, find the successor
-    SolRBTreeNode *rp_node = (solRBTree_node_is_nil(tree, solRBTreeNode_left(del_node))
-                           || solRBTree_node_is_nil(tree, solRBTreeNode_right(del_node)))
-        ? del_node
-        : solRBTree_search_successor(tree, del_node);
+    SolRBTreeNode *rp_node;
+    if (solRBTree_node_is_nil(tree, solRBTreeNode_left(del_node))
+        || solRBTree_node_is_nil(tree, solRBTreeNode_right(del_node))
+    ) {
+        rp_node = del_node;
+    } else {
+        rp_node = solRBTree_search_successor(tree, del_node);
+    }
     SolRBTreeNode *rp_child_node = solRBTree_node_is_nil(tree, solRBTreeNode_left(rp_node))
         ? solRBTreeNode_right(rp_node)
         : solRBTreeNode_left(rp_node);

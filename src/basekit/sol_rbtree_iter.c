@@ -90,8 +90,8 @@ SolRBTreeNode* solRBTreeIter_next_inorder(SolRBTreeIter *i)
         do {
             solStack_push(i->s, n);
             n = solRBTreeNode_left(n);
-            i->cn = n;
-        } while (solRBTree_node_is_NOT_nil(i->t, solRBTreeNode_left(n)));
+        } while (solRBTree_node_is_NOT_nil(i->t, n));
+        i->cn = solStack_pop(i->s);
     } else if (n && solRBTree_node_is_NOT_nil(i->t, solRBTreeNode_right(n))) {
         i->cn = n;
         n = solRBTreeNode_right(n);
