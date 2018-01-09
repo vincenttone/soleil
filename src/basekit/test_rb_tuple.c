@@ -26,17 +26,19 @@ void prv(SolRBTupleRecord *t)
 
 int prvx(SolRBTree *tr, SolRBTreeNode *n, void *d)
 {
-    int *i = (int*)d + 1;
-    SolRBTupleRecord *r = (SolRBTupleRecord*)solRBTreeNode_val(n);
+    int *j = (int*)d + 1;
+    int *x;
+    SolRBTupleRecord *r;
+    r = (SolRBTupleRecord*)solRBTreeNode_val(n);
     if (r) {
-        while (i--) {
+        for (x = 0; x < j; x++) {
             printf("-");
         }
         printf("%s\n", (char*)(r->v));
     }
     SolRBTree *tree = r->n;
     if (r->n) {
-        solRBTree_travelsal_inorder(tree, solRBTree_root(tree), &prvx, i);
+        solRBTree_travelsal_inorder(tree, solRBTree_root(tree), &prvx, j);
     } else {
         //printf("no children\n");
     }
@@ -60,18 +62,30 @@ int main()
 	solRBTuple_set_compare_val_func(t, &cmp);
     // solRBTuple_set_free_val_func(t, &pf);
 	printf("put ret: %d\n", solRBTuple_put(t, 4, a, b, c, d));
-	printf("put ret: %d\n", solRBTuple_put(t, 3, a, b, d));
-    print_rb_tuple(t);
-    /*
+	printf("put ret: %d\n", solRBTuple_put(t, 3, b, c, d));
 	solRBTuple_put(t, 3, a, c, d);
-	solRBTuple_put(t, 3, b, c, d);
+	solRBTuple_put(t, 3, b, c, a);
 	solRBTuple_put(t, 3, b, d, d);
 	solRBTuple_put(t, 4, b, d, a, c);
 	solRBTuple_put(t, 3, c, d, a);
+    print_rb_tuple(t);
 
     SolRBTupleRecord *x = solRBTuple_get(t, 2, a, b);
-    if (x) prv(x);
-    */
+    printf("try get a, b:\n");
+    if (x) {
+        prv(x);
+        prvx(x->n, solRBTree_root(x->n), NULL);
+    }
+    x = solRBTuple_get(t, 1, b);
+    printf("try get b:\n");
+    if (x) {
+        prv(x);
+        prvx(x->n, solRBTree_root(x->n), NULL);
+    }
+    printf("try del a,c (return %d):\n", solRBTuple_remove(t, 2, a, c));
+    print_rb_tuple(t);
+    printf("try del b (return %d):\n", solRBTuple_remove(t, 1, b));
+    print_rb_tuple(t);
 	solRBTuple_free(t);
 	return 0;
 }
