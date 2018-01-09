@@ -18,6 +18,7 @@ SolSLRParser* solSLRParser_new()
     p->symbols = solRBTree_new();
     p->collections = sol_calloc(SolSLRParserItemCol_INIT_SIZE, sizeof(SolLRItemCol));
     p->s = solSymbol_new(p, SolLRSymbolFlag_ORIGIN);
+    p->table = solRBTuple_new();
     return p;
 }
 /**
@@ -261,6 +262,16 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
 
 int solSLRParser_record_accept(SolSLRParser *p, size_t state)
 {
+    struct _SolSLRTableField *s = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    s->t = state;
+    s->flag |= SolLRTableFieldFlag_TYPE_STATE;
+    struct _SolSLRTableField *sym = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    sym->t = p->s;
+    sym->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
+    if (solRBTuple_put(p->table, s, sym) != 0) {
+        return 1;
+    }
+    return 0;
 }
 
 int solSLRParser_record_reduce(SolSLRParser *p, size_t state, SolLRSymbol *symbol)
@@ -268,16 +279,61 @@ int solSLRParser_record_reduce(SolSLRParser *p, size_t state, SolLRSymbol *symbo
     if (solSLRParser_compute_follow(p, symbol) != 0) {
         return 1;
     }
-    //symbol->follows
+    struct _SolSLRTableField *s = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    s->t = state1;
+    s->flag |= SolLRTableFieldFlag_TYPE_STATE;
+    struct _SolSLRTableField *sym1 = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    sym1->t = symbol;
+    sym1->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
+    sym2->flag |= SolLRTableFieldFlag_ACTION_REDUCE;
+    struct _SolSLRTableField *sym2;
+    SolRBTreeIter *i = solRBTreeIter_new(symbol->follows, solRBTree_root(symbol->follows), SolRBTreeIterTT_inorder);
+    do {
+        symbol = (SolLRSymbol*)(solRBTreeIter_current_val(i));
+        sym2 = sol_calloc(1, sizeof(struct _SolSLRTableField));
+        sym2->t = symbol;
+        sym2->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
+        if (solRBTuple_put(p->table, s, sym2, sym1) != 0) {
+            return 1;
+        }
+    } while (solRBTreeIter_next(i));
+    return 0;
 }
 
 int solSLRParser_record_shift(SolSLRParser *p, size_t state1, SolLRSymbol *symbol, size_t state2)
 {
+    struct _SolSLRTableField *s1 = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    s->t = state1;
+    s->flag |= SolLRTableFieldFlag_TYPE_STATE;
+    struct _SolSLRTableField *sym = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    sym->t = symbol;
+    sym->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
+    struct _SolSLRTableField *s2 = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    s->t = state2;
+    s->flag |= SolLRTableFieldFlag_TYPE_STATE;
+    s->flag |= SolLRTableFieldFlag_ACTION_SHIFT;
+    if (solRBTuple_put(p->table, s1, sym, s2) != 0) {
+        return 1;
+    }
+    return 0;
 }
 
 int solSLRParser_record_goto(SolSLRParser *p, size_t state1, SolLRSymbol *symbol, size_t state2)
 {
-    
+    struct _SolSLRTableField *s1 = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    s->t = state1;
+    s->flag |= SolLRTableFieldFlag_TYPE_STATE;
+    struct _SolSLRTableField *sym = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    sym->t = symbol;
+    sym->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
+    struct _SolSLRTableField *s2 = sol_calloc(1, sizeof(struct _SolSLRTableField));
+    s->t = state2;
+    s->flag |= SolLRTableFieldFlag_TYPE_STATE;
+    s->flag |= SolLRTableFieldFlag_ACTION_GOTO;
+    if (solRBTuple_put(p->table, s1, sym, s2) != 0) {
+        return 1;
+    }
+    return 0;
 }
 
 int solLRSymbol_compute_nullable(SolLRSymbol *symbol)

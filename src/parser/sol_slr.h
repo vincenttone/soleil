@@ -6,6 +6,7 @@
 #include "sol_list.h"
 #include "sol_stack.h"
 #include "sol_rbtree.h"
+#include "sol_rb_tuple.h"
 
 #define SolSLRParserItemCol_INIT_SIZE 32
 
@@ -20,10 +21,14 @@
 #define SolLRSymbolFlag_NULLABLE_COMPUTED    0x200
 #define SolLRSymbolFlag_FIRST_COMPUTED       0x300
 
-#define SolLRItem_KERNEL    0
-#define SolLRItem_NONKERNEL 1
-
 #define SolLRItemCol_FLAG_END  0x1
+// action list
+#define SolLRTableFieldFlag_ACTION_ACCEPT 0x1
+#define SolLRTableFieldFlag_ACTION_GOTO   0x2
+#define SolLRTableFieldFlag_ACTION_SHIFT  0x4
+#define SolLRTableFieldFlag_ACTION_REDUCE 0x8
+#define SolLRTableFieldFlag_TYPE_STATE    0x10
+#define SolLRTableFieldFlag_TYPE_SYMBOL   0x20
 
 typedef struct _SolLRSymbol {
     int f;   // flag
@@ -61,7 +66,13 @@ typedef struct _SolSLRParser {
     SolLRItemCol *collections; // items collection
     SolLRSymbol *s; // start symbol
 	SolLRSymbol *e; // empty symbol
+    SolRBTuple *table; // parser table
 } SolSLRParser;
+
+struct _SolSLRTableField {
+    int flag; // flag
+    void *t; // taget
+};
 
 SolSLRParser* solSLRParser_new();
 void solSLRParser_free(SolSLRParser*);
