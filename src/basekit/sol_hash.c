@@ -69,6 +69,18 @@ SolHash* solHash_new()
     return hash;
 }
 
+SolHash* solHash_new_with_size(size_t s)
+{
+    SolHash *hash = sol_calloc(1, sizeof(SolHash));
+    if (hash == NULL) {
+        return NULL;
+    }
+    if (solHash_set_size(hash, s)) {
+        return NULL;
+    }
+    return hash;
+}
+
 void solHash_free(SolHash *hash)
 {
     solHash_free_records(hash->records, hash->size, hash->f_free_k, hash->f_free_v);
@@ -230,10 +242,11 @@ int solHash_put_key_and_val(SolHash *hash, void *k, void *v)
 
 int solHash_try_to_put(SolHash *hash, void *k, void *v)
 {
-    SolHashRecord *r, rs;
+    SolHashRecord *r;
+    SolHashRecord rs;
     rs.k = k;
     rs.v = v;
-    int i = 0;
+    size_t i = 0;
     for (; i < hash->size * 2; i++) {
         // get conflict hash record
         r = solHash_record1_of_key(hash, k);

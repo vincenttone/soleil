@@ -40,6 +40,7 @@ typedef struct _SolHashIter {
 } SolHashIter;
 
 SolHash* solHash_new();
+SolHash* solHash_new_with_size(size_t);
 void solHash_free(SolHash*);
 int solHash_set_size(SolHash*, size_t);
 int solHash_try_to_put(SolHash*, void*, void*);
