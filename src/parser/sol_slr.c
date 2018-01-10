@@ -1,11 +1,12 @@
 #include <string.h>
+#include <assert.h>
 #include "sol_slr.h"
 #include "sol_hash.h"
 
 /**
  * create a new slr parser
- * @return SolSLRParser *
- */
+ * @return SolSLRParser
+ **/
 SolSLRParser* solSLRParser_new()
 {
     SolSLRParser *p = sol_alloc(sizeof(SolSLRParser));
@@ -19,6 +20,8 @@ SolSLRParser* solSLRParser_new()
     p->collections = sol_calloc(SolSLRParserItemCol_INIT_SIZE, sizeof(SolLRItemCol));
     p->s = solSymbol_new(p, SolLRSymbolFlag_ORIGIN);
     p->table = solRBTuple_new();
+    solRBTuple_set_compare_val_func(p->table, &_solSLRParserField_compare);
+    solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
     return p;
 }
 /**
@@ -58,6 +61,33 @@ SolLRItem* solLRItem_new(SolLRProduct *product, size_t pos)
 void solLRItem_free(SolLRItem *item)
 {
     sol_free(item);
+}
+
+int _solSLRParserField_compare(void *f1, void *f2)
+{
+    int flag = ((struct _SolSLRTableField*)f1)->flag & ((struct _SolSLRTableField*)f1)->flag;
+    if (flag & SolLRTableFieldFlag_TYPE_STATE) { // state
+        if (*(size_t*)(((struct _SolSLRTableField*)f1)->t) > *(size_t*)(((struct _SolSLRTableField*)f2)->t)) {
+            return 1;
+        } else if (*(size_t*)(((struct _SolSLRTableField*)f1)->t) < *(size_t*)(((struct _SolSLRTableField*)f2)->t)) {
+            return -1;
+        }
+        return 0;
+    } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
+        if ((SolLRSymbol*)(((struct _SolSLRTableField*)f1)->t) > (SolLRSymbol*)(((struct _SolSLRTableField*)f2)->t)) {
+            return 1;
+        } else if ((SolLRSymbol*)(((struct _SolSLRTableField*)f1)->t) < (SolLRSymbol*)(((struct _SolSLRTableField*)f2)->t)) {
+            return -1;
+        }
+        return 0;
+    } else {
+        assert("field type is not same");
+    }
+}
+
+void _solSLRParserField_compare(void *field)
+{
+    sol_free(((struct _SolSLRTableField*)field));
 }
 
 SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
@@ -262,6 +292,9 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
 
 int solSLRParser_record_accept(SolSLRParser *p, size_t state)
 {
+    if (p == NULL) {
+        return -1;
+    }
     struct _SolSLRTableField *s = sol_calloc(1, sizeof(struct _SolSLRTableField));
     s->t = state;
     s->flag |= SolLRTableFieldFlag_TYPE_STATE;
@@ -276,6 +309,9 @@ int solSLRParser_record_accept(SolSLRParser *p, size_t state)
 
 int solSLRParser_record_reduce(SolSLRParser *p, size_t state, SolLRSymbol *symbol)
 {
+    if (p == NULL || symbol == NULL) {
+        return -1;
+    }
     if (solSLRParser_compute_follow(p, symbol) != 0) {
         return 1;
     }
@@ -302,6 +338,9 @@ int solSLRParser_record_reduce(SolSLRParser *p, size_t state, SolLRSymbol *symbo
 
 int solSLRParser_record_shift(SolSLRParser *p, size_t state1, SolLRSymbol *symbol, size_t state2)
 {
+    if (p == NULL || symbol == NULL) {
+        return -1;
+    }
     struct _SolSLRTableField *s1 = sol_calloc(1, sizeof(struct _SolSLRTableField));
     s->t = state1;
     s->flag |= SolLRTableFieldFlag_TYPE_STATE;
@@ -320,6 +359,9 @@ int solSLRParser_record_shift(SolSLRParser *p, size_t state1, SolLRSymbol *symbo
 
 int solSLRParser_record_goto(SolSLRParser *p, size_t state1, SolLRSymbol *symbol, size_t state2)
 {
+    if (p == NULL || symbol == NULL) {
+        return -1;
+    }
     struct _SolSLRTableField *s1 = sol_calloc(1, sizeof(struct _SolSLRTableField));
     s->t = state1;
     s->flag |= SolLRTableFieldFlag_TYPE_STATE;
