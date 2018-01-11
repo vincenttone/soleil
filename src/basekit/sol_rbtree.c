@@ -437,7 +437,9 @@ int solRBTree_delete_node(SolRBTree *tree, SolRBTreeNode *del_node)
     }
     // fix the key
     if (del_node != rp_node) {
+        void *pre_val = solRBTreeNode_val(del_node);
         solRBTreeNode_set_val(del_node, solRBTreeNode_val(rp_node));
+        solRBTreeNode_set_val(rp_node, pre_val);
     }
     // if deleted node is black, need to fixup
     if (solRBTreeNode_is_black(rp_node)) {
