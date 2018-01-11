@@ -67,7 +67,7 @@ int _solLRSymbol_share_follows(SolRBTree*, SolRBTreeNode*, void*);
 
 int solLRSymbol_compute_nullable(SolLRSymbol*);
 int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*);
-int solSLRParser_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
+int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
 
 int solLRItemCol_compute_items_collections(SolLRItemCol*, SolLRItemCol* (*gen_col)(void*), void*);
 int solLRItemCol_compute_nonkernel_items(SolLRItemCol*, SolLRSymbol*, SolLRItemCol* (*gen_col)(void*), void*);

@@ -353,7 +353,7 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c, SolLRItemCol* (*gen_
             }
         }
     } while ((n = solListNode_next(n)));
-    SolRBTreeIter* rbti = solRBTreeIter_new(c->nc, solRBTree_root(c->nc), SolRBTreeIterTT_inorder);
+    SolRBTreeIter *rbti = solRBTreeIter_new(c->nc, solRBTree_root(c->nc), SolRBTreeIterTT_inorder);
     do { // compute next kernel items collections
         col = (SolLRItemCol*)(solRBTreeIter_current_val(rbti));
         // compute next step items collections

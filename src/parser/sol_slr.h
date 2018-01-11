@@ -3,12 +3,11 @@
 
 #include <stdarg.h>
 #include "sol_common.h"
+#include "sol_lr.h"
 #include "sol_stack.h"
 #include "sol_rb_tuple.h"
 
 #define SolSLRParserItemCol_INIT_SIZE 32
-
-#define SolLRItemCol_FLAG_END  0x1
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT 0x1
 #define SolLRTableFieldFlag_ACTION_GOTO   0x2
@@ -20,7 +19,7 @@
 typedef struct _SolSLRParser {
     size_t state; // current state
     size_t gen; // state generate
-    size_t size_col; // items collection size
+    size_t size_cols; // items collection size
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
     SolLRItemCol *collections; // items collection
@@ -39,9 +38,11 @@ void solSLRParser_free(SolSLRParser*);
 
 int solSLRParser_prepare(SolSLRParser*);
 
-int solSLRParser_generate_items_collection();
-int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
-int solSLRParser_compute_nonkernel_items(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
+SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser*);
+SolLRItemCol* _solSLRParser_generate_items_collection(void*);
+
+//int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
+//int solSLRParser_compute_nonkernel_items(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
 
 int solSLRParser_compute_parsing_table(SolSLRParser*);
 // state1  read symbol -> do action -> state2
@@ -53,17 +54,13 @@ int solSLRParser_compute_parsing_table(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
-int solLRSymbol_compute_nullable(SolLRSymbol*);
-int solLRSymbol_compute_first(SolSLRParser*, SolSymbol*, SolSymbol*);
-int solSLRParser_compute_follow(SolSLRParser*, SolLRSymbol*);
-
 int _solSLRParserField_compare(void*, void*);
 void _solSLRParserField_free(void*);
 
-int solSLRParser_record_accept(SolSLRParser*, size_t);
-int solSLRParser_record_reduce(SolSLRParser*, size_t, SolLRSymbol*);
-int solSLRParser_record_shift(SolSLRParser*, size_t, SolLRSymbol*, size_t);
-int solSLRParser_record_goto(SolSLRParser*, size_t, SolLRSymbol*, size_t);
+int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
+int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
+int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
+int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 
