@@ -216,14 +216,21 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     solRBTree_count_inc(tree);
     return 0;
 }
-
+/**
+ * search node
+ * @params SolRBTree*
+ * @params void*
+ * @return void*
+ * @return NULL
+ */
 void* solRBTree_search(SolRBTree *tree, void *val)
 {
-	SolRBTreeNode *n = solRBTree_search_node(tree, val);
-	if (n) {
-		return solRBTreeNode_val(n);
-	}
-	return NULL;
+    SolRBTreeNode *n;
+    n = solRBTree_search_node(tree, val);
+    if (solRBTree_node_is_nil(tree, n)) {
+        return NULL;
+    }
+    return solRBTreeNode_val(n);
 }
 /**
  * search the needle key node
@@ -430,7 +437,9 @@ int solRBTree_delete_node(SolRBTree *tree, SolRBTreeNode *del_node)
     }
     // fix the key
     if (del_node != rp_node) {
+        void *pre_val = solRBTreeNode_val(del_node);
         solRBTreeNode_set_val(del_node, solRBTreeNode_val(rp_node));
+        solRBTreeNode_set_val(rp_node, pre_val);
     }
     // if deleted node is black, need to fixup
     if (solRBTreeNode_is_black(rp_node)) {
