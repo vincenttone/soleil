@@ -1,8 +1,10 @@
 #include "sol_lr.h"
+#include "sol_stack.h"
+#include "sol_rbtree_iter.h"
 
 SolLRSymbol* solLRSymbol_new(void *symbol)
 {
-    SolLRSymbol *s = sol_calloc(sizeof(SolLRSymbol));
+    SolLRSymbol *s = sol_calloc(1, sizeof(SolLRSymbol));
     s->s = s;
     return s;
 }
@@ -33,7 +35,7 @@ SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
     va_list al;
     va_start(al, s);
     for (i = 0; i < len; i++) {
-        s = va_arg(al, SolLRProduct*);
+        s = va_arg(al, SolLRSymbol*);
         sym = solLRProduct_find_symbol(p, i);
         *sym = *s;
     }
@@ -51,7 +53,9 @@ SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
 
 void solLRProduct_free(SolLRProduct *p)
 {
-    sol_free(p->r);
+    if (p->r) {
+        sol_free(p->r);
+    }
     sol_free(p);
 }
 
@@ -126,7 +130,7 @@ int solLRSymbol_compute_nullable(SolLRSymbol *symbol)
     return 0;
 }
 
-int solLRSymbol_compute_first(SolSLRParser *p, SolLRSymbol *symbol, SolLRSymbol *empty)
+int solLRSymbol_compute_first(SolLRSymbol *symbol, SolLRSymbol *empty)
 {
 	if (symbol == NULL || symbol->p == NULL) {
 		return -1;
@@ -150,9 +154,9 @@ int solLRSymbol_compute_first(SolSLRParser *p, SolLRSymbol *symbol, SolLRSymbol 
 					if (solLRSymbol_record_first(symbol, s) != 0) {
 						return 1;
 					}
-				} else if (solLRSymbol_compute_first(p, s, empty) != 0) {
+				} else if (solLRSymbol_compute_first(s, empty) != 0) {
 					if (s->firsts) {
-						if (solLRSymbol_copy_firsts(s-firsts, symbol) != 0) {
+						if (solLRSymbol_copy_firsts(s->firsts, symbol) != 0) {
 							return 2;
 						}
 					}
@@ -164,23 +168,26 @@ int solLRSymbol_compute_first(SolSLRParser *p, SolLRSymbol *symbol, SolLRSymbol 
 					break;
 				}
 				if (i + 1 == product->len) {
-					if (solLRSymbol_record_first(p, symbol, empty) != 0) {
+					if (solLRSymbol_record_first(symbol, empty) != 0) {
 						return 4;
 					}
 				}
 			}
 		} while ((n = solListNode_next(n)));
 	}
-	solLRSymbol_set_first_computed(s);
+	solLRSymbol_set_first_computed(symbol);
     return 0;
 }
 
 int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSymbol *empty)
 {
-    if (symbols == NULL || s->p == NULL) {
+    if (symbols == NULL || symbol->p == NULL) {
         return -1;
     }
-    SolRBTreeIter *iter = solRBTreeIter_new(symbols);
+    if (solLRSymbol_follow_computed(symbol)) {
+		return 0;
+	}
+    SolRBTreeIter *iter = solRBTreeIter_new(symbols, solRBTree_root(symbols), SolRBTreeIterTT_inorder);
     SolLRSymbol *s;
     SolLRProduct *product;
     SolListNode *n;
@@ -206,12 +213,12 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
                     } else {
                         s = (SolLRSymbol*)(product + i + 1);
                         if (solLRSymbol_is_terminal(s)) { // is terminal, record
-                            if (solLRSymbol_record_follow(p, s) != 0) {
+                            if (solLRSymbol_record_follow(symbol, s) != 0) {
 								return 3;
 							}
                         } else if (solLRSymbol_is_nonterminal(s)) { // nonterminal
                             // compute s's firsts, add to follow
-                            if (solLRSymbol_compute_first(p, s, empty) != 0) {
+                            if (solLRSymbol_compute_first(s, empty) != 0) {
 								return 1;
 							}
 							// add s's first to symbol's follow
@@ -220,11 +227,11 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
 									return 2;
 								}
 							}
-                            if (solSLRParser_compute_nullable(p, s) != 0) {
+                            if (solLRSymbol_compute_nullable(s) != 0) {
 								return 3;
 							}
                             if (solLRSymbol_is_nullable(s) == 0) {
-                                if (solLRSymbol_compute_follow(s, symbols, empty) != ) {
+                                if (solLRSymbol_compute_follow(s, symbols, empty) != 0) {
 									return 4;
 								}
 								// add s's follows to symbol's follow
@@ -240,6 +247,7 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
             }
         } while ((n = solListNode_next(n)));
     } while (solRBTreeIter_next(iter));
+    solLRSymbol_set_follow_computed(symbol);
     return 0;
 }
 
@@ -282,7 +290,7 @@ int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow)
 			return -2;
 		}
 	}
-	if (solRBTree_insert(symbol->follows, follows) != 0) {
+	if (solRBTree_insert(symbol->follows, follow) != 0) {
 		return 1;
 	}
 	return 0;
@@ -300,15 +308,15 @@ int _solLRSymbol_share_follows(SolRBTree *follows, SolRBTreeNode *node, void *sy
 	return solLRSymbol_record_follow((SolLRSymbol*)symbol, s);
 }
 
-int solLRItemCol_compute_items_collections(SolLRItemCol *c)
+int solLRItemCol_compute_items_collections(SolLRItemCol *c, SolLRItemCol* (*gen_col)(void*), void *v)
 {
-    if (c == NULL || c->is == NULL) {
+    if (c == NULL || c->items == NULL) {
         return -1;
     }
     if (solList_head(c->items) == NULL || solList_len(c->items) == 0) {
         return -2;
     }
-    if ((c->flag & SolLRItemCol_FLAG_END) > 0) {
+    if (c->flag & SolLRItemCol_FLAG_END) {
         return 0;
     }
     SolListNode *n = solList_head(c->items);
@@ -322,7 +330,7 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c)
             continue;
         }
         if (item->pos == item->p->len) { // the end of product
-            col = solSLRParser_generate_items_collection(p);
+            col = (*gen_col)(v);
             col->flag |= SolLRItemCol_FLAG_END;
             col->sym = item->p->s; // record product nonterminal symbol when reach end
             if (solRBTree_insert(c->nc, col) != 0) {
@@ -332,7 +340,7 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c)
             s = solLRProduct_find_symbol(item->p, item->pos);
             col = solRBTree_search(c->nc, s);
             if (col == NULL) {
-                col = solSLRParser_generate_items_collection(p);
+                col = (*gen_col)(v);
                 col->sym = s;
                 if (solRBTree_insert(c->nc, col) != 0) {
 					return 1;
@@ -341,7 +349,7 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c)
             item = solLRItem_new(item->p, (item->pos) + 1);
             solList_add(col->items, item);
             if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
-                solLRItemCol_compute_nonkernel_items(c, s);
+                solLRItemCol_compute_nonkernel_items(c, s, gen_col, v);
             }
         }
     } while ((n = solListNode_next(n)));
@@ -349,14 +357,14 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c)
     do { // compute next kernel items collections
         col = (SolLRItemCol*)(solRBTreeIter_current_val(rbti));
         // compute next step items collections
-        if (solLRItemCol_compute_items_collections(col) != 0) {
+        if (solLRItemCol_compute_items_collections(col, gen_col, v) != 0) {
             return 1;
         }
     } while (solRBTreeIter_next(rbti) != NULL);
     return 0;
 }
 
-int solLRItemCol_compute_nonkernel_items(SolLRItemCol *c, SolLRSymbol *s)
+int solLRItemCol_compute_nonkernel_items(SolLRItemCol *c, SolLRSymbol *s, SolLRItemCol* (*gen_col)(void*), void *v)
 {
     SolStack *stk = solStack_new();
     SolListNode *n = solList_head(s->p);
@@ -364,13 +372,12 @@ int solLRItemCol_compute_nonkernel_items(SolLRItemCol *c, SolLRSymbol *s)
     SolLRSymbol *sym;
     SolLRItem *item;
     SolLRItemCol *col;
-    SolList *l;
     do {
         product = (SolLRProduct*)(solListNode_val(n));
         sym = solLRProduct_right(product);
         col = solRBTree_search(c->nc, sym);
         if (col == NULL) {
-            col = solSLRParser_generate_items_collection(p);
+            col = (*gen_col)(v);
             col->sym = s;
             if (solRBTree_insert(c->nc, col) != 0) {
                 solStack_free(stk);
@@ -380,13 +387,15 @@ int solLRItemCol_compute_nonkernel_items(SolLRItemCol *c, SolLRSymbol *s)
         item = solLRItem_new(product, 1);
         solList_add(col->items, item);
         if (solLRSymbol_is_nonterminal(sym) && solLRSymbol_is_idle(sym)) {
-            solLRSymbol_set_busy(sym)
+            solLRSymbol_set_is_busy(sym);
             solStack_push(stk, sym);
         }
     } while ((n = solListNode_next(n)));
     while ((sym = solStack_pop(stk))) {
-        solLRItemCol_process_nonkernel_items(p, c, sym);
-        solLRSymbol_set_idle(sym)
+        if (solLRItemCol_compute_nonkernel_items(c, sym, gen_col, v)) {
+            return 2;
+        }
+        solLRSymbol_set_is_idle(sym);
     }
     solStack_free(stk);
     return 0;
