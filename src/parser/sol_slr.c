@@ -9,24 +9,47 @@
  **/
 SolSLRParser* solSLRParser_new()
 {
-    SolSLRParser *p = sol_alloc(sizeof(SolSLRParser));
+    SolSLRParser *p = sol_calloc(1, sizeof(SolSLRParser));
     if (p == NULL) {
         return NULL;
     }
     p->gen = 0;
     p->size_cols = SolSLRParserItemCol_INIT_SIZE;
     p->stk = solStack_new();
+    if (p->stk == NULL) {
+        goto failed;
+    }
     p->symbols = solRBTree_new();
+    if (p->symbols == NULL) {
+        goto failed;
+    }
+    solRBTree_set_compare_func(p->symbols, &_solSLRSymbol_compare);
+    solRBTree_set_val_free_func(p->symbols, &_solLRSymbol_free);
     p->collections = sol_calloc(SolSLRParserItemCol_INIT_SIZE, sizeof(SolLRItemCol));
-    p->s = solLRSymbol_new(NULL);
-    p->s->flag |= SolLRSymbolFlag_ORIGIN;
-    p->s = solLRSymbol_new(NULL);
-    p->s->flag |= SolLRSymbolFlag_EMPTY;
-    p->s->flag |= SolLRSymbolFlag_NULLABLE;
+    if (p->collections == NULL) {
+        goto failed;
+    }
+    p->s = solLRSymbol_nonterminal_new(NULL);
+    if (p->s == NULL) {
+        goto failed;
+    }
+    solLRSymbol_set_flag(p->s, SolLRSymbolFlag_ORIGIN);
+    p->e = solLRSymbol_terminal_new(NULL);
+    if (p->e == NULL) {
+        goto failed;
+    }
+    solLRSymbol_set_flag(p->s, SolLRSymbolFlag_EMPTY);
+    solLRSymbol_set_flag(p->s, SolLRSymbolFlag_NULLABLE);
     p->table = solRBTuple_new();
+    if (p->table == NULL) {
+        goto failed;
+    }
     solRBTuple_set_compare_val_func(p->table, &_solSLRParserField_compare);
     solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
     return p;
+failed:
+    solSLRParser_free(p);
+    return NULL;
 }
 /**
  * free paraser
@@ -38,17 +61,24 @@ void solSLRParser_free(SolSLRParser *p)
     if (p->stk) {
         solStack_free(p->stk);
     }
-    solRBTree_free(p->symbols);
-    size_t i;
-    SolLRItemCol *c;
-    for (i = 0; i < p->size_cols; i++) {
-        c = solSLRParser_find_items_collection(p, i);
-        if (c) {
-            solLRItemCol_free(c);
-        }
+    if (p->symbols) {
+        solRBTree_free(p->symbols);
     }
-    sol_free(p->collections);
-    sol_free(p);
+    if (p->collections) {
+        sol_free(p->collections);
+    }
+    if (p->s) {
+        solLRSymbol_free(p->s);
+    }
+    if (p->e) {
+        solLRSymbol_free(p->e);
+    }
+    if (p->table) {
+        solRBTuple_free(p->table);
+    }
+    if (p) {
+        sol_free(p);
+    }
 }
 
 int _solSLRParserField_compare(void *f1, void *f2)
@@ -72,6 +102,13 @@ int _solSLRParserField_compare(void *f1, void *f2)
     return 0;
 }
 
+int _solSLRSymbol_compare(void *s1, void *s2)
+{
+    if (s1 > s2) return 1;
+    if (s2 > s1) return -1;
+    return 0;
+}
+
 void _solSLRParserField_free(void *field)
 {
     sol_free(((struct _SolSLRTableField*)field));
@@ -84,10 +121,11 @@ int solSLRParser_prepare(SolSLRParser *p)
     }
     if (solLRSymbol_is_origin(p->s) == 0
         || solLRSymbol_is_nonterminal(p->s) == 0
+        || p->s->productions == NULL
         ) {
         return -2;
     }
-    SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->s->p)));
+    SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->s->productions)));
     SolLRItem *i = solLRItem_new(product, 0);
     SolLRItemCol *c = solSLRParser_generate_items_collection(p);
     if (solList_add(c->items, i) == NULL) {

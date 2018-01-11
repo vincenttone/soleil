@@ -23,7 +23,7 @@
 typedef struct _SolLRSymbol {
     int flag;   // flag
     void *s; // symbol
-    SolList *p; // productions
+    SolList *productions; // productions
 	SolRBTree *firsts;
 	SolRBTree *follows;
 } SolLRSymbol;
@@ -49,6 +49,10 @@ typedef struct _SolLRItemCol { // items collection
 
 SolLRSymbol* solLRSymbol_new(void*);
 void solLRSymbol_free(SolLRSymbol*);
+void _solLRSymbol_free(void*);
+
+SolLRSymbol* solLRSymbol_terminal_new(void*);
+SolLRSymbol* solLRSymbol_nonterminal_new(void*);
 
 SolLRProduct* solLRProduct_new(size_t, SolLRSymbol*, ...);
 void solLRProduct_free(SolLRProduct*);
@@ -71,6 +75,8 @@ int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
 
 int solLRItemCol_compute_items_collections(SolLRItemCol*, SolLRItemCol* (*gen_col)(void*), void*);
 int solLRItemCol_compute_nonkernel_items(SolLRItemCol*, SolLRSymbol*, SolLRItemCol* (*gen_col)(void*), void*);
+
+#define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
 #define solLRSymbol_is_terminal(s)   ((s)->flag & SolLRSymbolFlag_TERMINAL)
 #define solLRSymbol_is_nonterminal(s) ((s)->flag & SolLRSymbolFlag_NONTERMINAL)

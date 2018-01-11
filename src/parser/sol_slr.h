@@ -62,6 +62,8 @@ int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
 int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 
+int _solSLRSymbol_compare(void*, void*);
+
 #define solSLRParser_generate_state(p) (++((p)->gen))
 
 #endif
