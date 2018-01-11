@@ -28,6 +28,8 @@ SolRBTupleRecord* solRBTuple_get(SolRBTuple*, size_t, ...);
 int solRBTuple_remove(SolRBTuple*, size_t, ...);
 
 #define solRBTuple_set_compare_val_func(t, f) solRBTree_set_compare_func((t)->n, f)
+#define solRBTuple_set_free_val_func(t, f) ((t)->f_free_val = f)
+
 #define solRBTupleRecord_set_free_val_func(r, f) (r)->f_free_val = f
 
 #endif

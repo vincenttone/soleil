@@ -30,7 +30,9 @@ SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void *v)
 	if (r == NULL) {
 		return NULL;
 	}
-    //solRBTupleRecord_set_free_val_func(cur, t->f_free_val);
+    if (t->f_free_val) {
+        solRBTupleRecord_set_free_val_func(r, t->f_free_val);
+    }
     r->v = v;
 	return r;
 }
@@ -121,6 +123,7 @@ int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
 		return -1;
 	}
     SolRBTree *tree = t->n;
+    SolRBTree *target_tree;
     SolRBTupleRecord *r;
     SolRBTreeNode *n;
     void *v;
@@ -130,19 +133,19 @@ int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
         if (tree == NULL) {
             return 1;
         }
+        target_tree = tree;
 		v = va_arg(al, void*);
         t->tmp->v = v;
         n = solRBTree_search_node(tree, t->tmp);
 		r = (SolRBTupleRecord*)(solRBTreeNode_val(n));
 		if (r == NULL) {
+            va_end(al);
 			return 2;
 		}
-        if (l > 1) {
-            tree = r->n;
-        }
+        tree = r->n;
 	}
 	va_end(al);
-    if (solRBTree_delete_node(tree, n) != 0) {
+    if (solRBTree_delete_node(target_tree, n) != 0) {
         return 3;
     }
 	return 0;
