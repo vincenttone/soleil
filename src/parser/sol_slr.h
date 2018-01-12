@@ -36,11 +36,16 @@ struct _SolSLRTableField {
 SolSLRParser* solSLRParser_new();
 void solSLRParser_free(SolSLRParser*);
 
+SolLRSymbol* solSLRParser_terminal_new(SolSLRParser*, void*);
+SolLRSymbol* solSLRParser_nonterminal_new(SolSLRParser*, void*);
+int solSLRParser_regiter_symbol(SolSLRParser*, SolLRSymbol*);
+
 int solSLRParser_prepare(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser*);
 SolLRItemCol* _solSLRParser_generate_items_collection(void*);
 
+int solSLRParser_set_begin_product(SolSLRParser*, SolLRProduct*);
 //int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
 //int solSLRParser_compute_nonkernel_items(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
 
@@ -63,6 +68,7 @@ int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRI
 int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 
 int _solSLRSymbol_compare(void*, void*);
+void _solLRItem_free(void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 

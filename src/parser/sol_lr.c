@@ -5,7 +5,7 @@
 SolLRSymbol* solLRSymbol_new(void *symbol)
 {
     SolLRSymbol *s = sol_calloc(1, sizeof(SolLRSymbol));
-    s->s = s;
+    s->v = symbol;
     return s;
 }
 
@@ -29,6 +29,15 @@ SolLRSymbol* solLRSymbol_nonterminal_new(void *symbol)
 
 void solLRSymbol_free(SolLRSymbol *symbol)
 {
+    if (symbol->productions) {
+        solList_free(symbol->productions);
+    }
+    if (symbol->firsts) {
+        solRBTree_free(symbol->firsts);
+    }
+    if (symbol->follows) {
+        solRBTree_free(symbol->follows);
+    }
     sol_free(symbol);
 }
 
@@ -37,7 +46,7 @@ void _solLRSymbol_free(void *symbol)
     solLRSymbol_free((SolLRSymbol*)symbol);
 }
 
-SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
+SolLRProduct* solLRProduct_new(SolLRSymbol *s, size_t len, ...)
 {
     if (s == NULL || solLRSymbol_is_terminal(s)) {
         return NULL;
@@ -54,13 +63,14 @@ SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
         return NULL;
     }
     SolLRSymbol *sym;
+    SolLRSymbol *sarg;
     size_t i;
     va_list al;
-    va_start(al, s);
+    va_start(al, len);
     for (i = 0; i < len; i++) {
-        s = va_arg(al, SolLRSymbol*);
+        sarg = va_arg(al, SolLRSymbol*);
         sym = solLRProduct_find_symbol(p, i);
-        *sym = *s;
+        *sym = *sarg;
     }
     va_end(al);
     if (s->productions == NULL) {
@@ -69,6 +79,7 @@ SolLRProduct* solLRProduct_new(size_t len, SolLRSymbol *s, ...)
             solLRProduct_free(p);
             return NULL;
         }
+        solList_set_val_free_func(s->productions, _solLRProduct_free);
     }
     solList_add(s->productions, p);
     return p;
@@ -80,6 +91,11 @@ void solLRProduct_free(SolLRProduct *p)
         sol_free(p->r);
     }
     sol_free(p);
+}
+
+void _solLRProduct_free(void *p)
+{
+    solLRProduct_free((SolLRProduct*)p);
 }
 
 SolLRItem* solLRItem_new(SolLRProduct *product, size_t pos)
@@ -271,6 +287,7 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
         } while ((n = solListNode_next(n)));
     } while (solRBTreeIter_next(iter));
     solLRSymbol_set_follow_computed(symbol);
+    solRBTreeIter_free(iter);
     return 0;
 }
 
@@ -384,6 +401,7 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c, SolLRItemCol* (*gen_
             return 1;
         }
     } while (solRBTreeIter_next(rbti) != NULL);
+    solRBTreeIter_free(rbti);
     return 0;
 }
 
