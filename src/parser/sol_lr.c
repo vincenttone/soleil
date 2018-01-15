@@ -393,15 +393,16 @@ int solLRItemCol_compute_items_collections(SolLRItemCol *c, SolLRItemCol* (*gen_
             }
         }
     } while ((n = solListNode_next(n)));
-    SolRBTreeIter *rbti = solRBTreeIter_new(c->nc, solRBTree_root(c->nc), SolRBTreeIterTT_inorder);
+    SolRBTreeIter *rii = solRBTreeIter_inorder_new(c->nc, solRBTree_root(c->nc));
     do { // compute next kernel items collections
-        col = (SolLRItemCol*)(solRBTreeIter_current_val(rbti));
+        col = (SolLRItemCol*)(solRBTreeIter_current_val(rii));
         // compute next step items collections
         if (solLRItemCol_compute_items_collections(col, gen_col, v) != 0) {
+            solRBTreeIter_free(rii);
             return 1;
         }
-    } while (solRBTreeIter_next(rbti) != NULL);
-    solRBTreeIter_free(rbti);
+    } while (solRBTreeIter_next(rii) != NULL);
+    solRBTreeIter_free(rii);
     return 0;
 }
 
