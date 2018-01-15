@@ -91,26 +91,29 @@ int main()
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_node_and_children, NULL);
     printf("---------Test iter preorder--------\n");
     SolRBTreeIter *ip = solRBTreeIter_new(tree, solRBTree_root(tree), SolRBTreeIterTT_preorder);
-    while ((n = solRBTreeIter_next(ip))) {
+    do {
+        n = solRBTreeIter_current(ip);
         printf("stack size %zu\t", solStack_size(ip->s));
         print_key(tree, n, NULL);
-    }
+    } while (solRBTreeIter_next(ip));
     solRBTreeIter_free(ip);
     printf("---------End test iter preorder--------\n");
     printf("---------Test iter inorder--------\n");
     SolRBTreeIter *ii = solRBTreeIter_new(tree, solRBTree_root(tree), SolRBTreeIterTT_inorder);
-    while ((n = solRBTreeIter_next(ii))) {
+    do {
+        n = solRBTreeIter_current(ii);
         printf("stack size %zu\t", solStack_size(ii->s));
         print_key(tree, n, NULL);
-    }
+    } while (solRBTreeIter_next(ii));
     solRBTreeIter_free(ii);
     printf("---------End test iter inorder--------\n");
     printf("---------Test iter backorder--------\n");
     SolRBTreeIter *ib = solRBTreeIter_new(tree, solRBTree_root(tree), SolRBTreeIterTT_backorder);
-    while ((n = solRBTreeIter_next(ib))) {
+    do {
+        n = solRBTreeIter_current(ib);
         printf("stack size %zu\t", solStack_size(ib->s));
         print_key(tree, n, NULL);
-    }
+    } while (solRBTreeIter_next(ib));
     solRBTreeIter_free(ib);
     printf("---------End test iter backorder--------\n");
     solRBTree_free(tree);

@@ -101,10 +101,10 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 #define solRBTreeNode_right_elder(n) solRBTreeNode_right(solRBTreeNode_grandad(n))
 
 #define solRBTree_node_is_root(t, n) solRBTree_node_is_nil(t, solRBTreeNode_parent(n))
-#define solRBTreeNode_is_left(n) solRBTreeNode_left(solRBTreeNode_parent(n)) == n
-#define solRBTreeNode_is_right(n) solRBTreeNode_right(solRBTreeNode_parent(n)) == n
-#define solRBTreeNode_parent_is_left(n) solRBTreeNode_left_elder(n) == solRBTreeNode_parent(n)
-#define solRBTreeNode_parent_is_right(n) solRBTreeNode_right_elder(n) == solRBTreeNode_parent(n)
+#define solRBTreeNode_is_left(n) (solRBTreeNode_left(solRBTreeNode_parent(n)) == n)
+#define solRBTreeNode_is_right(n) (solRBTreeNode_right(solRBTreeNode_parent(n)) == n)
+#define solRBTreeNode_parent_is_left(n) (solRBTreeNode_left_elder(n) == solRBTreeNode_parent(n))
+#define solRBTreeNode_parent_is_right(n) (solRBTreeNode_right_elder(n) == solRBTreeNode_parent(n))
 #define solRBTreeNode_parent_is_red(n) solRBTreeNode_is_red(solRBTreeNode_parent(n))
 
 #define solRBTreeNode_set_left_parent(n, x) solRBTreeNode_set_parent(solRBTreeNode_left(n), x)
