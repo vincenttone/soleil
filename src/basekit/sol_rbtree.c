@@ -179,13 +179,17 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     solRBTreeNode_set_left(node, solRBTree_nil(tree));
     solRBTreeNode_set_right(node, solRBTree_nil(tree));
     solRBTreeNode_set_val(node, val);
+    if (tree->f_insert_compare == NULL) {
+        tree->f_insert_compare = tree->f_compare;
+    }
     // find insert position
     int w;
     SolRBTreeNode *current_node = solRBTree_root(tree);
     SolRBTreeNode *pre_node = solRBTree_nil(tree);
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
         pre_node = current_node;
-        w = solRBTree_node_compare(tree, node, current_node);
+        w = (*(tree->f_insert_compare))(solRBTreeNode_val(node), solRBTreeNode_val(current_node));
+        // w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
 			if (solRBTree_insert_conflict_fix_func(tree)) {
@@ -205,7 +209,7 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     if (solRBTree_node_is_nil(tree, pre_node)) {
         // empty tree
         solRBTree_set_root(tree, node);
-    } else if (solRBTree_node_compare(tree, node, pre_node) < 0) {
+    } else if ((*(tree->f_insert_compare))(solRBTreeNode_val(node), solRBTreeNode_val(pre_node)) < 0) {
         // is left child
         solRBTreeNode_set_left(pre_node, node);
     } else {
