@@ -1,4 +1,3 @@
-#include <string.h>
 #include <assert.h>
 #include "sol_slr.h"
 #include "sol_rbtree_iter.h"
@@ -13,8 +12,11 @@ SolSLRParser* solSLRParser_new()
     if (p == NULL) {
         return NULL;
     }
-    p->gen = 0;
-    p->size_cols = SolSLRParserItemCol_INIT_SIZE;
+    p->lr = solLRParser_new();
+    if (p->lr == NULL) {
+        goto oops;
+    }
+    p->lr->compare_symbol = &_solSLRSymbol_compare;
     p->stk = solStack_new();
     if (p->stk == NULL) {
         goto oops;
@@ -25,10 +27,6 @@ SolSLRParser* solSLRParser_new()
     }
     solRBTree_set_compare_func(p->symbols, &_solSLRSymbol_compare);
     solRBTree_set_val_free_func(p->symbols, &_solLRSymbol_free);
-    p->collections = sol_calloc(SolSLRParserItemCol_INIT_SIZE, sizeof(SolLRItemCol));
-    if (p->collections == NULL) {
-        goto oops;
-    }
     // start symbol
     p->s = solSLRParser_nonterminal_new(p, NULL);
     if (p->s == NULL) {
@@ -66,21 +64,8 @@ void solSLRParser_free(SolSLRParser *p)
     if (p->symbols) {
         solRBTree_free(p->symbols);
     }
-    if (p->collections) {
-        size_t i;
-        SolLRItemCol *c;
-        for (i = 0; i < p->size_cols; i++) {
-            c = solSLRParser_find_items_collection(p, i);
-            if (c) {
-                if (c->items) {
-                    solList_free(c->items);
-                }
-                if (c->nc) {
-                    solRBTree_free(c->nc);
-                }
-            }
-        }
-        sol_free(p->collections);
+    if (p->lr) {
+        solLRParser_free(p->lr);
     }
     if (p->table) {
         solRBTuple_free(p->table);
@@ -174,11 +159,11 @@ int solSLRParser_prepare(SolSLRParser *p)
     }
     SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->s->productions)));
     SolLRItem *i = solLRItem_new(product, 0);
-    SolLRItemCol *c = solSLRParser_generate_items_collection(p);
+    SolLRItemCol *c = solLRParser_generate_items_collection(p->lr);
     if (solList_add(c->items, i) == NULL) {
         return -3;
     }
-    if (solLRItemCol_compute_items_collections(c, &_solSLRParser_generate_items_collection, p) != 0) {
+    if (solLRParser_compute_items_collections(p->lr, c) != 0) {
         return 1;
     }
     if (solSLRParser_compute_parsing_table(p) != 0) {
@@ -187,48 +172,17 @@ int solSLRParser_prepare(SolSLRParser *p)
     return 0;
 }
 
-SolLRItemCol* _solSLRParser_generate_items_collection(void *p)
-{
-    return solSLRParser_generate_items_collection((SolSLRParser*)p);
-}
-
-void _solLRItem_free(void *item)
-{
-    solLRItem_free((SolLRItem*)item);
-}
-
-SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser *p)
-{
-    size_t state = solSLRParser_generate_state(p);
-    SolLRItemCol *c = solSLRParser_find_items_collection(p, state);
-    if (c == NULL) {
-        return NULL;
-    }
-    c->items = solList_new();
-    if (c->items == NULL) {
-        return NULL;
-    }
-    solList_set_val_free_func(c->items, &_solLRItem_free);
-    c->nc = solRBTree_new();
-    solRBTree_set_compare_func(c->nc, &_solSLRSymbol_compare);
-    if (c->nc == NULL) {
-        return NULL;
-    }
-    c->state = state;
-    return c;
-}
-
 int solSLRParser_compute_parsing_table(SolSLRParser *p)
 {
-    if (p == NULL || p->collections == NULL) {
+    if (p == NULL || p->lr == NULL) {
         return -1;
     }
     size_t i;
     SolLRItemCol *c1;
     SolLRItemCol *c2;
     SolRBTreeIter* rbti;
-    for (i = 0; i < p->size_cols; i++) {
-        c1 = p->collections + i;
+    for (i = 0; i < p->lr->cols_size; i++) {
+        c1 = p->lr->collections + i;
         if (i == 0) { // init state
             p->state = c1->state;
         }
@@ -350,23 +304,4 @@ int solSLRParser_record_goto(SolSLRParser *p, SolLRItemCol *c1, SolLRSymbol *sym
         return 1;
     }
     return 0;
-}
-
-SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser *p, size_t s)
-{
-	if (p == NULL) {
-		return NULL;
-	}
-    if (s > p->size_cols) {
-        SolLRItemCol *ic = p->collections;
-        p->collections = sol_calloc(p->size_cols * 2, sizeof(SolLRItemCol));
-        if (p->collections == NULL) {
-            p->collections = ic;
-            return NULL;
-        }
-        memcpy(p->collections, ic, p->size_cols);
-        p->size_cols = p->size_cols * 2;
-        sol_free(ic);
-    }
-    return p->collections + s;
 }

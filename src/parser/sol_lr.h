@@ -20,6 +20,8 @@
 
 #define SolLRItemCol_FLAG_END  0x1
 
+#define SolLRParserItemCol_INIT_SIZE 32
+
 typedef struct _SolLRSymbol {
     int flag;   // flag
     void *v; // symbol val
@@ -46,6 +48,18 @@ typedef struct _SolLRItemCol { // items collection
     SolRBTree *nc; // next items collection
     SolLRSymbol *sym; // pre symbol
 } SolLRItemCol;
+
+typedef struct _SolLRParser {
+    size_t gen; // state generate
+    size_t cols_size; // items collection size
+    SolLRItemCol *collections; // items collection
+    int (*compare_symbol)(void*, void*);
+} SolLRParser;
+
+SolLRParser* solLRParser_new();
+void solLRParser_free(SolLRParser*);
+SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*);
+SolLRItemCol* solLRParser_find_items_collection(SolLRParser*, size_t);
 
 SolLRSymbol* solLRSymbol_new(void*);
 void solLRSymbol_free(SolLRSymbol*);
@@ -74,9 +88,10 @@ int solLRSymbol_compute_nullable(SolLRSymbol*);
 int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*);
 int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
 
-int solLRItemCol_compute_items_collections(SolLRItemCol*, SolLRItemCol* (*gen_col)(void*), void*);
-int solLRItemCol_compute_nonkernel_items(SolLRItemCol*, SolLRSymbol*, SolLRItemCol* (*gen_col)(void*), void*);
+int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
+int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
+void _solLRItem_free(void*);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 

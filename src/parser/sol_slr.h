@@ -7,7 +7,6 @@
 #include "sol_stack.h"
 #include "sol_rb_tuple.h"
 
-#define SolSLRParserItemCol_INIT_SIZE 32
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT 0x1
 #define SolLRTableFieldFlag_ACTION_GOTO   0x2
@@ -17,12 +16,10 @@
 #define SolLRTableFieldFlag_TYPE_SYMBOL   0x20
 
 typedef struct _SolSLRParser {
+    SolLRParser *lr;
     size_t state; // current state
-    size_t gen; // state generate
-    size_t size_cols; // items collection size
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
-    SolLRItemCol *collections; // items collection
     SolLRSymbol *s; // start symbol
 	SolLRSymbol *e; // empty symbol
     SolRBTuple *table; // parser table
@@ -68,7 +65,6 @@ int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRI
 int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 
 int _solSLRSymbol_compare(void*, void*);
-void _solLRItem_free(void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 
