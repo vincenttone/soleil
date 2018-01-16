@@ -73,6 +73,7 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 #define solRBTree_insert_conflict_fix_func(t) (t)->f_insert_conflict_fix
 #define solRBTree_insert_conflict_fix(t, n1, n2) (*(t)->f_insert_conflict_fix)(n1, n2)
 
+#define solRBTree_set_insert_compare_func(t, f) (t)->f_insert_compare = f
 #define solRBTree_set_compare_func(t, f) (t)->f_compare = f
 #define solRBTree_node_val_compare_func(t) (t)->f_compare
 #define solRBTree_node_val_compare(t, v1, v2) (*(t)->f_compare)(v1, v2)
