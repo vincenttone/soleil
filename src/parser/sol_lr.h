@@ -19,6 +19,7 @@
 #define SolLRSymbolFlag_FOLLOW_COMPUTED      0x400
 
 #define SolLRItemCol_FLAG_END  0x1
+#define SolLRItemCol_FLAG_BUSY  0x2
 
 #define SolLRParserItemCol_INIT_SIZE 32
 
