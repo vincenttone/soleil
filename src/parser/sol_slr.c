@@ -177,15 +177,12 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
     if (p == NULL || p->lr == NULL) {
         return -1;
     }
-    size_t i;
     SolLRItemCol *c1;
     SolLRItemCol *c2;
     SolRBTreeIter* rbti;
-    for (i = 0; i < p->lr->cols_size; i++) {
-        c1 = p->lr->collections + i;
-        if (i == 0) { // init state
-            p->state = c1->state;
-        }
+    SolListNode *n = solList_head(p->lr->collections);
+    do {
+        c1 = (SolLRItemCol*)(solListNode_val(n));
         if ((c1->flag & SolLRItemCol_FLAG_END) > 0) {
             continue;
         }
@@ -214,7 +211,7 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
                 return 5; // error
             }
         } while (solRBTreeIter_next(rbti));
-    }
+    } while ((n = solListNode_next(n)));
     return 0;
 }
 
