@@ -365,16 +365,12 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
     if (c == NULL || c->items == NULL) {
         return -1;
     }
-    if (solList_head(c->items) == NULL || solList_len(c->items) == 0) {
-        return -2;
-    }
     if (c->flag & SolLRItemCol_FLAG_END) {
         return 0;
     }
-    if (c->flag & SolLRItemCol_FLAG_BUSY) {
-        return 0;
+    if (solList_head(c->items) == NULL || solList_len(c->items) == 0) {
+        return -2;
     }
-    c->flag |= SolLRItemCol_FLAG_BUSY;
     SolListNode *n = solList_head(c->items);
     SolLRItemCol *col;
     SolLRItem *item;
@@ -412,7 +408,6 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
     if (solRBTree_travelsal_inorder(c->nc, solRBTree_root(c->nc), &_solLRParser_compute_items_collections, p)) {
         return 3;
     }
-    c->flag = c->flag &  (~SolLRItemCol_FLAG_BUSY);
     return 0;
 }
 
