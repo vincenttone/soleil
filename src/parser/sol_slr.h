@@ -58,13 +58,14 @@ SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
 int _solSLRParserField_compare(void*, void*);
 void _solSLRParserField_free(void*);
+int _solSLRParser_compare_symbol_and_col(void*, void*);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
 int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
 int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 
-int _solSLRSymbol_compare(void*, void*);
+int _solLRItemCols_compare(void*, void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 

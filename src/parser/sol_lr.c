@@ -132,6 +132,11 @@ void solLRItemCol_free(SolLRItemCol *c)
     sol_free(c);
 }
 
+void _solLRItemCol_free(void *c)
+{
+    solLRItemCol_free((SolLRItemCol*)c);
+}
+
 int solLRSymbol_compute_nullable(SolLRSymbol *symbol)
 {
 	if (symbol == NULL || symbol->productions == NULL) {
@@ -466,6 +471,7 @@ SolLRParser* solLRParser_new()
     if (p->collections == NULL) {
         goto oops;
     }
+    solList_set_val_free_func(p->collections, &_solLRItemCol_free);
     return p;
 oops:
     solLRParser_free(p);
@@ -505,8 +511,8 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p)
     if (c->nc == NULL) {
         goto oops;
     }
-    solRBTree_set_compare_func(c->nc, p->compare_symbol);
-    solRBTree_set_insert_compare_func(c->nc, p->compare_symbol);
+    solRBTree_set_compare_func(c->nc, p->compare_symbol_and_col);
+    solRBTree_set_insert_compare_func(c->nc, p->compare_cols);
     return c;
 oops:
     if (c) {

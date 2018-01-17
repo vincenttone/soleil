@@ -16,7 +16,8 @@ SolSLRParser* solSLRParser_new()
     if (p->lr == NULL) {
         goto oops;
     }
-    p->lr->compare_symbol = &_solSLRSymbol_compare;
+    p->lr->compare_cols = &_solLRItemCols_compare;
+    p->lr->compare_symbol_and_col = &_solSLRParser_compare_symbol_and_col;
     p->stk = solStack_new();
     if (p->stk == NULL) {
         goto oops;
@@ -25,7 +26,7 @@ SolSLRParser* solSLRParser_new()
     if (p->symbols == NULL) {
         goto oops;
     }
-    solRBTree_set_compare_func(p->symbols, &_solSLRSymbol_compare);
+    solRBTree_set_compare_func(p->symbols, &_solLRItemCols_compare);
     solRBTree_set_val_free_func(p->symbols, &_solLRSymbol_free);
     // start symbol
     p->s = solSLRParser_nonterminal_new(p, NULL);
@@ -134,7 +135,14 @@ int _solSLRParserField_compare(void *f1, void *f2)
     return 0;
 }
 
-int _solSLRSymbol_compare(void *s1, void *s2)
+int _solSLRParser_compare_symbol_and_col(void *s, void *c)
+{
+    if ((SolLRSymbol*)s > ((SolLRItemCol*)c)->sym) return 1;
+    if ((SolLRSymbol*)s < ((SolLRItemCol*)c)->sym) return -1;
+    return 0;
+}
+
+int _solLRItemCols_compare(void *s1, void *s2)
 {
     if (s1 > s2) return 1;
     if (s2 > s1) return -1;
