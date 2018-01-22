@@ -24,37 +24,37 @@
 #define SolLRParserItemCol_INIT_SIZE 32
 
 typedef struct _SolLRSymbol {
-  int flag;   // flag
-  void *v; // symbol val
-  SolList *productions; // productions
-  SolRBTree *firsts;
-  SolRBTree *follows;
+    int flag;   // flag
+    void *v; // symbol val
+    SolList *productions; // productions
+    SolRBTree *firsts;
+    SolRBTree *follows;
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
-  size_t len; // len
-  SolLRSymbol *s;
-  SolLRSymbol **r; // right
+    size_t len; // len
+    SolLRSymbol *s;
+    SolLRSymbol **r; // right
 } SolLRProduct;
 
 typedef struct _SolLRItem {
-  size_t pos;
-  SolLRProduct *p;
+    size_t pos;
+    SolLRProduct *p;
 } SolLRItem;
 
 typedef struct _SolLRItemCol { // items collection
-  size_t state; // state
-  size_t flag; // flag
-  SolList *items; // items
-  SolRBTree *nc; // next items collection
-  SolLRSymbol *sym; // pre symbol
+    size_t state; // state
+    size_t flag; // flag
+    SolList *items; // items
+    SolRBTree *nc; // next items collection
+    SolLRSymbol *sym; // pre symbol
 } SolLRItemCol;
 
 typedef struct _SolLRParser {
-  size_t gen; // state generate
-  SolList *collections; // items collection
-  int (*compare_symbol_and_col)(void*, void*);
-  int (*compare_cols)(void*, void*);
+    size_t gen; // state generate
+    SolList *collections; // items collection
+    int (*compare_symbol_and_col)(void*, void*);
+    int (*compare_cols)(void*, void*);
 } SolLRParser;
 
 SolLRParser* solLRParser_new();

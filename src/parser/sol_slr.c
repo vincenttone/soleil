@@ -168,11 +168,11 @@ int solSLRParser_prepare(SolSLRParser *p)
     SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->s->productions)));
     SolLRItem *i = solLRItem_new(product, 0);
     if (i == NULL) {
-      solLRItem_free(i);
+        solLRItem_free(i);
     }
     SolLRItemCol *c = solLRParser_generate_items_collection(p->lr);
     if (c == NULL) {
-      solLRItemCol_free(c);
+        solLRItemCol_free(c);
     }
     if (solList_add(c->items, i) == NULL) {
         return -3;
