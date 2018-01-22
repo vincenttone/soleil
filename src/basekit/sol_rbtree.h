@@ -21,6 +21,7 @@ typedef struct _SolRBTree {
     SolRBTreeNode *nil;
     SolRBTreeNode *root;
     sol_f_cmp_ptr f_compare;
+    sol_f_cmp_ptr f_insert_compare;
     sol_f_free_ptr f_free; // free node val func
     int (*f_insert_conflict_fix)(SolRBTreeNode*, SolRBTreeNode*);
 } SolRBTree;
@@ -72,6 +73,7 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 #define solRBTree_insert_conflict_fix_func(t) (t)->f_insert_conflict_fix
 #define solRBTree_insert_conflict_fix(t, n1, n2) (*(t)->f_insert_conflict_fix)(n1, n2)
 
+#define solRBTree_set_insert_compare_func(t, f) (t)->f_insert_compare = f
 #define solRBTree_set_compare_func(t, f) (t)->f_compare = f
 #define solRBTree_node_val_compare_func(t) (t)->f_compare
 #define solRBTree_node_val_compare(t, v1, v2) (*(t)->f_compare)(v1, v2)
@@ -101,10 +103,10 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 #define solRBTreeNode_right_elder(n) solRBTreeNode_right(solRBTreeNode_grandad(n))
 
 #define solRBTree_node_is_root(t, n) solRBTree_node_is_nil(t, solRBTreeNode_parent(n))
-#define solRBTreeNode_is_left(n) solRBTreeNode_left(solRBTreeNode_parent(n)) == n
-#define solRBTreeNode_is_right(n) solRBTreeNode_right(solRBTreeNode_parent(n)) == n
-#define solRBTreeNode_parent_is_left(n) solRBTreeNode_left_elder(n) == solRBTreeNode_parent(n)
-#define solRBTreeNode_parent_is_right(n) solRBTreeNode_right_elder(n) == solRBTreeNode_parent(n)
+#define solRBTreeNode_is_left(n) (solRBTreeNode_left(solRBTreeNode_parent(n)) == n)
+#define solRBTreeNode_is_right(n) (solRBTreeNode_right(solRBTreeNode_parent(n)) == n)
+#define solRBTreeNode_parent_is_left(n) (solRBTreeNode_left_elder(n) == solRBTreeNode_parent(n))
+#define solRBTreeNode_parent_is_right(n) (solRBTreeNode_right_elder(n) == solRBTreeNode_parent(n))
 #define solRBTreeNode_parent_is_red(n) solRBTreeNode_is_red(solRBTreeNode_parent(n))
 
 #define solRBTreeNode_set_left_parent(n, x) solRBTreeNode_set_parent(solRBTreeNode_left(n), x)

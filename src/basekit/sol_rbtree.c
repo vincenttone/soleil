@@ -179,13 +179,17 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     solRBTreeNode_set_left(node, solRBTree_nil(tree));
     solRBTreeNode_set_right(node, solRBTree_nil(tree));
     solRBTreeNode_set_val(node, val);
+    if (tree->f_insert_compare == NULL) {
+        tree->f_insert_compare = tree->f_compare;
+    }
     // find insert position
     int w;
     SolRBTreeNode *current_node = solRBTree_root(tree);
     SolRBTreeNode *pre_node = solRBTree_nil(tree);
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
         pre_node = current_node;
-        w = solRBTree_node_compare(tree, node, current_node);
+        w = (*(tree->f_insert_compare))(solRBTreeNode_val(node), solRBTreeNode_val(current_node));
+        // w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
 			if (solRBTree_insert_conflict_fix_func(tree)) {
@@ -205,7 +209,7 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     if (solRBTree_node_is_nil(tree, pre_node)) {
         // empty tree
         solRBTree_set_root(tree, node);
-    } else if (solRBTree_node_compare(tree, node, pre_node) < 0) {
+    } else if ((*(tree->f_insert_compare))(solRBTreeNode_val(node), solRBTreeNode_val(pre_node)) < 0) {
         // is left child
         solRBTreeNode_set_left(pre_node, node);
     } else {
@@ -243,12 +247,16 @@ void* solRBTree_search(SolRBTree *tree, void *val)
 SolRBTreeNode* solRBTree_search_node(SolRBTree *tree, void *val)
 {
     SolRBTreeNode *current_node = solRBTree_root(tree);
-    while (solRBTree_node_is_NOT_nil(tree, current_node)
-           && solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node)) != 0
-        ) {
-        current_node = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node)) < 0
-            ? solRBTreeNode_left(current_node)
-            : solRBTreeNode_right(current_node);
+    int i = 0;
+    while (solRBTree_node_is_NOT_nil(tree, current_node)) {
+        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node));
+        if (i < 0) {
+            current_node =  solRBTreeNode_left(current_node);
+        } else if (i > 0) {
+            current_node = solRBTreeNode_right(current_node);
+        } else {
+            break;
+        }
     }
     return current_node;
 }

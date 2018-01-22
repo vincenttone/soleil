@@ -19,24 +19,29 @@
 #define SolLRSymbolFlag_FOLLOW_COMPUTED      0x400
 
 #define SolLRItemCol_FLAG_END  0x1
+#define SolLRItemCol_FLAG_BUSY  0x2
+
+#define SolLRParserItemCol_INIT_SIZE 32
 
 typedef struct _SolLRSymbol {
     int flag;   // flag
-    void *s; // symbol
+    void *v; // symbol val
     SolList *productions; // productions
-	SolRBTree *firsts;
-	SolRBTree *follows;
+    SolRBTree *firsts;
+    SolRBTree *follows;
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
     size_t len; // len
     SolLRSymbol *s;
-    SolLRSymbol *r; // right
+    SolLRSymbol **r; // right
+    struct _SolLRItem *items; // items
 } SolLRProduct;
 
 typedef struct _SolLRItem {
     size_t pos;
     SolLRProduct *p;
+    int flag;
 } SolLRItem;
 
 typedef struct _SolLRItemCol { // items collection
@@ -47,6 +52,17 @@ typedef struct _SolLRItemCol { // items collection
     SolLRSymbol *sym; // pre symbol
 } SolLRItemCol;
 
+typedef struct _SolLRParser {
+    size_t gen; // state generate
+    SolList *collections; // items collection
+    int (*compare_symbol_and_col)(void*, void*);
+    int (*compare_cols)(void*, void*);
+} SolLRParser;
+
+SolLRParser* solLRParser_new();
+void solLRParser_free(SolLRParser*);
+SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*);
+
 SolLRSymbol* solLRSymbol_new(void*);
 void solLRSymbol_free(SolLRSymbol*);
 void _solLRSymbol_free(void*);
@@ -54,14 +70,15 @@ void _solLRSymbol_free(void*);
 SolLRSymbol* solLRSymbol_terminal_new(void*);
 SolLRSymbol* solLRSymbol_nonterminal_new(void*);
 
-SolLRProduct* solLRProduct_new(size_t, SolLRSymbol*, ...);
+SolLRProduct* solLRProduct_new(SolLRSymbol*, size_t, ...);
 void solLRProduct_free(SolLRProduct*);
+void _solLRProduct_free(void*);
 
-SolLRItem* solLRItem_new(SolLRProduct*, size_t);
-void solLRItem_free(SolLRItem*);
+SolLRItem* solLRProduct_item(SolLRProduct*, size_t);
 
 SolLRItemCol* solLRItemCol_new();
 void solLRItemCol_free(SolLRItemCol*);
+void _solLRItemCol_free(void*);
 
 int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*);
 int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*);
@@ -73,8 +90,10 @@ int solLRSymbol_compute_nullable(SolLRSymbol*);
 int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*);
 int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
 
-int solLRItemCol_compute_items_collections(SolLRItemCol*, SolLRItemCol* (*gen_col)(void*), void*);
-int solLRItemCol_compute_nonkernel_items(SolLRItemCol*, SolLRSymbol*, SolLRItemCol* (*gen_col)(void*), void*);
+int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
+int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
+
+int _solLRParser_compute_items_collections(SolRBTree*, SolRBTreeNode*, void*);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
@@ -100,17 +119,14 @@ int solLRItemCol_compute_nonkernel_items(SolLRItemCol*, SolLRSymbol*, SolLRItemC
 #define solLRSymbol_set_is_idle(s) (s)->flag = ((s)->flag) & (~SolLRSymbolFlag_COMPUTING)
 
 #define solLRSymbol_copy_firsts(f, symbol) solRBTree_travelsal_inorder(f, \
-																	   solRBTree_root(f), \
-																	   &_solLRSymbol_share_firsts, \
-																	   symbol)
+                                                                       solRBTree_root(f), \
+                                                                       &_solLRSymbol_share_firsts, \
+                                                                       symbol)
 #define solLRSymbol_copy_follows(f, symbol) solRBTree_travelsal_inorder(f, \
-																		solRBTree_root(f), \
-																		&_solLRSymbol_share_follows, \
-																		symbol)
+                                                                        solRBTree_root(f), \
+                                                                        &_solLRSymbol_share_follows, \
+                                                                        symbol)
 
-#define solLRProduct_left(p) (p)->s
-#define solLRProduct_right(p) (p)->r
-#define solLRProduct_size(p) (p)->l
-#define solLRProduct_find_symbol(p, s)  (SolLRSymbol*)((p)->r + s)
+#define solLRProduct_find_symbol(p, s)  (SolLRSymbol**)((p)->r + s)
 
 #endif

@@ -19,6 +19,10 @@ typedef struct _SolRBTreeIter {
     SolStack *s;
 } SolRBTreeIter;
 
+#define solRBTreeIter_preorder_new(t, n) solRBTreeIter_new(t, n, SolRBTreeIterTT_preorder)
+#define solRBTreeIter_inorder_new(t, n) solRBTreeIter_new(t, n, SolRBTreeIterTT_inorder)
+#define solRBTreeIter_backorder_new(t, n) solRBTreeIter_new(t, n, SolRBTreeIterTT_backorder)
+
 SolRBTreeIter* solRBTreeIter_new(SolRBTree*, SolRBTreeNode*, SolRBTreeIterTravelsalType);
 SolRBTreeNode* solRBTreeIter_current(SolRBTreeIter*);
 void* solRBTreeIter_current_val(SolRBTreeIter*);

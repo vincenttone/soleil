@@ -377,18 +377,17 @@ int solLL1ParserSymbol_add_first_entry(SolLL1ParserSymbol *s, SolLL1ParserEntry 
 
 int solLL1ParserSymbol_dup_first(SolLL1ParserSymbol *s, SolRBTree *t, SolLL1ParserProduct *p)
 {
-    SolRBTreeIter *i = solRBTreeIter_new(t, solRBTree_root(t), SolRBTreeIterTT_preorder);
+    SolRBTreeIter *i = solRBTreeIter_preorder_new(t, solRBTree_root(t));
     SolLL1ParserEntry *e;
-    SolRBTreeNode *n;
     SolLL1ParserSymbol *s1;
-    while ((n = solRBTreeIter_next(i))) {
-        e = solRBTreeNode_val(n);
+    do {
+        e = solRBTreeIter_current_val(i);
         s1 = solLL1ParserEntry_symbol(e);
         if (p == NULL) {
             p = solLL1ParserEntry_product(e);
         }
         solLL1ParserSymbol_add_first(s, s1, p);
-    }
+    } while ( solRBTreeIter_next(i));
     solRBTreeIter_free(i);
     return 0;
 }
@@ -428,18 +427,17 @@ int solLL1ParserSymbol_dup_follow(SolLL1ParserSymbol *s, SolRBTree *t, SolLL1Par
         solRBTree_set_val_free_func(solLL1ParserSymbol_follow(s), &_solLL1ParserEntry_free);
     }
     if (solLL1ParserSymbol_follow(s) == t) return -5;
-    SolRBTreeIter *i = solRBTreeIter_new(t, solRBTree_root(t), SolRBTreeIterTT_preorder);
+    SolRBTreeIter *i = solRBTreeIter_preorder_new(t, solRBTree_root(t));
     SolLL1ParserEntry *e;
-    SolRBTreeNode *n;
     SolLL1ParserSymbol *s1;
-    while ((n = solRBTreeIter_next(i))) {
-        e = solRBTreeNode_val(n);
+    do {
+        e = solRBTreeIter_current_val(i);
         s1 = solLL1ParserEntry_symbol(e);
         if (p == NULL) {
             p = solLL1ParserEntry_product(e);
         }
         solLL1ParserSymbol_add_follow(s, s1, p);
-    }
+    } while (solRBTreeIter_next(i));
     solRBTreeIter_free(i);
     return 0;
 }
