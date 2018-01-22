@@ -247,12 +247,16 @@ void* solRBTree_search(SolRBTree *tree, void *val)
 SolRBTreeNode* solRBTree_search_node(SolRBTree *tree, void *val)
 {
     SolRBTreeNode *current_node = solRBTree_root(tree);
-    while (solRBTree_node_is_NOT_nil(tree, current_node)
-           && solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node)) != 0
-        ) {
-        current_node = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node)) < 0
-            ? solRBTreeNode_left(current_node)
-            : solRBTreeNode_right(current_node);
+    int i = 0;
+    while (solRBTree_node_is_NOT_nil(tree, current_node)) {
+        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node));
+        if (i < 0) {
+            current_node =  solRBTreeNode_left(current_node);
+        } else if (i > 0) {
+            current_node = solRBTreeNode_right(current_node);
+        } else {
+            break;
+        }
     }
     return current_node;
 }
