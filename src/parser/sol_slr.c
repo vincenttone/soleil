@@ -118,9 +118,11 @@ int _solSLRParserField_compare(void *f1, void *f2)
 {
     int flag = ((struct _SolSLRTableField*)f1)->flag & ((struct _SolSLRTableField*)f1)->flag;
     if (flag & SolLRTableFieldFlag_TYPE_STATE) { // state
-        if (*(size_t*)(((struct _SolSLRTableField*)f1)->t) > *(size_t*)(((struct _SolSLRTableField*)f2)->t)) {
+        SolLRItemCol *c1 = (SolLRItemCol*)(((struct _SolSLRTableField*)f1)->t);
+        SolLRItemCol *c2 = (SolLRItemCol*)(((struct _SolSLRTableField*)f2)->t);
+        if (c1->state > c2->state) {
             return 1;
-        } else if (*(size_t*)(((struct _SolSLRTableField*)f1)->t) < *(size_t*)(((struct _SolSLRTableField*)f2)->t)) {
+        } else if (c1->state < c2->state) {
             return -1;
         }
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
@@ -166,7 +168,7 @@ int solSLRParser_prepare(SolSLRParser *p)
         return -2;
     }
     SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->s->productions)));
-    SolLRItem *i = solLRItem_new(product, 0);
+    SolLRItem *i = solLRProduct_item(product, 0);
     SolLRItemCol *c = solLRParser_generate_items_collection(p->lr);
     if (solList_add(c->items, i) == NULL) {
         return -3;
@@ -194,7 +196,7 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
         if ((c1->flag & SolLRItemCol_FLAG_END) > 0) {
             continue;
         }
-        rbti = solRBTreeIter_new(c1->nc, solRBTree_root(c1->nc), SolRBTreeIterTT_inorder);
+        rbti = solRBTreeIter_new(c1->nc, solRBTree_root(c1->nc), SolRBTreeIterTT_preorder);
         do {
             c2 = (SolLRItemCol*)(solRBTreeIter_current_val(rbti));
             if ((c2->flag & SolLRItemCol_FLAG_END) > 0) { // reach the end of product, reduce
@@ -256,7 +258,7 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *sy
     sym1->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
     sym1->flag |= SolLRTableFieldFlag_ACTION_REDUCE;
     struct _SolSLRTableField *sym2;
-    SolRBTreeIter *i = solRBTreeIter_new(symbol->follows, solRBTree_root(symbol->follows), SolRBTreeIterTT_inorder);
+    SolRBTreeIter *i = solRBTreeIter_new(symbol->follows, solRBTree_root(symbol->follows), SolRBTreeIterTT_preorder);
     do {
         symbol = (SolLRSymbol*)(solRBTreeIter_current_val(i));
         sym2 = sol_calloc(1, sizeof(struct _SolSLRTableField));

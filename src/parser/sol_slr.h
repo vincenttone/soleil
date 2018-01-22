@@ -27,7 +27,7 @@ typedef struct _SolSLRParser {
 
 struct _SolSLRTableField {
     int flag; // flag
-    void *t; // taget
+    void *t; // target
 };
 
 SolSLRParser* solSLRParser_new();

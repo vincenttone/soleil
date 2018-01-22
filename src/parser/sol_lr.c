@@ -60,8 +60,11 @@ SolLRProduct* solLRProduct_new(SolLRSymbol *s, size_t len, ...)
     p->len = len;
     p->r = sol_calloc(len, sizeof(SolLRSymbol*));
     if (p->r == NULL) {
-        solLRProduct_free(p);
-        return NULL;
+        goto oops;
+    }
+    p->items = sol_calloc(len + 1, sizeof(SolLRItem));
+    if (p->items == NULL) {
+        goto oops;
     }
     SolLRSymbol **sym;
     SolLRSymbol *sarg;
@@ -84,12 +87,18 @@ SolLRProduct* solLRProduct_new(SolLRSymbol *s, size_t len, ...)
     }
     solList_add(s->productions, p);
     return p;
+oops:
+    solLRProduct_free(p);
+    return NULL;
 }
 
 void solLRProduct_free(SolLRProduct *p)
 {
     if (p->r) {
         sol_free(p->r);
+    }
+    if (p->items) {
+        sol_free(p->items);
     }
     sol_free(p);
 }
@@ -99,20 +108,14 @@ void _solLRProduct_free(void *p)
     solLRProduct_free((SolLRProduct*)p);
 }
 
-SolLRItem* solLRItem_new(SolLRProduct *product, size_t pos)
+SolLRItem* solLRProduct_item(SolLRProduct *product, size_t pos)
 {
-    SolLRItem *i = sol_alloc(sizeof(SolLRItem));
-    if (i == NULL) {
-        return NULL;
+    SolLRItem *i = (product->items + pos);
+    if (i->p == NULL) {
+        i->p = product;
+        i->pos = pos;
     }
-    i->p = product;
-    i->pos = pos;
     return i;
-}
-
-void solLRItem_free(SolLRItem *item)
-{
-    sol_free(item);
 }
 
 SolLRItemCol* solLRItemCol_new()
@@ -377,6 +380,9 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
     SolLRSymbol *s;
     do {
         item = (SolLRItem*)(solListNode_val(n));
+        if (item->flag == 1) {
+            continue;
+        }
         // nonkernel items
         if (item->pos > item->p->len) {
             continue;
@@ -398,12 +404,13 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
 					return 2;
 				}
             }
-            item = solLRItem_new(item->p, (item->pos) + 1);
+            item = solLRProduct_item(item->p, (item->pos) + 1);
             solList_add(col->items, item);
             if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
                 solLRParser_compute_nonkernel_items(p, c, s);
             }
         }
+        item->flag = 1;
     } while ((n = solListNode_next(n)));
     if (solRBTree_travelsal_inorder(c->nc, solRBTree_root(c->nc), &_solLRParser_compute_items_collections, p)) {
         return 3;
@@ -440,7 +447,7 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
 				return 1;
 			}
         }
-        item = solLRItem_new(product, 1);
+        item = solLRProduct_item(product, 1);
         solList_add(col->items, item);
         if (solLRSymbol_is_nonterminal(sym) && solLRSymbol_is_idle(sym)) {
             solLRSymbol_set_is_busy(sym);
@@ -501,7 +508,6 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p)
     if (c->items == NULL) {
         goto oops;
     }
-    solList_set_val_free_func(c->items, &_solLRItem_free);
     c->nc = solRBTree_new();
     if (c->nc == NULL) {
         goto oops;
@@ -514,9 +520,4 @@ oops:
         solLRItemCol_free(c);
     }
     return NULL;
-}
-
-void _solLRItem_free(void *item)
-{
-    solLRItem_free((SolLRItem*)item);
 }

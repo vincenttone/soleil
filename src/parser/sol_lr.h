@@ -35,11 +35,13 @@ typedef struct _SolLRProduct {
     size_t len; // len
     SolLRSymbol *s;
     SolLRSymbol **r; // right
+    struct _SolLRItem *items; // items
 } SolLRProduct;
 
 typedef struct _SolLRItem {
     size_t pos;
     SolLRProduct *p;
+    int flag;
 } SolLRItem;
 
 typedef struct _SolLRItemCol { // items collection
@@ -72,8 +74,7 @@ SolLRProduct* solLRProduct_new(SolLRSymbol*, size_t, ...);
 void solLRProduct_free(SolLRProduct*);
 void _solLRProduct_free(void*);
 
-SolLRItem* solLRItem_new(SolLRProduct*, size_t);
-void solLRItem_free(SolLRItem*);
+SolLRItem* solLRProduct_item(SolLRProduct*, size_t);
 
 SolLRItemCol* solLRItemCol_new();
 void solLRItemCol_free(SolLRItemCol*);
@@ -93,7 +94,6 @@ int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
 int _solLRParser_compute_items_collections(SolRBTree*, SolRBTreeNode*, void*);
-void _solLRItem_free(void*);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
@@ -127,9 +127,6 @@ void _solLRItem_free(void*);
 																		&_solLRSymbol_share_follows, \
 																		symbol)
 
-#define solLRProduct_left(p) (p)->s
-#define solLRProduct_right(p) (p)->r
-#define solLRProduct_size(p) (p)->l
 #define solLRProduct_find_symbol(p, s)  (SolLRSymbol**)((p)->r + s)
 
 #endif
