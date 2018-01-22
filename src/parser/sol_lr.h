@@ -27,8 +27,8 @@ typedef struct _SolLRSymbol {
     int flag;   // flag
     void *v; // symbol val
     SolList *productions; // productions
-	SolRBTree *firsts;
-	SolRBTree *follows;
+    SolRBTree *firsts;
+    SolRBTree *follows;
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
@@ -119,13 +119,13 @@ int _solLRParser_compute_items_collections(SolRBTree*, SolRBTreeNode*, void*);
 #define solLRSymbol_set_is_idle(s) (s)->flag = ((s)->flag) & (~SolLRSymbolFlag_COMPUTING)
 
 #define solLRSymbol_copy_firsts(f, symbol) solRBTree_travelsal_inorder(f, \
-																	   solRBTree_root(f), \
-																	   &_solLRSymbol_share_firsts, \
-																	   symbol)
+                                                                       solRBTree_root(f), \
+                                                                       &_solLRSymbol_share_firsts, \
+                                                                       symbol)
 #define solLRSymbol_copy_follows(f, symbol) solRBTree_travelsal_inorder(f, \
-																		solRBTree_root(f), \
-																		&_solLRSymbol_share_follows, \
-																		symbol)
+                                                                        solRBTree_root(f), \
+                                                                        &_solLRSymbol_share_follows, \
+                                                                        symbol)
 
 #define solLRProduct_find_symbol(p, s)  (SolLRSymbol**)((p)->r + s)
 
