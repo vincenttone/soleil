@@ -94,8 +94,8 @@ int solLL1ParserSymbol_dup_follow(SolLL1ParserSymbol*, SolRBTree*, SolLL1ParserP
 SolLL1ParserEntry* solLL1ParserEntry_new(SolLL1ParserSymbol*, SolLL1ParserProduct*);
 void solLL1ParserEntry_free(SolLL1ParserEntry*);
 
-int _solLL1Parser_entry_compare(void*, void*);
-int _solLL1Parser_symbol_compare(void*, void*);
+int _solLL1Parser_entry_compare(void*, void*, int);
+int _solLL1Parser_symbol_compare(void*, void*, int);
 void _solLL1ParserEntry_free(void*);
 int _solLL1Parser_rbnode_compute_nullable(SolRBTree*, SolRBTreeNode*, void*);
 int _solLL1Parser_rbnode_compute_first(SolRBTree*, SolRBTreeNode*, void*);

@@ -533,7 +533,7 @@ void _solLL1ParserEntry_free(void *e)
     solLL1ParserEntry_free((SolLL1ParserEntry*)e);
 }
 
-int _solLL1Parser_entry_compare(void *s1, void *s2)
+int _solLL1Parser_entry_compare(void *s1, void *s2, int flag)
 {
     if (solLL1ParserEntry_symbol((SolLL1ParserEntry*)s1)
         > solLL1ParserEntry_symbol((SolLL1ParserEntry*)s2)
@@ -544,7 +544,7 @@ int _solLL1Parser_entry_compare(void *s1, void *s2)
     else return 0;
 }
 
-int _solLL1Parser_symbol_compare(void *s1, void *s2)
+int _solLL1Parser_symbol_compare(void *s1, void *s2, int flag)
 {
     if (s1 > s2) return 1;
     else if (s1 < s2) return -1;
