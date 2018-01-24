@@ -8,20 +8,25 @@ SolRBTuple* solRBTuple_new()
 		return NULL;
 	}
     t->n = solRBTree_new();
-    t->tmp = sol_calloc(1, sizeof(SolRBTuple));
+    solRBTree_set_compare_func(t->n, &_solRBTuple_compare_node_val);
     solRBTree_set_val_free_func(t->n, &_solRBTupleRecord_free);
 	return t;
 }
 
 void solRBTuple_free(SolRBTuple *t)
 {
-    if (t->tmp) {
-        sol_free(t->tmp);
-    }
     if (t->n) {
         solRBTree_free(t->n);
     }
     sol_free(t);
+}
+
+int _solRBTuple_compare_node_val(void *r1, void *r2, int flag)
+{
+    if (flag & 0x2) { // insert
+        return (*((SolRBTupleRecord*)r2)->f_cmp_val)(((SolRBTupleRecord*)r1)->v, ((SolRBTupleRecord*)r2)->v, flag);
+    }
+    return (*((SolRBTupleRecord*)r2)->f_cmp_val)(r1, ((SolRBTupleRecord*)r2)->v, flag);
 }
 
 SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void *v)
@@ -30,6 +35,9 @@ SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void *v)
 	if (r == NULL) {
 		return NULL;
 	}
+    if (t->f_cmp_val) {
+        solRBTuple_set_compare_val_func(r, t->f_cmp_val);
+    }
     if (t->f_free_val) {
         solRBTupleRecord_set_free_val_func(r, t->f_free_val);
     }
@@ -64,8 +72,7 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
 	 while (l--) {
 		v = va_arg(al, void*);
         if (tree) {
-            t->tmp->v = v;
-            cur = (SolRBTupleRecord*)(solRBTree_search(tree, t->tmp));
+            cur = (SolRBTupleRecord*)(solRBTree_search(tree, v));
         } else {
             cur = NULL;
             pre->n = solRBTree_new();
@@ -106,8 +113,7 @@ SolRBTupleRecord* solRBTuple_get(SolRBTuple *t, size_t l, ...)
             return NULL;
         }
 		v = va_arg(al, void*);
-        t->tmp->v = v;
-		r = (SolRBTupleRecord*)(solRBTree_search(tree, t->tmp));
+		r = (SolRBTupleRecord*)(solRBTree_search(tree, v));
 		if (r == NULL) {
 			return NULL;
 		}
@@ -135,8 +141,7 @@ int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
         }
         target_tree = tree;
 		v = va_arg(al, void*);
-        t->tmp->v = v;
-        n = solRBTree_search_node(tree, t->tmp);
+        n = solRBTree_search_node(tree, v);
 		r = (SolRBTupleRecord*)(solRBTreeNode_val(n));
 		if (r == NULL) {
             va_end(al);
