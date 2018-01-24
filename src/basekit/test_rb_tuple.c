@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include "sol_rb_tuple.h"
 
-int cmp(void *t1, void *t2)
+int cmp(void *t1, void *t2, int flag)
 {
-    char *c1 = ((SolRBTupleRecord*)t1)->v;
-    char *c2 = ((SolRBTupleRecord*)t2)->v;
-	if (*c1 > *c2) {
+	if (*(char*)t1 > *(char*)t2) {
 		return 1;
-	} else if (*c1 < *c2) {
+	} else if (*(char*)t1 < *(char*)t2) {
 		return -1;
 	}
 	return 0;
