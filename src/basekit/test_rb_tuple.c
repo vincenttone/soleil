@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "sol_rb_tuple.h"
 
-int cmp(void *t1, void *t2, int flag)
+int cmp(void *t1, void *t2, SolRBTuple *t, int flag)
 {
 	if (*(char*)t1 > *(char*)t2) {
 		return 1;

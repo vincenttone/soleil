@@ -8,6 +8,7 @@ SolRBTuple* solRBTuple_new()
 		return NULL;
 	}
     t->n = solRBTree_new();
+    t->n->ex = t;
     solRBTree_set_compare_func(t->n, &_solRBTuple_compare_node_val);
     solRBTree_set_val_free_func(t->n, &_solRBTupleRecord_free);
 	return t;
@@ -21,12 +22,23 @@ void solRBTuple_free(SolRBTuple *t)
     sol_free(t);
 }
 
-int _solRBTuple_compare_node_val(void *r1, void *r2, int flag)
+int _solRBTuple_compare_node_val(void *r1, void *r2, SolRBTree *tree, int flag)
 {
+    SolRBTuple *t = (SolRBTuple*)(tree->ex);
     if (flag & 0x2) { // insert
-        return (*((SolRBTupleRecord*)r2)->f_cmp_val)(((SolRBTupleRecord*)r1)->v, ((SolRBTupleRecord*)r2)->v, flag);
+        return (*t->f_cmp_val)(
+            ((SolRBTupleRecord*)r1)->v,
+            ((SolRBTupleRecord*)r2)->v,
+            t,
+            flag
+            );
     }
-    return (*((SolRBTupleRecord*)r2)->f_cmp_val)(r1, ((SolRBTupleRecord*)r2)->v, flag);
+    return (*t->f_cmp_val)(
+        r1,
+        ((SolRBTupleRecord*)r2)->v,
+        t,
+        flag
+        );
 }
 
 SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void *v)
@@ -35,9 +47,6 @@ SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void *v)
 	if (r == NULL) {
 		return NULL;
 	}
-    if (t->f_cmp_val) {
-        solRBTuple_set_compare_val_func(r, t->f_cmp_val);
-    }
     if (t->f_free_val) {
         solRBTupleRecord_set_free_val_func(r, t->f_free_val);
     }
@@ -80,6 +89,7 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
                 return 1;   
             }
             tree = pre->n;
+            tree->ex = t;
             solRBTree_set_compare_func(tree, solRBTree_node_val_compare_func(t->n));
             solRBTree_set_insert_conflict_fix_func(tree, solRBTree_insert_conflict_fix_func(t->n));
             solRBTree_set_val_free_func(tree, solRBTree_node_val_free_func(t->n));
