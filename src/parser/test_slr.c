@@ -48,7 +48,9 @@ int main()
     product = solLRProduct_new(F, 3, lc, E, rc);  // F -> (E)
     product = solLRProduct_new(F, 1, id);         // F -> id
     printf("set begin product ret: %d\n", solSLRParser_set_begin_product(p, product));
-    printf("prepare return %d\n", solSLRParser_prepare(p));
+    printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
+    //SolListNode *n = solList_head(p->lr->collections);
+
     solSLRParser_free(p);
     return 0;
 }

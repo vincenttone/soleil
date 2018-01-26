@@ -16,7 +16,6 @@ SolSLRParser* solSLRParser_new()
     if (p->lr == NULL) {
         goto oops;
     }
-    //p->lr->compare_symbols = &_solLRParser_compare_symbols;
     p->stk = solStack_new();
     if (p->stk == NULL) {
         goto oops;
@@ -192,8 +191,11 @@ int solSLRParser_prepare(SolSLRParser *p)
 
 int solSLRParser_compute_parsing_table(SolSLRParser *p)
 {
-    if (p == NULL || p->lr == NULL) {
+    if (p == NULL || p->lr == NULL || p->lr->collections == NULL) {
         return -1;
+    }
+    if (solList_len(p->lr->collections) == 0) {
+        return -2;
     }
     SolLRItemCol *c1;
     SolLRItemCol *c2;
@@ -202,6 +204,9 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
     do {
         c1 = (SolLRItemCol*)(solListNode_val(n));
         if ((c1->flag & SolLRItemCol_FLAG_END) > 0) {
+            continue;
+        }
+        if (solRBTree_count(c1->nc) == 0) {
             continue;
         }
         rbti = solRBTreeIter_new(c1->nc, solRBTree_root(c1->nc), SolRBTreeIterTT_preorder);

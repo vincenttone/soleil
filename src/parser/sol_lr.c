@@ -248,6 +248,9 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
     size_t i;
     do {
         s = (SolLRSymbol*)(solRBTreeIter_current_val(iter));
+        if (!solLRSymbol_is_nonterminal(s)) {
+            continue;
+        }
         n = solList_head(s->productions);
         do {
             product = (SolLRProduct*)(solListNode_val(n));
