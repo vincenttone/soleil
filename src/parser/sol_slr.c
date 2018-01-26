@@ -16,8 +16,7 @@ SolSLRParser* solSLRParser_new()
     if (p->lr == NULL) {
         goto oops;
     }
-    p->lr->compare_cols = &_solLRItemCols_compare;
-    p->lr->compare_symbol_and_col = &_solSLRParser_compare_symbol_and_col;
+    //p->lr->compare_symbols = &_solLRParser_compare_symbols;
     p->stk = solStack_new();
     if (p->stk == NULL) {
         goto oops;
@@ -26,7 +25,8 @@ SolSLRParser* solSLRParser_new()
     if (p->symbols == NULL) {
         goto oops;
     }
-    solRBTree_set_compare_func(p->symbols, &_solLRItemCols_compare);
+    p->symbols->ex = p;
+    solRBTree_set_compare_func(p->symbols, &_solSLRParser_compare_symbols);
     solRBTree_set_val_free_func(p->symbols, &_solLRSymbol_free);
     // start symbol
     p->s = solSLRParser_nonterminal_new(p, NULL);
@@ -114,7 +114,7 @@ int solSLRParser_set_begin_product(SolSLRParser *p, SolLRProduct *product)
     return 1;
 }
 
-int _solSLRParserField_compare(void *f1, void *f2)
+int _solSLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int cf)
 {
     int flag = ((struct _SolSLRTableField*)f1)->flag & ((struct _SolSLRTableField*)f1)->flag;
     if (flag & SolLRTableFieldFlag_TYPE_STATE) { // state
@@ -137,11 +137,16 @@ int _solSLRParserField_compare(void *f1, void *f2)
     return 0;
 }
 
-int _solSLRParser_compare_symbol_and_col(void *s, void *c)
+int _solSLRParser_compare_symbols(void *s1, void *s2, SolRBTree *tree, int flag)
 {
-    if ((SolLRSymbol*)s > ((SolLRItemCol*)c)->sym) return 1;
-    if ((SolLRSymbol*)s < ((SolLRItemCol*)c)->sym) return -1;
-    return 0;
+    if (((SolLRSymbol*)s1)->v == NULL) {
+        return -1;
+    }
+    if (((SolLRSymbol*)s2)->v == NULL) {
+        return 1;
+    }
+    SolSLRParser *p = tree->ex;
+    return (*p->lr->f_compare_symbol_val)(((SolLRSymbol*)s1)->v, ((SolLRSymbol*)s2)->v);
 }
 
 int _solLRItemCols_compare(void *s1, void *s2)

@@ -55,13 +55,13 @@ typedef struct _SolLRItemCol { // items collection
 typedef struct _SolLRParser {
     size_t gen; // state generate
     SolList *collections; // items collection
-    int (*compare_symbol_and_col)(void*, void*);
-    int (*compare_cols)(void*, void*);
+    int (*f_compare_symbol_val)(void*, void*);
 } SolLRParser;
 
 SolLRParser* solLRParser_new();
 void solLRParser_free(SolLRParser*);
 SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*);
+int _solLRParser_compare_cols(void*, void*, SolRBTree*, int);
 
 SolLRSymbol* solLRSymbol_new(void*);
 void solLRSymbol_free(SolLRSymbol*);

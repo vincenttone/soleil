@@ -16,10 +16,21 @@ enum _Symbol {
 #define solSLRParser_NONTERMINAL(v, p, x) SolLRSymbol *v = solSLRParser_nonterminal_new(p, &(x[_##v - 1]))
 #define solSLRParser_TERMINAL(v, p, x)    SolLRSymbol *v = solSLRParser_terminal_new(p, &(x[_##v - 1]))
 
+int cmp(void *v1, void *v2)
+{
+    if (*(int*)v1 > *(int*)v2) {
+        return 1;
+    } else if (*(int*)v1 < *(int*)v2) {
+        return -1;
+    }
+    return 0;
+}
+
 int main()
 {
     int symbols[] = {_E, _T, _F, _lc, _rc, _plus, _mul, _id};
     SolSLRParser *p = solSLRParser_new();
+    solSLRParser_set_compare_symbol_val_func(p, &cmp);
     // symbols
     solSLRParser_NONTERMINAL(E, p, symbols);
     solSLRParser_NONTERMINAL(T, p, symbols);

@@ -56,9 +56,9 @@ int solSLRParser_compute_parsing_table(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
-int _solSLRParserField_compare(void*, void*);
+int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
 void _solSLRParserField_free(void*);
-int _solSLRParser_compare_symbol_and_col(void*, void*);
+int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
 int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
@@ -68,5 +68,6 @@ int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRIt
 int _solLRItemCols_compare(void*, void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
+#define solSLRParser_set_compare_symbol_val_func(p, f) p->lr->f_compare_symbol_val = f
 
 #endif

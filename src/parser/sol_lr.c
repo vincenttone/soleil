@@ -512,12 +512,30 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p)
     if (c->nc == NULL) {
         goto oops;
     }
-    solRBTree_set_compare_func(c->nc, p->compare_symbol_and_col);
-    solRBTree_set_insert_compare_func(c->nc, p->compare_cols);
+    c->nc->ex = p;
+    solRBTree_set_compare_func(c->nc, &_solLRParser_compare_cols);
     return c;
 oops:
     if (c) {
         solLRItemCol_free(c);
     }
     return NULL;
+}
+
+int _solLRParser_compare_cols(void *c1, void *c2, SolRBTree *tree, int flag)
+{
+    if (flag & 0x2) { // insert
+        if (((SolLRItemCol*)c1)->state > ((SolLRItemCol*)c2)->state) {
+            return 1;
+        } else if (((SolLRItemCol*)c1)->state < ((SolLRItemCol*)c2)->state) {
+            return -1;
+        }
+        return 0;
+    } else {
+        // tree->ex is SolLRParser
+        return (*((SolLRParser*)(tree->ex))->f_compare_symbol_val)(
+            ((SolLRSymbol*)c1)->v,
+            ((SolLRSymbol*)(((SolLRItemCol*)c2)->sym))->v
+            );
+    }
 }
