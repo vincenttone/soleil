@@ -80,15 +80,16 @@ SolLRItemCol* solLRItemCol_new();
 void solLRItemCol_free(SolLRItemCol*);
 void _solLRItemCol_free(void*);
 
-int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*);
-int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*);
+int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
+int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 
 int _solLRSymbol_share_firsts(SolRBTree*, SolRBTreeNode*, void*);
 int _solLRSymbol_share_follows(SolRBTree*, SolRBTreeNode*, void*);
+int _solLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 
 int solLRSymbol_compute_nullable(SolLRSymbol*);
-int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*);
-int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
+int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
+int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRParser*);
 
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);

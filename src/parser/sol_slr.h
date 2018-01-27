@@ -24,7 +24,9 @@ typedef struct _SolSLRParser {
     SolLRSymbol *e; // empty symbol
     SolRBTuple *table; // parser table
 #ifdef __SOL_DEBUG__
-    void (*_f_debug_symbol_val)(void*, char*, char*);
+    void (*_f_debug_symbol)(SolLRSymbol*, struct _SolSLRParser*);
+    void (*_f_debug_product)(SolLRProduct*, struct _SolSLRParser*);
+    void (*_f_debug_item)(SolLRItem*, struct _SolSLRParser*);
 #endif    
 } SolSLRParser;
 

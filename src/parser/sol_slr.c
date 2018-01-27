@@ -198,23 +198,21 @@ int solSLRParser_prepare(SolSLRParser *p)
             _debug_col = solListNode_val(_debug_node);
             printf("~~~~~~~Col state: %zu~~~~~~~~\n", _debug_col->state);
             if (_debug_col->sym) {
-                if (p->_f_debug_symbol_val) {
-                    (*p->_f_debug_symbol_val)(_debug_col->sym->v, "Symbol: ", "\n");
+                if (p->_f_debug_symbol) {
+                    (*p->_f_debug_symbol)(_debug_col->sym, p);
                 }
             } else {
-                printf("No symbol in this collection\n");
+                printf("No symbol in this collection");
             }
-            printf("%zu items here: \n", solList_len(_debug_col->items));
+            printf("\n");
+            printf("%zu item(s) here: \n", solList_len(_debug_col->items));
             if (solList_len(_debug_col->items) > 0) {
                 _debug_node2 = solList_head(_debug_col->items);
                 do {
                     _debug_item = solListNode_val(_debug_node2);
-                    if (_debug_item->p->s->v) {
-                        (*p->_f_debug_symbol_val)(_debug_item->p->s->v, "product symbo: ", "");
-                    } else {
-                        printf("origin symbol product.\n");
+                    if (p->_f_debug_item) {
+                        (*p->_f_debug_item)(_debug_item, p);
                     }
-                    printf("  @%zu\n", _debug_item->pos);
                 } while ((_debug_node2 = solListNode_next(_debug_node2)));
             }
         } while ((_debug_node = solListNode_next(_debug_node)));
@@ -297,7 +295,7 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *sy
     if (p == NULL || symbol == NULL) {
         return -1;
     }
-    if (solLRSymbol_compute_follow(symbol, p->symbols, p->e) != 0) {
+    if (solLRSymbol_compute_follow(symbol, p->symbols, p->e, p->lr) != 0) {
         return 1;
     }
     struct _SolSLRTableField *s = sol_calloc(1, sizeof(struct _SolSLRTableField));
