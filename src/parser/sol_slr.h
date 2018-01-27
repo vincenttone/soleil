@@ -21,8 +21,11 @@ typedef struct _SolSLRParser {
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
     SolLRSymbol *s; // start symbol
-	SolLRSymbol *e; // empty symbol
+    SolLRSymbol *e; // empty symbol
     SolRBTuple *table; // parser table
+#ifdef __SOL_DEBUG__
+    void (*_f_debug_symbol_val)(void*, char*, char*);
+#endif    
 } SolSLRParser;
 
 struct _SolSLRTableField {

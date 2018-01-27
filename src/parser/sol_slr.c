@@ -2,6 +2,10 @@
 #include "sol_slr.h"
 #include "sol_rbtree_iter.h"
 
+#ifdef __SOL_DEBUG__
+#include <stdio.h>
+#endif
+
 /**
  * create a new slr parser
  * @return SolSLRParser
@@ -183,6 +187,39 @@ int solSLRParser_prepare(SolSLRParser *p)
     if (solLRParser_compute_items_collections(p->lr, c) != 0) {
         return 1;
     }
+#ifdef __SOL_DEBUG__
+    if (solList_len(p->lr->collections)) {
+        printf("----There are %zu collections---\n", solList_len(p->lr->collections));
+        SolListNode *_debug_node = solList_head(p->lr->collections);
+        SolListNode *_debug_node2;
+        SolLRItemCol *_debug_col;
+        SolLRItem *_debug_item;
+        do {
+            _debug_col = solListNode_val(_debug_node);
+            printf("~~~~~~~Col state: %zu~~~~~~~~\n", _debug_col->state);
+            if (_debug_col->sym) {
+                if (p->_f_debug_symbol_val) {
+                    (*p->_f_debug_symbol_val)(_debug_col->sym->v, "Symbol: ", "\n");
+                }
+            } else {
+                printf("No symbol in this collection\n");
+            }
+            printf("%zu items here: \n", solList_len(_debug_col->items));
+            if (solList_len(_debug_col->items) > 0) {
+                _debug_node2 = solList_head(_debug_col->items);
+                do {
+                    _debug_item = solListNode_val(_debug_node2);
+                    if (_debug_item->p->s->v) {
+                        (*p->_f_debug_symbol_val)(_debug_item->p->s->v, "product symbo: ", "");
+                    } else {
+                        printf("origin symbol product.\n");
+                    }
+                    printf("  @%zu\n", _debug_item->pos);
+                } while ((_debug_node2 = solListNode_next(_debug_node2)));
+            }
+        } while ((_debug_node = solListNode_next(_debug_node)));
+    }
+#endif
     if (solSLRParser_compute_parsing_table(p) != 0) {
         return 2;
     }
