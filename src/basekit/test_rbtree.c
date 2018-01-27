@@ -49,7 +49,7 @@ void print_free_val(void *val)
     printf("Free node of val: %d\n", *(int*)val);
 }
 
-int cmp(void *v1, void *v2, int flag)
+int cmp(void *v1, void *v2, SolRBTree *tree, int flag)
 {
     if (conv_val(v1) == conv_val(v2)) return 0;
     if (conv_val(v1) < conv_val(v2)) return -1;

@@ -184,7 +184,7 @@ int solLRSymbol_compute_nullable(SolLRSymbol *symbol)
     return 0;
 }
 
-int solLRSymbol_compute_first(SolLRSymbol *symbol, SolLRSymbol *empty)
+int solLRSymbol_compute_first(SolLRSymbol *symbol, SolLRSymbol *empty, SolLRParser *p)
 {
     if (symbol == NULL || symbol->productions == NULL) {
         return -1;
@@ -205,10 +205,10 @@ int solLRSymbol_compute_first(SolLRSymbol *symbol, SolLRSymbol *empty)
             for (i = 0; i < product->len; i++) {
                 s = *(product->r + i);
                 if (solLRSymbol_is_terminal(s)) {
-                    if (solLRSymbol_record_first(symbol, s) != 0) {
+                    if (solLRSymbol_record_first(symbol, s, p) != 0) {
                         return 1;
                     }
-                } else if (solLRSymbol_compute_first(s, empty) != 0) {
+                } else if (solLRSymbol_compute_first(s, empty, p) != 0) {
                     if (s->firsts) {
                         if (solLRSymbol_copy_firsts(s->firsts, symbol) != 0) {
                             return 2;
@@ -222,7 +222,7 @@ int solLRSymbol_compute_first(SolLRSymbol *symbol, SolLRSymbol *empty)
                     break;
                 }
                 if (i + 1 == product->len) {
-                    if (solLRSymbol_record_first(symbol, empty) != 0) {
+                    if (solLRSymbol_record_first(symbol, empty, p) != 0) {
                         return 4;
                     }
                 }
@@ -233,7 +233,7 @@ int solLRSymbol_compute_first(SolLRSymbol *symbol, SolLRSymbol *empty)
     return 0;
 }
 
-int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSymbol *empty)
+int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSymbol *empty, SolLRParser *p)
 {
     if (symbols == NULL || symbol->productions == NULL) {
         return -1;
@@ -248,15 +248,18 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
     size_t i;
     do {
         s = (SolLRSymbol*)(solRBTreeIter_current_val(iter));
+        if (!solLRSymbol_is_nonterminal(s)) {
+            continue;
+        }
         n = solList_head(s->productions);
         do {
             product = (SolLRProduct*)(solListNode_val(n));
             for (i = 0; i< product->len; i++) {
-                s = (SolLRSymbol*)(product->r + i);
+                s = *(product->r + i);
                 if (s == symbol) {
                     if (product->len == (i + 1)) { // is the last of product
                         // compute product nonterminal's follow
-                        if (solLRSymbol_compute_follow(product->s, symbols, empty) != 0 ) {
+                        if (solLRSymbol_compute_follow(product->s, symbols, empty, p) != 0 ) {
                             return 1;
                         }
                         if (product->s->follows) {
@@ -265,14 +268,14 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
                             }
                         }
                     } else {
-                        s = (SolLRSymbol*)(product->r + i + 1);
+                        s = *(product->r + i + 1);
                         if (solLRSymbol_is_terminal(s)) { // is terminal, record
-                            if (solLRSymbol_record_follow(symbol, s) != 0) {
+                            if (solLRSymbol_record_follow(symbol, s, p) != 0) {
                                 return 3;
                             }
                         } else if (solLRSymbol_is_nonterminal(s)) { // nonterminal
                             // compute s's firsts, add to follow
-                            if (solLRSymbol_compute_first(s, empty) != 0) {
+                            if (solLRSymbol_compute_first(s, empty, p) != 0) {
                                 return 1;
                             }
                             // add s's first to symbol's follow
@@ -285,7 +288,7 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
                                 return 3;
                             }
                             if (solLRSymbol_is_nullable(s) == 0) {
-                                if (solLRSymbol_compute_follow(s, symbols, empty) != 0) {
+                                if (solLRSymbol_compute_follow(s, symbols, empty, p) != 0) {
                                     return 4;
                                 }
                                 // add s's follows to symbol's follow
@@ -310,9 +313,10 @@ int solLRSymbol_compute_follow(SolLRSymbol *symbol, SolRBTree *symbols, SolLRSym
  * @desc record symbol's first
  * @param symbol
  * @param first (of symbol)
+ * @param lr parser
  * @return 0 when success, others when failed
  */
-int solLRSymbol_record_first(SolLRSymbol *symbol, SolLRSymbol *first)
+int solLRSymbol_record_first(SolLRSymbol *symbol, SolLRSymbol *first, SolLRParser *p)
 {
     if (symbol == NULL || first == NULL) {
         return -1;
@@ -322,6 +326,8 @@ int solLRSymbol_record_first(SolLRSymbol *symbol, SolLRSymbol *first)
         if (symbol->firsts == NULL) {
             return -2;
         }
+        symbol->firsts->ex = p;
+        solRBTree_set_compare_func(symbol->firsts, &_solLRParser_compare_symbols);
     }
     if (solRBTree_insert(symbol->firsts, first) != 0) {
         return 1;
@@ -332,9 +338,10 @@ int solLRSymbol_record_first(SolLRSymbol *symbol, SolLRSymbol *first)
  * @desc record symbol's follow
  * @param symbol
  * @param follow (of symbol)
+ * @param lr parser
  * @return 0 when success, others when failed
  */
-int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow)
+int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow, SolLRParser *p)
 {
     if (symbol == NULL || follow == NULL) {
         return -1;
@@ -344,6 +351,8 @@ int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow)
         if (symbol->follows == NULL) {
             return -2;
         }
+        symbol->follows->ex = p;
+        solRBTree_set_compare_func(symbol->follows, &_solLRParser_compare_symbols);
     }
     if (solRBTree_insert(symbol->follows, follow) != 0) {
         return 1;
@@ -354,13 +363,13 @@ int solLRSymbol_record_follow(SolLRSymbol *symbol, SolLRSymbol *follow)
 int _solLRSymbol_share_firsts(SolRBTree *firsts, SolRBTreeNode *node, void *symbol)
 {
     SolLRSymbol *s = (SolLRSymbol*)solRBTreeNode_val(node);
-    return solLRSymbol_record_first((SolLRSymbol*)symbol, s);
+    return solLRSymbol_record_first((SolLRSymbol*)symbol, s, (SolLRParser*)(firsts->ex));
 }
 
 int _solLRSymbol_share_follows(SolRBTree *follows, SolRBTreeNode *node, void *symbol)
 {
     SolLRSymbol *s = (SolLRSymbol*)solRBTreeNode_val(node);
-    return solLRSymbol_record_follow((SolLRSymbol*)symbol, s);
+    return solLRSymbol_record_follow((SolLRSymbol*)symbol, s, (SolLRParser*)(follows->ex));
 }
 
 int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
@@ -512,12 +521,42 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p)
     if (c->nc == NULL) {
         goto oops;
     }
-    solRBTree_set_compare_func(c->nc, p->compare_symbol_and_col);
-    solRBTree_set_insert_compare_func(c->nc, p->compare_cols);
+    c->nc->ex = p;
+    solRBTree_set_compare_func(c->nc, &_solLRParser_compare_cols);
     return c;
 oops:
     if (c) {
         solLRItemCol_free(c);
     }
     return NULL;
+}
+
+int _solLRParser_compare_cols(void *c1, void *c2, SolRBTree *tree, int flag)
+{
+    if (flag & 0x2) { // insert
+        if (((SolLRItemCol*)c1)->state > ((SolLRItemCol*)c2)->state) {
+            return 1;
+        } else if (((SolLRItemCol*)c1)->state < ((SolLRItemCol*)c2)->state) {
+            return -1;
+        }
+        return 0;
+    } else {
+        // tree->ex is SolLRParser
+        return (*((SolLRParser*)(tree->ex))->f_compare_symbol_val)(
+            ((SolLRSymbol*)c1)->v,
+            ((SolLRSymbol*)(((SolLRItemCol*)c2)->sym))->v
+            );
+    }
+}
+
+int _solLRParser_compare_symbols(void *s1, void *s2, SolRBTree *tree, int flag)
+{
+    if (((SolLRSymbol*)s1)->v == NULL) {
+        return -1;
+    }
+    if (((SolLRSymbol*)s2)->v == NULL) {
+        return 1;
+    }
+    SolLRParser *p = tree->ex;
+    return (*p->f_compare_symbol_val)(((SolLRSymbol*)s1)->v, ((SolLRSymbol*)s2)->v);
 }

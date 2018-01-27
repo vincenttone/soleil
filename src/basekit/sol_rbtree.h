@@ -20,7 +20,8 @@ typedef struct _SolRBTree {
     size_t c; // count
     SolRBTreeNode *nil;
     SolRBTreeNode *root;
-    sol_f_cmp_ex_ptr f_compare;
+    void *ex; // for extra
+    int (*f_compare)(void*, void*, struct _SolRBTree*, int);
     sol_f_free_ptr f_free; // free node val func
     int (*f_insert_conflict_fix)(SolRBTreeNode*, SolRBTreeNode*);
 } SolRBTree;
@@ -74,7 +75,7 @@ int solRBTree_travelsal_backorder(SolRBTree*, SolRBTreeNode*, solRBTree_f_ptr_ac
 
 #define solRBTree_set_compare_func(t, f) (t)->f_compare = f
 #define solRBTree_node_val_compare_func(t) (t)->f_compare
-#define solRBTree_node_val_compare(t, v1, v2, f) (*(t)->f_compare)(v1, v2, f)
+#define solRBTree_node_val_compare(t, v1, v2, f) (*(t)->f_compare)(v1, v2, t, f)
 #define solRBTree_node_compare(t, n1, n2) solRBTree_node_val_compare(t, solRBTreeNode_val(n1), solRBTreeNode_val(n2))
 
 #define solRBTreeNode_left(n) n->l

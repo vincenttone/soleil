@@ -8,14 +8,13 @@
 typedef struct _SolRBTupleRecord {
 	void *v;
 	SolRBTree *n;
-    sol_f_cmp_ex_ptr f_cmp_val;
     sol_f_free_ptr f_free_val; // free node val func
 } SolRBTupleRecord;
 
 typedef struct _SolRBTuple {
 	SolRBTree *n;
     SolRBTupleRecord *tmp;
-    sol_f_cmp_ex_ptr f_cmp_val;
+    int (*f_cmp_val)(void*, void*, struct _SolRBTuple*, int);
     sol_f_free_ptr f_free_val; // free node val func
 } SolRBTuple;
 
@@ -25,7 +24,7 @@ SolRBTupleRecord* solRBTupleRecord_new(SolRBTuple *t, void*);
 void solRBTupleRecord_free(SolRBTupleRecord*);
 void _solRBTupleRecord_free(void*);
 
-int _solRBTuple_compare_node_val(void*, void*, int);
+int _solRBTuple_compare_node_val(void*, void*, SolRBTree*, int);
 
 int solRBTuple_put(SolRBTuple*, size_t, ...);
 SolRBTupleRecord* solRBTuple_get(SolRBTuple*, size_t, ...);

@@ -55,13 +55,13 @@ typedef struct _SolLRItemCol { // items collection
 typedef struct _SolLRParser {
     size_t gen; // state generate
     SolList *collections; // items collection
-    int (*compare_symbol_and_col)(void*, void*);
-    int (*compare_cols)(void*, void*);
+    int (*f_compare_symbol_val)(void*, void*);
 } SolLRParser;
 
 SolLRParser* solLRParser_new();
 void solLRParser_free(SolLRParser*);
 SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*);
+int _solLRParser_compare_cols(void*, void*, SolRBTree*, int);
 
 SolLRSymbol* solLRSymbol_new(void*);
 void solLRSymbol_free(SolLRSymbol*);
@@ -80,15 +80,16 @@ SolLRItemCol* solLRItemCol_new();
 void solLRItemCol_free(SolLRItemCol*);
 void _solLRItemCol_free(void*);
 
-int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*);
-int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*);
+int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
+int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 
 int _solLRSymbol_share_firsts(SolRBTree*, SolRBTreeNode*, void*);
 int _solLRSymbol_share_follows(SolRBTree*, SolRBTreeNode*, void*);
+int _solLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 
 int solLRSymbol_compute_nullable(SolLRSymbol*);
-int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*);
-int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*);
+int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
+int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRParser*);
 
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);

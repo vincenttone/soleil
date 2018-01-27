@@ -12,7 +12,6 @@
 #define sol_realloc realloc
 
 typedef int (*sol_f_cmp_ptr)(void*, void*);
-typedef int (*sol_f_cmp_ex_ptr)(void*, void*, int);
 typedef void (*sol_f_free_ptr)(void*);
 typedef void* (*sol_f_dup_ptr)(void*);
 typedef size_t (*sol_f_hash_ptr)(void*);
