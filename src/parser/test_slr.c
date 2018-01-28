@@ -33,7 +33,7 @@ void out_symbol_val(void *v, char *pre, char *after)
     if (v == NULL) {
         s = " -O- ";
     } else {
-        char a[_limit - 1][3] = {"E", "T", "F", "(", ")", "+", "x", "id"};
+        char a[_limit - 1][3] = {"E", "T", "F", "(", ")", "+", "*", "id"};
         s = a[*(int*)v - 1];
     }
     printf("%s%s%s", pre, s, after);
@@ -101,6 +101,7 @@ int main()
     // productions
     SolLRProduct *product = solLRProduct_new(E, 3, E, plus, T); // E -> E + T
     out_product(product, p);
+    printf("set begin product ret: %d\n", solSLRParser_set_begin_product(p, product));
     product = solLRProduct_new(E, 1, T);          // E -> T
     out_product(product, p);
     product = solLRProduct_new(T, 3, T, mul, F);  // T -> T * F
@@ -111,7 +112,6 @@ int main()
     out_product(product, p);
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p);
-    printf("set begin product ret: %d\n", solSLRParser_set_begin_product(p, product));
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
     //SolListNode *n = solList_head(p->lr->collections);
 
