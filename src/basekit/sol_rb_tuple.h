@@ -13,7 +13,6 @@ typedef struct _SolRBTupleRecord {
 
 typedef struct _SolRBTuple {
 	SolRBTree *n;
-    SolRBTupleRecord *tmp;
     int (*f_cmp_val)(void*, void*, struct _SolRBTuple*, int);
     sol_f_free_ptr f_free_val; // free node val func
 } SolRBTuple;
