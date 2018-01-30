@@ -48,6 +48,7 @@ SolSLRParser* solSLRParser_new()
     if (p->table == NULL) {
         goto oops;
     }
+    p->table->ex = p;
     solRBTuple_set_compare_val_func(p->table, &_solSLRParserField_compare);
     solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
     return p;
@@ -250,25 +251,30 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
             if ((c2->flag & SolLRItemCol_FLAG_END) > 0) { // reach the end of product, reduce
                 if (solLRSymbol_is_origin(c2->sym)) { // reduce to original, accept
                     if (solSLRParser_record_accept(p, c1) != 0) {
+                        solRBTreeIter_free(rbti);
                         return 1;
                     }
                 } else if (solSLRParser_record_reduce(p, c1, c2->sym) != 0) {
+                    solRBTreeIter_free(rbti);
                     return 2;
                 }
                 continue;
             }
             if (solLRSymbol_is_terminal(c2->sym)) { // terminal, shift
                 if (solSLRParser_record_shift(p, c1, c2->sym, c2) != 0) {
+                    solRBTreeIter_free(rbti);
                     return 3;
                 }
             } else if (solLRSymbol_is_nonterminal(c2->sym)) { // nonerminal, goto
                 if (solSLRParser_record_goto(p, c1, c2->sym, c2) != 0) {
+                    solRBTreeIter_free(rbti);
                     return 4;
                 }
             } else { // unexpect
                 return 5; // error
             }
         } while (solRBTreeIter_next(rbti));
+        solRBTreeIter_free(rbti);
     } while ((n = solListNode_next(n)));
     return 0;
 }
@@ -316,6 +322,7 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *sy
             return 1;
         }
     } while (solRBTreeIter_next(i));
+    solRBTreeIter_free(i);
     return 0;
 }
 

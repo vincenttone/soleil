@@ -60,6 +60,36 @@ void out_product(SolLRProduct *product, SolSLRParser *p)
     printf("\n");
 }
 
+int _travelsal_fileds(void *f, SolRBTuple *t, int *level)
+{
+    int i;
+    printf("|");
+    for (i = 0; i < *level; i++) {
+        printf("-");
+    }
+    int flag = ((struct _SolSLRTableField*)f)->flag;
+    if (flag & SolLRTableFieldFlag_TYPE_STATE) {
+        SolLRItemCol *c = ((struct _SolSLRTableField*)f)->t;
+        printf("<%zu>\tflag %d\t", c->state, ((struct _SolSLRTableField*)f)->flag);
+    } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+        SolLRSymbol *s = ((struct _SolSLRTableField*)f)->t;
+        printf("[");
+        out_symbol(s, (SolSLRParser*)(t->ex));
+        printf("]\tflag %d\t", ((struct _SolSLRTableField*)f)->flag);
+    }
+    if (flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
+        printf("ACCEPT");
+    } else if (flag & SolLRTableFieldFlag_ACTION_REDUCE) {
+        printf("REDUCE");
+    } else if (flag & SolLRTableFieldFlag_ACTION_GOTO) {
+        printf("GOTO");
+    } else if (flag & SolLRTableFieldFlag_ACTION_SHIFT) {
+        printf("SHIFT");
+    }
+    printf("\n");
+    return 0;
+}
+
 void out_item(SolLRItem *item, SolSLRParser *p)
 {
     SolLRProduct *product = item->p;
@@ -113,7 +143,8 @@ int main()
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p);
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
-    //SolListNode *n = solList_head(p->lr->collections);
+    p->table->f_travelsal_act = &_travelsal_fileds;
+    solRBTuple_travelsal(p->table);
 
     solSLRParser_free(p);
     return 0;
