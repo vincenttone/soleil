@@ -15,6 +15,7 @@ typedef struct _SolRBTuple {
 	SolRBTree *n;
     int (*f_cmp_val)(void*, void*, struct _SolRBTuple*, int);
     sol_f_free_ptr f_free_val; // free node val func
+    int (*f_travelsal_act)(void*, struct _SolRBTuple*, int*);
 } SolRBTuple;
 
 SolRBTuple* solRBTuple_new();
@@ -28,6 +29,9 @@ int _solRBTuple_compare_node_val(void*, void*, SolRBTree*, int);
 int solRBTuple_put(SolRBTuple*, size_t, ...);
 SolRBTupleRecord* solRBTuple_get(SolRBTuple*, size_t, ...);
 int solRBTuple_remove(SolRBTuple*, size_t, ...);
+
+int solRBTuple_travelsal(SolRBTuple*);
+int _solRBTupleRecord_travelsal(SolRBTree*, SolRBTreeNode*, void*);
 
 #define solRBTuple_set_compare_val_func(t, f) ((t)->f_cmp_val = f)
 #define solRBTuple_set_free_val_func(t, f) ((t)->f_free_val = f)
