@@ -109,6 +109,26 @@ void out_item(SolLRItem *item, SolSLRParser *p)
     printf("\n");
 }
 
+void out_item_collections(SolLRItemCol *col, SolSLRParser *p)
+{
+    SolLRItem *item;
+    SolListNode *n;
+    printf("Collection of state %zu, symbol: ", col->state);
+    if (col->sym) {
+        out_symbol(col->sym, p);
+    } else {
+        printf("NULL");
+    }
+    printf("\n");
+    if (col->items && solList_len(col->items)) {
+        n = solList_head(col->items);
+        do {
+            item = solListNode_val(n);
+            out_item(item, p);
+        } while ((n = solListNode_next(n)));
+    }
+}
+
 int main()
 {
     int symbols[] = {_E, _T, _F, _lc, _rc, _plus, _mul, _id};
@@ -143,6 +163,12 @@ int main()
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p);
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
+    SolLRItemCol *col;
+    SolListNode *n = solList_head(p->lr->collections);
+    do {
+        col = solListNode_val(n);
+        out_item_collections(col, p);
+    } while ((n = solListNode_next(n)));
     p->table->f_travelsal_act = &_travelsal_fileds;
     solRBTuple_travelsal(p->table);
 

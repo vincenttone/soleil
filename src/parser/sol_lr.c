@@ -416,7 +416,9 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             item = solLRProduct_item(item->p, (item->pos) + 1);
             solList_add(col->items, item);
             if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
-                solLRParser_compute_nonkernel_items(p, c, s);
+                if (solLRParser_compute_nonkernel_items(p, c, s)) {
+                    return 3;
+                }
             }
         }
         item->flag = 1;
