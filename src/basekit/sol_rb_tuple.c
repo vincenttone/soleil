@@ -170,7 +170,7 @@ int solRBTuple_travelsal(SolRBTuple *t)
 {
     int *level = sol_alloc(sizeof(int));
     *level = 0;
-    if (solRBTree_travelsal_preorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal, level)) {
+    if (solRBTree_travelsal_inorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal, level)) {
         sol_free(level);
         return 1;
     }
@@ -187,7 +187,7 @@ int _solRBTupleRecord_travelsal(SolRBTree *tree, SolRBTreeNode *node, void *d)
     if (r->n) {
         int *level = sol_alloc(sizeof(int));
         *level = (*(int*)d) + 1;
-        if (solRBTree_travelsal_preorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal, level) != 0) {
+        if (solRBTree_travelsal_inorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal, level) != 0) {
             sol_free(level);
             return 2;
         }
