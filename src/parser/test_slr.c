@@ -39,16 +39,18 @@ void out_symbol_val(void *v, char *pre, char *after)
     printf("%s%s%s", pre, s, after);
 }
 
-void out_symbol(SolLRSymbol *s, SolSLRParser *p)
+void out_symbol(SolLRSymbol *s, SolLRParser *p)
 {
-    if (s == p->s) {
+    if (s == p->origin) {
         printf("Origin");
+    } else if (s == p->empty) {
+        printf("Empty");
     } else {
         out_symbol_val(s->v, "", "");
     }
 }
 
-void out_product(SolLRProduct *product, SolSLRParser *p)
+void out_product(SolLRProduct *product, SolLRParser *p)
 {
     printf("Product:\t");
     out_symbol(product->s, p);
@@ -74,7 +76,7 @@ int _travelsal_fileds(void *f, SolRBTuple *t, int *level)
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
         SolLRSymbol *s = ((struct _SolSLRTableField*)f)->t;
         printf("[");
-        out_symbol(s, (SolSLRParser*)(t->ex));
+        out_symbol(s, (SolLRParser*)((SolSLRParser*)(t->ex))->lr);
         printf("]\tflag %d\t", ((struct _SolSLRTableField*)f)->flag);
     }
     if (flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
@@ -90,7 +92,7 @@ int _travelsal_fileds(void *f, SolRBTuple *t, int *level)
     return 0;
 }
 
-void out_item(SolLRItem *item, SolSLRParser *p)
+void out_item(SolLRItem *item, SolLRParser *p)
 {
     SolLRProduct *product = item->p;
     printf("Item:\t");
@@ -109,7 +111,7 @@ void out_item(SolLRItem *item, SolSLRParser *p)
     printf("\n");
 }
 
-void out_item_collections(SolLRItemCol *col, SolSLRParser *p)
+void out_item_collections(SolLRItemCol *col, SolLRParser *p)
 {
     SolLRItem *item;
     SolListNode *n;
@@ -134,9 +136,10 @@ int main()
     int symbols[] = {_E, _T, _F, _lc, _rc, _plus, _mul, _id};
     SolSLRParser *p = solSLRParser_new();
 #ifdef __SOL_DEBUG__
-    p->_f_debug_symbol = &out_symbol;
-    p->_f_debug_product = &out_product;
-    p->_f_debug_item = &out_item;
+    p->lr->f_debug_symbol = &out_symbol;
+    p->lr->f_debug_product = &out_product;
+    p->lr->f_debug_item = &out_item;
+    p->lr->f_debug_item_col = &out_item_collections;
 #endif
     solSLRParser_set_compare_symbol_val_func(p, &cmp);
     // symbols
@@ -150,24 +153,24 @@ int main()
     solSLRParser_TERMINAL(id, p, symbols);
     // productions
     SolLRProduct *product = solLRProduct_new(E, 3, E, plus, T); // E -> E + T
-    out_product(product, p);
+    out_product(product, p->lr);
     printf("set begin product ret: %d\n", solSLRParser_set_begin_product(p, product));
     product = solLRProduct_new(E, 1, T);          // E -> T
-    out_product(product, p);
+    out_product(product, p->lr);
     product = solLRProduct_new(T, 3, T, mul, F);  // T -> T * F
-    out_product(product, p);
+    out_product(product, p->lr);
     product = solLRProduct_new(T, 1, F);          // T -> F
-    out_product(product, p);
+    out_product(product, p->lr);
     product = solLRProduct_new(F, 3, lc, E, rc);  // F -> (E)
-    out_product(product, p);
+    out_product(product, p->lr);
     product = solLRProduct_new(F, 1, id);         // F -> id
-    out_product(product, p);
+    out_product(product, p->lr);
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
     SolLRItemCol *col;
     SolListNode *n = solList_head(p->lr->collections);
     do {
         col = solListNode_val(n);
-        out_item_collections(col, p);
+        out_item_collections(col, p->lr);
     } while ((n = solListNode_next(n)));
     p->table->f_travelsal_act = &_travelsal_fileds;
     solRBTuple_travelsal(p->table);

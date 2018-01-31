@@ -485,6 +485,19 @@ SolLRParser* solLRParser_new()
         goto oops;
     }
     solList_set_val_free_func(p->collections, &_solLRItemCol_free);
+    // start symbol
+    p->origin = solLRSymbol_nonterminal_new(NULL);
+    if (p->origin == NULL) {
+        goto oops;
+    }
+    solLRSymbol_set_flag(p->origin, SolLRSymbolFlag_ORIGIN);
+    // empty symbol
+    p->empty = solLRSymbol_terminal_new(NULL);
+    if (p->empty == NULL) {
+        goto oops;
+    }
+    solLRSymbol_set_flag(p->empty, SolLRSymbolFlag_EMPTY);
+    solLRSymbol_set_flag(p->empty, SolLRSymbolFlag_NULLABLE);
     return p;
 oops:
     solLRParser_free(p);

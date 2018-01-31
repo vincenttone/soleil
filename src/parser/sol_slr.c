@@ -27,19 +27,6 @@ SolSLRParser* solSLRParser_new()
     p->symbols->ex = p;
     solRBTree_set_compare_func(p->symbols, &_solSLRParser_compare_symbols);
     solRBTree_set_val_free_func(p->symbols, &_solLRSymbol_free);
-    // start symbol
-    p->s = solSLRParser_nonterminal_new(p, NULL);
-    if (p->s == NULL) {
-        goto oops;
-    }
-    solLRSymbol_set_flag(p->s, SolLRSymbolFlag_ORIGIN);
-    // empty symbol
-    p->e = solSLRParser_terminal_new(p, NULL);
-    if (p->e == NULL) {
-        goto oops;
-    }
-    solLRSymbol_set_flag(p->e, SolLRSymbolFlag_EMPTY);
-    solLRSymbol_set_flag(p->e, SolLRSymbolFlag_NULLABLE);
     p->table = solRBTuple_new();
     if (p->table == NULL) {
         goto oops;
@@ -47,6 +34,8 @@ SolSLRParser* solSLRParser_new()
     p->table->ex = p;
     solRBTuple_set_compare_val_func(p->table, &_solSLRParserField_compare);
     solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
+    solRBTree_insert(p->symbols, p->lr->origin);
+    solRBTree_insert(p->symbols, p->lr->empty);
     return p;
 oops:
     solSLRParser_free(p);
@@ -107,7 +96,7 @@ int solSLRParser_regiter_symbol(SolSLRParser *p, SolLRSymbol *s)
 
 int solSLRParser_set_begin_product(SolSLRParser *p, SolLRProduct *product)
 {
-    SolLRProduct *o = solLRProduct_new(p->s, 1, product->s);
+    SolLRProduct *o = solLRProduct_new(p->lr->origin, 1, product->s);
     if (o) {
         return 0;
     }
@@ -163,16 +152,16 @@ void _solSLRParserField_free(void *field)
 
 int solSLRParser_prepare(SolSLRParser *p)
 {
-    if (p == NULL || p->s == NULL) {
+    if (p == NULL || p->lr->origin == NULL) {
         return -1;
     }
-    if ((!solLRSymbol_is_nonterminal(p->s))
-        || (!solLRSymbol_is_origin(p->s))
-        || p->s->productions == NULL
+    if ((!solLRSymbol_is_nonterminal(p->lr->origin))
+        || (!solLRSymbol_is_origin(p->lr->origin))
+        || p->lr->origin->productions == NULL
         ) {
         return -2;
     }
-    SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->s->productions)));
+    SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->lr->origin->productions)));
     SolLRItem *i = solLRProduct_item(product, 0);
     SolLRItemCol *c = solLRParser_generate_items_collection(p->lr);
     if (c == NULL) {
@@ -253,7 +242,7 @@ int solSLRParser_record_accept(SolSLRParser *p, SolLRItemCol *c)
     s->t = c;
     s->flag |= SolLRTableFieldFlag_TYPE_STATE;
     struct _SolSLRTableField *sym = sol_calloc(1, sizeof(struct _SolSLRTableField));
-    sym->t = p->s;
+    sym->t = p->lr->origin;
     sym->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
     if (solRBTuple_put(p->table, 2, s, sym) != 0) {
         return 1;
@@ -266,7 +255,7 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *sy
     if (p == NULL || symbol == NULL) {
         return -1;
     }
-    if (solLRSymbol_compute_follow(symbol, p->symbols, p->e, p->lr) != 0) {
+    if (solLRSymbol_compute_follow(symbol, p->symbols, p->lr->empty, p->lr) != 0) {
         return 1;
     }
     struct _SolSLRTableField *s = sol_calloc(1, sizeof(struct _SolSLRTableField));
