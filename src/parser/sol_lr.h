@@ -55,7 +55,15 @@ typedef struct _SolLRItemCol { // items collection
 typedef struct _SolLRParser {
     size_t gen; // state generate
     SolList *collections; // items collection
+    SolLRSymbol *origin; // start symbol
+    SolLRSymbol *empty; // empty symbol
     int (*f_compare_symbol_val)(void*, void*);
+#ifdef __SOL_DEBUG__
+    void (*f_debug_symbol)(SolLRSymbol*, struct _SolLRParser*);
+    void (*f_debug_product)(SolLRProduct*, struct _SolLRParser*);
+    void (*f_debug_item)(SolLRItem*, struct _SolLRParser*);
+    void (*f_debug_item_col)(SolLRItemCol*, struct _SolLRParser*);
+#endif
 } SolLRParser;
 
 SolLRParser* solLRParser_new();

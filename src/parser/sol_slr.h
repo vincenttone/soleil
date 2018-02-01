@@ -20,14 +20,7 @@ typedef struct _SolSLRParser {
     size_t state; // current state
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
-    SolLRSymbol *s; // start symbol
-    SolLRSymbol *e; // empty symbol
     SolRBTuple *table; // parser table
-#ifdef __SOL_DEBUG__
-    void (*_f_debug_symbol)(SolLRSymbol*, struct _SolSLRParser*);
-    void (*_f_debug_product)(SolLRProduct*, struct _SolSLRParser*);
-    void (*_f_debug_item)(SolLRItem*, struct _SolSLRParser*);
-#endif    
 } SolSLRParser;
 
 struct _SolSLRTableField {

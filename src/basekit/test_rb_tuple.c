@@ -52,6 +52,17 @@ void print_rb_tuple(SolRBTuple *t)
     solRBTree_travelsal_inorder(tree, solRBTree_root(tree), &prvx, i);
 }
 
+int _echo(void *v, SolRBTuple *t, size_t level)
+{
+    int i;
+    printf("|");
+    for (i = 0; i < level; i++) {
+        printf("-");
+    }
+    printf("%s\n", (char*)v);
+    return 0;
+}
+
 int main()
 {
 	char *a = "a";
@@ -69,6 +80,8 @@ int main()
 	solRBTuple_put(t, 4, b, d, a, c);
 	solRBTuple_put(t, 3, c, d, a);
     print_rb_tuple(t);
+    t->f_travelsal_act = &_echo;
+    solRBTuple_travelsal(t, NULL);
 
     SolRBTupleRecord *x = solRBTuple_get(t, 2, a, b);
     printf("try get a, b:\n");
