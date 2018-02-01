@@ -117,6 +117,7 @@ void out_item(SolLRItem *item, SolLRParser *p)
     if (item->flag & 0x8) {
         printf("\t[FNKL]");
     }
+    printf("\t[%zu:%zu]", item->pos, item->p->len);
     printf("\n");
 }
 

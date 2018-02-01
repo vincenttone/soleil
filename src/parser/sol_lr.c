@@ -404,9 +404,17 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
     do {
         item = (SolLRItem*)(solListNode_val(n));
         if (item->flag & 0x2) { // processed
+#ifdef __SOL_DEBUG__
+            printf("> processed item: ");
+            (*p->f_debug_item)(item, p);
+#endif
             continue;
         }
         if (item->pos > item->p->len) {
+#ifdef __SOL_DEBUG__
+            printf("> unexpect item: ");
+            (*p->f_debug_item)(item, p);
+#endif
             continue;
         }
         if (item->pos == item->p->len) { // the end of product
@@ -454,6 +462,10 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             }
         }
         item->flag |= 0x2;
+#ifdef __SOL_DEBUG__
+        printf("> add processed item flag: ");
+        (*p->f_debug_item)(item, p);
+#endif
     } while ((n = solListNode_next(n)));
     if (solRBTree_travelsal_inorder(c->nc, solRBTree_root(c->nc), &_solLRParser_compute_items_collections, p)) {
         return 3;
