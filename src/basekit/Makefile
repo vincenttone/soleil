@@ -26,4 +26,4 @@ test_rb_tuple: test_rb_tuple.c sol_rb_tuple.o sol_rbtree.o
 
 .PHONY: clean
 clean:
-	-rm -rf output *.o *.gch test_hash test_set test_dl_list test_stack test_list test_rbtree test_sparse_matrix test_rb_tuple
+	-rm -rf output *.o *.gch test_hash test_set test_dl_list test_stack test_list test_rbtree test_sparse_matrix test_rb_tuple *.dSYM
