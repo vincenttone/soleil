@@ -62,11 +62,11 @@ void out_product(SolLRProduct *product, SolLRParser *p)
     printf("\n");
 }
 
-int _travelsal_fileds(void *f, SolRBTuple *t, int *level)
+int _travelsal_fileds(void *f, SolRBTuple *t, size_t level)
 {
     int i;
     printf("|");
-    for (i = 0; i < *level; i++) {
+    for (i = 0; i < level; i++) {
         printf("-");
     }
     int flag = ((struct _SolSLRTableField*)f)->flag;
@@ -189,7 +189,7 @@ int main()
         out_item_collections(col, p->lr);
     } while ((n = solListNode_next(n)));
     p->table->f_travelsal_act = &_travelsal_fileds;
-    solRBTuple_travelsal(p->table);
+    solRBTuple_travelsal(p->table, NULL);
 
     solSLRParser_free(p);
     return 0;
