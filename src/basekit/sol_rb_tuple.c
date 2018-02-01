@@ -75,11 +75,11 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
 	va_list al;
 	va_start(al, l);
     SolRBTree *tree = t->n;
-    SolRBTupleRecord *pre;
+    SolRBTupleRecord *pre = NULL;
 	SolRBTupleRecord *cur;
     void *v;
-	 while (l--) {
-		v = va_arg(al, void*);
+    while (l--) {
+        v = va_arg(al, void*);
         if (tree) {
             cur = (SolRBTupleRecord*)(solRBTree_search(tree, v));
         } else {
@@ -94,15 +94,20 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
             solRBTree_set_insert_conflict_fix_func(tree, solRBTree_insert_conflict_fix_func(t->n));
             solRBTree_set_val_free_func(tree, solRBTree_node_val_free_func(t->n));
         }
-		if (cur == NULL) {
+        if (cur == NULL) {
             cur = solRBTupleRecord_new(t, v);
             if (cur == NULL) {
                 return 1;
             }
+            if (pre == NULL) {
+                cur->level = 0;
+            } else {
+                cur->level = pre->level + 1;
+            }
             solRBTree_insert(tree, cur);
-		}
+        }
         tree = cur->n;
-		pre = cur;
+        pre = cur;
 	}
 	va_end(al);
 	return 0;
@@ -166,32 +171,24 @@ int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
 	return 0;
 }
 
-int solRBTuple_travelsal(SolRBTuple *t)
+int solRBTuple_travelsal(SolRBTuple *t, void *d)
 {
-    int *level = sol_alloc(sizeof(int));
-    *level = 0;
-    if (solRBTree_travelsal_inorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal, level)) {
-        sol_free(level);
+    if (solRBTree_travelsal_inorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal, d)) {
         return 1;
     }
-    sol_free(level);
     return 0;
 }
 
 int _solRBTupleRecord_travelsal(SolRBTree *tree, SolRBTreeNode *node, void *d)
 {
     SolRBTupleRecord *r = solRBTreeNode_val(node);
-    if ((*(((SolRBTuple*)tree->ex)->f_travelsal_act))(r->v, ((SolRBTuple*)tree->ex), (int*)d) != 0) {
+    if ((*(((SolRBTuple*)tree->ex)->f_travelsal_act))(r->v, ((SolRBTuple*)tree->ex), r->level) != 0) {
         return 1;
     }
     if (r->n) {
-        int *level = sol_alloc(sizeof(int));
-        *level = (*(int*)d) + 1;
-        if (solRBTree_travelsal_inorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal, level) != 0) {
-            sol_free(level);
+        if (solRBTree_travelsal_inorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal, d) != 0) {
             return 2;
         }
-        sol_free(level);
     }
     return 0;
 }
