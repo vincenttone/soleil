@@ -95,7 +95,7 @@ int _travelsal_fileds(void *f, SolRBTuple *t, int *level)
 void out_item(SolLRItem *item, SolLRParser *p)
 {
     SolLRProduct *product = item->p;
-    printf("Item:\t");
+    //printf("Item:\t");
     out_symbol(product->s, p);
     printf(" => ");
     size_t i;
@@ -107,6 +107,15 @@ void out_item(SolLRItem *item, SolLRParser *p)
     }
     if (i == item->pos) {
         printf(".");
+    }
+    if (item->flag & 0x1) {
+        printf("\t[FINAL]");
+    }
+    if (item->flag & 0x4) {
+        printf("\t[FKL]");
+    }
+    if (item->flag & 0x8) {
+        printf("\t[FNKL]");
     }
     printf("\n");
 }
@@ -121,13 +130,19 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     } else {
         printf("NULL");
     }
-    printf("\n");
+    if (col->flag & SolLRItemCol_FLAG_END) {
+        printf("\t(with END FLAG)");
+    } 
     if (col->items && solList_len(col->items)) {
+        printf("\nItem(s):\n");
         n = solList_head(col->items);
         do {
             item = solListNode_val(n);
+            printf("\t");
             out_item(item, p);
         } while ((n = solListNode_next(n)));
+    } else {
+        printf("\nNo item now\n");
     }
 }
 
