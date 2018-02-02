@@ -593,14 +593,14 @@ int _solLRParser_compare_cols(void *c1, void *c2, SolRBTree *tree, int flag)
 int solLRParser_compare_symbol(SolLRParser *p, SolLRSymbol *s1, SolLRSymbol *s2)
 {
     if (s1 == p->origin) {
-        return -1;
-    } else if (s2 == p->origin) {
         return 1;
+    } else if (s2 == p->origin) {
+        return -1;
     }
     if (s1 == p->empty || s1 == p->end) {
-        return 1;
-    } else if (s2 == p->empty || s2 == p->end) {
         return -1;
+    } else if (s2 == p->empty || s2 == p->end) {
+        return 1;
     }
     // tree->ex is SolLRParser
     return (*p->f_compare_symbol_val)(s1->v, s2->v);

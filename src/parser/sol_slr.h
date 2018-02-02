@@ -54,9 +54,10 @@ int solSLRParser_compute_parsing_table(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
+int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
 void _solSLRParserField_free(void*);
-int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
+int _solSLRField_conflict(void*, void*);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
 int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);

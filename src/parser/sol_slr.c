@@ -34,6 +34,7 @@ SolSLRParser* solSLRParser_new()
     p->table->ex = p;
     solRBTuple_set_compare_val_func(p->table, &_solSLRParserField_compare);
     solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
+    // solRBTuple_set_insert_conflict_fix_func(p->table, &_solSLRField_conflict);
     solRBTree_insert(p->symbols, p->lr->origin);
     solRBTree_insert(p->symbols, p->lr->empty);
     solRBTree_insert(p->symbols, p->lr->end);
@@ -106,7 +107,7 @@ int solSLRParser_set_begin_product(SolSLRParser *p, SolLRProduct *product)
 
 int _solSLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
 {
-    int flag = ((struct _SolSLRTableField*)f1)->flag & ((struct _SolSLRTableField*)f1)->flag;
+    int flag = ((struct _SolSLRTableField*)f1)->flag & ((struct _SolSLRTableField*)f2)->flag;
     if (flag & SolLRTableFieldFlag_TYPE_STATE) { // state
         SolLRItemCol *c1 = (SolLRItemCol*)(((struct _SolSLRTableField*)f1)->t);
         SolLRItemCol *c2 = (SolLRItemCol*)(((struct _SolSLRTableField*)f2)->t);
@@ -116,13 +117,24 @@ int _solSLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
             return -1;
         }
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
-        return solLRParser_compare_symbol(
+        int c = solLRParser_compare_symbol(
             ((SolSLRParser*)(t->ex))->lr,
             (SolLRSymbol*)(((struct _SolSLRTableField*)f1)->t),
             (SolLRSymbol*)(((struct _SolSLRTableField*)f2)->t)
             );
+        if (c != 0) {
+            return c;
+        }
     } else {
         _DEBUG_ALARM_;
+    }
+    if (((struct _SolSLRTableField*)f1)->flag > ((struct _SolSLRTableField*)f1)->flag) {
+        return 1;
+    } else if (((struct _SolSLRTableField*)f1)->flag < ((struct _SolSLRTableField*)f1)->flag) {
+        return -1;
+    }
+    if (ext & 0x2) {
+        sol_free((struct _SolSLRTableField*)f1);
     }
     return 0;
 }
@@ -149,6 +161,12 @@ int _solLRItemCols_compare(void *s1, void *s2)
 void _solSLRParserField_free(void *field)
 {
     sol_free(((struct _SolSLRTableField*)field));
+}
+
+int _solSLRField_conflict(void *f1, void *f2)
+{
+    sol_free(((struct _SolSLRTableField*)f1));
+    return 0;
 }
 
 int solSLRParser_prepare(SolSLRParser *p)
