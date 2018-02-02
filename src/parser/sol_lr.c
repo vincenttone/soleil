@@ -3,10 +3,6 @@
 #include "sol_stack.h"
 #include "sol_rbtree_iter.h"
 
-#ifdef __SOL_DEBUG__
-#include <stdio.h>
-#endif
-
 SolLRSymbol* solLRSymbol_new(void *symbol)
 {
     SolLRSymbol *s = sol_calloc(1, sizeof(SolLRSymbol));
@@ -115,6 +111,7 @@ void _solLRProduct_free(void *p)
 SolLRItem* solLRProduct_item(SolLRProduct *product, size_t pos)
 {
     if (pos > product->len) {
+        _DEBUG_ALARM_;
         return NULL;
     }
     SolLRItem *i = (product->items + pos);
@@ -385,36 +382,27 @@ int _solLRSymbol_share_follows(SolRBTree *follows, SolRBTreeNode *node, void *sy
 int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
 {
     if (c == NULL || c->items == NULL) {
+        _DEBUG_ALARM_;
         return -1;
     }
     if (c->flag & SolLRItemCol_FLAG_END) {
         return 0;
     }
     if (solList_head(c->items) == NULL || solList_len(c->items) == 0) {
+        _DEBUG_ALARM_;
         return -2;
     }
-#ifdef __SOL_DEBUG__
-    printf("------try compute items collections, (%zu items)-------\n", solList_len(c->items));
-    (*p->f_debug_item_col)(c, p);
-#endif
     SolListNode *n = solList_head(c->items);
     SolLRItemCol *col;
     SolLRItem *item;
+    SolLRItem *item1;
     SolLRSymbol *s;
     do {
         item = (SolLRItem*)(solListNode_val(n));
         if (item->flag & 0x2) { // processed
-#ifdef __SOL_DEBUG__
-            printf("> processed item: ");
-            (*p->f_debug_item)(item, p);
-#endif
             continue;
         }
         if (item->pos > item->p->len) {
-#ifdef __SOL_DEBUG__
-            printf("> unexpect item: ");
-            (*p->f_debug_item)(item, p);
-#endif
             continue;
         }
         if (item->pos == item->p->len) { // the end of product
@@ -422,12 +410,9 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             col->flag |= SolLRItemCol_FLAG_END;
             col->sym = item->p->s; // record product nonterminal symbol when reach end
             if (solRBTree_insert(c->nc, col) != 0) {
+                _DEBUG_ALARM_;
                 return 1;
             }
-#ifdef __SOL_DEBUG__
-            printf("> GEN new col (end of product) --->> ");
-            (*p->f_debug_item_col)(col, p);
-#endif
         } else {
             s = *(solLRProduct_find_symbol(item->p, item->pos));
             col = solRBTree_search(c->nc, s);
@@ -435,40 +420,26 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
                 col = solLRParser_generate_items_collection(p);
                 col->sym = s;
                 if (solRBTree_insert(c->nc, col) != 0) {
+                    _DEBUG_ALARM_;
                     return 2;
                 }
-#ifdef __SOL_DEBUG__
-                printf("> GEN new col --->> ");
-                (*p->f_debug_item_col)(col, p);
-#endif
             }
-#ifdef __SOL_DEBUG__
-            printf("> process next col, ");
-            (*p->f_debug_item_col)(col, p);
-#endif
-            item = solLRProduct_item(item->p, (item->pos) + 1);
-            solList_add(col->items, item);
-#ifdef __SOL_DEBUG__
-            printf(">> ADD item, ");
-            (*p->f_debug_item)(item, p);
-#endif
+            item1 = solLRProduct_item(item->p, (item->pos) + 1);
+            item1->flag |= 0x4;
+            solList_add(col->items, item1);
             if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
-#ifdef __SOL_DEBUG__
-                printf("--------try compute nonkernel items--------\n");
-#endif
                 if (solLRParser_compute_nonkernel_items(p, c, s)) {
+                    _DEBUG_ALARM_;
                     return 3;
                 }
             }
         }
         item->flag |= 0x2;
-#ifdef __SOL_DEBUG__
-        printf("> add processed item flag: ");
-        (*p->f_debug_item)(item, p);
-#endif
     } while ((n = solListNode_next(n)));
-    if (solRBTree_travelsal_inorder(c->nc, solRBTree_root(c->nc), &_solLRParser_compute_items_collections, p)) {
-        return 3;
+    int x = solRBTree_travelsal_inorder(c->nc, solRBTree_root(c->nc), &_solLRParser_compute_items_collections, p);
+    if (x != 0) {
+        _DEBUG_ALARM_;
+        return 4;
     }
     return 0;
 }
@@ -476,6 +447,7 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
 int _solLRParser_compute_items_collections(SolRBTree *t, SolRBTreeNode *n, void *p)
 {
     if (t == NULL || n == NULL || p == NULL) {
+        _DEBUG_ALARM_;
         return -1;
     }
     SolLRItemCol *col = solRBTreeNode_val(n);
@@ -490,20 +462,11 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
     SolLRSymbol *sym;
     SolLRItem *item;
     SolLRItemCol *col;
-#ifdef __SOL_DEBUG__
-    printf("+ try compute nonkernel items, ");
-    (*p->f_debug_item_col)(c, p);
-    printf("+ SYMBOL: ");
-    (*p->f_debug_symbol)(s, p);
-    printf("\n");
-#endif
     do {
         product = (SolLRProduct*)(solListNode_val(n));
-#ifdef __SOL_DEBUG__
-        printf("++ try checking product: ");
-        (*p->f_debug_product)(product, p);
-#endif
         sym = *(product->r);
+        item = solLRProduct_item(product, 1);
+        item->flag |= 0x8;
         col = solRBTree_search(c->nc, sym);
         if (col == NULL) {
             col = solLRParser_generate_items_collection(p);
@@ -512,38 +475,18 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
                 solStack_free(stk);
                 return 1;
             }
-#ifdef __SOL_DEBUG__
-            printf("++ GEN new col --->> ");
-            (*p->f_debug_item_col)(col, p);
-            printf("+++ symbo is: ");
-            (*p->f_debug_symbol)(sym, p);
-            printf("\n");
-#endif
         }
-        item = solLRProduct_item(product, 1);
-        solList_add(col->items, item);
-#ifdef __SOL_DEBUG__
-        printf("+++ ADD item, ");
-        (*p->f_debug_item)(item, p);
-#endif
+        if (solList_add(col->items, item) == NULL) {
+            return 3;
+        }
         if (solLRSymbol_is_nonterminal(sym) && solLRSymbol_is_idle(sym)) {
             solLRSymbol_set_is_busy(sym);
             if (s != sym) {
                 solStack_push(stk, sym);
-#ifdef __SOL_DEBUG__
-                printf("+++ push symbol to stack: ");
-                (*p->f_debug_symbol)(sym, p);
-                printf("\n");
-#endif
             }
         }
     } while ((n = solListNode_next(n)));
     while ((sym = solStack_pop(stk))) {
-#ifdef __SOL_DEBUG__
-        printf("+++ pop symbol from stack: ");
-        (*p->f_debug_symbol)(sym, p);
-        printf("\n");
-#endif
         if (solLRParser_compute_nonkernel_items(p, c, sym)) {
             solStack_free(stk);
             return 2;
@@ -556,7 +499,7 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
 
 SolLRParser* solLRParser_new()
 {
-    SolLRParser *p = sol_alloc(sizeof(SolLRParser));
+    SolLRParser *p = sol_calloc(1, sizeof(SolLRParser));
     p->gen = 0;
     p->collections = solList_new();
     if (p->collections == NULL) {
@@ -576,6 +519,11 @@ SolLRParser* solLRParser_new()
     }
     solLRSymbol_set_flag(p->empty, SolLRSymbolFlag_EMPTY);
     solLRSymbol_set_flag(p->empty, SolLRSymbolFlag_NULLABLE);
+    p->end = solLRSymbol_terminal_new(NULL);
+    if (p->end == NULL) {
+        goto oops;
+    }
+    solLRSymbol_set_flag(p->end, SolLRSymbolFlag_END);
     return p;
 oops:
     solLRParser_free(p);
@@ -634,12 +582,28 @@ int _solLRParser_compare_cols(void *c1, void *c2, SolRBTree *tree, int flag)
         }
         return 0;
     } else {
-        // tree->ex is SolLRParser
-        return (*((SolLRParser*)(tree->ex))->f_compare_symbol_val)(
-            ((SolLRSymbol*)c1)->v,
-            ((SolLRSymbol*)(((SolLRItemCol*)c2)->sym))->v
+        return solLRParser_compare_symbol(
+            (SolLRParser*)(tree->ex),
+            (SolLRSymbol*)c1,
+            (SolLRSymbol*)(((SolLRItemCol*)c2)->sym)
             );
     }
+}
+
+int solLRParser_compare_symbol(SolLRParser *p, SolLRSymbol *s1, SolLRSymbol *s2)
+{
+    if (s1 == p->origin) {
+        return -1;
+    } else if (s2 == p->origin) {
+        return 1;
+    }
+    if (s1 == p->empty || s1 == p->end) {
+        return 1;
+    } else if (s2 == p->empty || s2 == p->end) {
+        return -1;
+    }
+    // tree->ex is SolLRParser
+    return (*p->f_compare_symbol_val)(s1->v, s2->v);
 }
 
 int _solLRParser_compare_symbols(void *s1, void *s2, SolRBTree *tree, int flag)

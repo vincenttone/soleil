@@ -36,6 +36,7 @@ SolSLRParser* solSLRParser_new()
     solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
     solRBTree_insert(p->symbols, p->lr->origin);
     solRBTree_insert(p->symbols, p->lr->empty);
+    solRBTree_insert(p->symbols, p->lr->end);
     return p;
 oops:
     solSLRParser_free(p);
@@ -103,7 +104,7 @@ int solSLRParser_set_begin_product(SolSLRParser *p, SolLRProduct *product)
     return 1;
 }
 
-int _solSLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int cf)
+int _solSLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
 {
     int flag = ((struct _SolSLRTableField*)f1)->flag & ((struct _SolSLRTableField*)f1)->flag;
     if (flag & SolLRTableFieldFlag_TYPE_STATE) { // state
@@ -115,13 +116,13 @@ int _solSLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int cf)
             return -1;
         }
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
-        if ((SolLRSymbol*)(((struct _SolSLRTableField*)f1)->t) > (SolLRSymbol*)(((struct _SolSLRTableField*)f2)->t)) {
-            return 1;
-        } else if ((SolLRSymbol*)(((struct _SolSLRTableField*)f1)->t) < (SolLRSymbol*)(((struct _SolSLRTableField*)f2)->t)) {
-            return -1;
-        }
+        return solLRParser_compare_symbol(
+            ((SolSLRParser*)(t->ex))->lr,
+            (SolLRSymbol*)(((struct _SolSLRTableField*)f1)->t),
+            (SolLRSymbol*)(((struct _SolSLRTableField*)f2)->t)
+            );
     } else {
-        assert("field type is not same");
+        _DEBUG_ALARM_;
     }
     return 0;
 }
@@ -242,8 +243,9 @@ int solSLRParser_record_accept(SolSLRParser *p, SolLRItemCol *c)
     s->t = c;
     s->flag |= SolLRTableFieldFlag_TYPE_STATE;
     struct _SolSLRTableField *sym = sol_calloc(1, sizeof(struct _SolSLRTableField));
-    sym->t = p->lr->origin;
+    sym->t = p->lr->end;
     sym->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
+    sym->flag |= SolLRTableFieldFlag_ACTION_ACCEPT;
     if (solRBTuple_put(p->table, 2, s, sym) != 0) {
         return 1;
     }

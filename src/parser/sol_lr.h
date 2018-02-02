@@ -57,6 +57,7 @@ typedef struct _SolLRParser {
     SolList *collections; // items collection
     SolLRSymbol *origin; // start symbol
     SolLRSymbol *empty; // empty symbol
+    SolLRSymbol *end; // end symbol
     int (*f_compare_symbol_val)(void*, void*);
 #ifdef __SOL_DEBUG__
     void (*f_debug_symbol)(SolLRSymbol*, struct _SolLRParser*);
@@ -70,6 +71,7 @@ SolLRParser* solLRParser_new();
 void solLRParser_free(SolLRParser*);
 SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*);
 int _solLRParser_compare_cols(void*, void*, SolRBTree*, int);
+int solLRParser_compare_symbol(SolLRParser*, SolLRSymbol*, SolLRSymbol*);
 
 SolLRSymbol* solLRSymbol_new(void*);
 void solLRSymbol_free(SolLRSymbol*);
