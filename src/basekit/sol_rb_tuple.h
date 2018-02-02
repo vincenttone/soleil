@@ -1,5 +1,5 @@
 #ifndef _SOL_RB_TUPLE_H_
-#define _SOL_RB_TUPLE_H__ 1
+#define _SOL_RB_TUPLE_H_ 1
 
 #include <stdarg.h>
 #include "sol_common.h"
