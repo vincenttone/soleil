@@ -23,7 +23,7 @@ typedef struct _SolRBTree {
     void *ex; // for extra
     int (*f_compare)(void*, void*, struct _SolRBTree*, int);
     sol_f_free_ptr f_free; // free node val func
-    int (*f_insert_conflict_fix)(SolRBTreeNode*, SolRBTreeNode*);
+    int (*f_insert_conflict_fix)(void*, void*);
 } SolRBTree;
 
 typedef int (*solRBTree_f_ptr_act)(SolRBTree*, SolRBTreeNode*, void*);
