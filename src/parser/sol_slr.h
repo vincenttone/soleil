@@ -58,6 +58,7 @@ int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
 void _solSLRParserField_free(void*);
 int _solSLRField_conflict(void*, void*);
+void _solSLRSymbol_free(void*);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
 int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);

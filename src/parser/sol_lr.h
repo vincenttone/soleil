@@ -29,6 +29,7 @@ typedef struct _SolLRSymbol {
     SolList *productions; // productions
     SolRBTree *firsts;
     SolRBTree *follows;
+    void *ex; // extend
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
@@ -50,6 +51,7 @@ typedef struct _SolLRItemCol { // items collection
     SolList *items; // items
     SolRBTree *nc; // next items collection
     SolLRSymbol *sym; // pre symbol
+    void *ex; // for extend
 } SolLRItemCol;
 
 typedef struct _SolLRParser {
