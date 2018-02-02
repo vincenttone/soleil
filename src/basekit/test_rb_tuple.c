@@ -63,6 +63,12 @@ int _echo(void *v, SolRBTuple *t, size_t level)
     return 0;
 }
 
+int conflit_fix(void *v1, void *v2)
+{
+    printf("conflict %s.%s\n", (char*)v1, (char*)v2);
+    return 1;
+}
+
 int main()
 {
 	char *a = "a";
@@ -72,6 +78,7 @@ int main()
 	SolRBTuple *t = solRBTuple_new();
 	solRBTuple_set_compare_val_func(t, &cmp);
     solRBTuple_set_free_val_func(t, &pf);
+    solRBTuple_set_insert_conflict_fix_func(t, &conflit_fix);
 	printf("put ret: %d\n", solRBTuple_put(t, 4, a, b, c, d));
 	printf("put ret: %d\n", solRBTuple_put(t, 3, b, c, d));
 	solRBTuple_put(t, 3, a, c, d);

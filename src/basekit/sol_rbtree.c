@@ -185,12 +185,12 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     SolRBTreeNode *pre_node = solRBTree_nil(tree);
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
         pre_node = current_node;
-        w = solRBTree_node_val_compare(tree, solRBTreeNode_val(node), solRBTreeNode_val(current_node), 0x2);
+        w = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), 0x2);
         // w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
 			if (solRBTree_insert_conflict_fix_func(tree)) {
-				if (solRBTree_insert_conflict_fix(tree, solRBTreeNode_val(node), solRBTreeNode_val(current_node)) !=0) {
+				if (solRBTree_insert_conflict_fix(tree, val, solRBTreeNode_val(current_node)) !=0) {
 					return 1;
 				}
 			}
