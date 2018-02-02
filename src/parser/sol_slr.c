@@ -34,9 +34,27 @@ SolSLRParser* solSLRParser_new()
     p->table->ex = p;
     solRBTuple_set_compare_val_func(p->table, &_solSLRParserField_compare);
     solRBTuple_set_free_val_func(p->table, &_solSLRParserField_free);
-    // solRBTuple_set_insert_conflict_fix_func(p->table, &_solSLRField_conflict);
+    // start symbol
+    p->lr->origin = solLRSymbol_nonterminal_new(NULL);
+    if (p->lr->origin == NULL) {
+        goto oops;
+    }
+    solLRSymbol_set_flag(p->lr->origin, SolLRSymbolFlag_ORIGIN);
     solRBTree_insert(p->symbols, p->lr->origin);
+    // empty symbol
+    p->lr->empty = solLRSymbol_terminal_new(NULL);
+    if (p->lr->empty == NULL) {
+        goto oops;
+    }
+    solLRSymbol_set_flag(p->lr->empty, SolLRSymbolFlag_EMPTY);
+    solLRSymbol_set_flag(p->lr->empty, SolLRSymbolFlag_NULLABLE);
     solRBTree_insert(p->symbols, p->lr->empty);
+    // end symbol
+    p->lr->end = solLRSymbol_terminal_new(NULL);
+    if (p->lr->end == NULL) {
+        goto oops;
+    }
+    solLRSymbol_set_flag(p->lr->end, SolLRSymbolFlag_END);
     solRBTree_insert(p->symbols, p->lr->end);
     return p;
 oops:
