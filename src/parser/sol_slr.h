@@ -14,6 +14,7 @@
 #define SolLRTableFieldFlag_ACTION_REDUCE 0x8
 #define SolLRTableFieldFlag_TYPE_STATE    0x10
 #define SolLRTableFieldFlag_TYPE_SYMBOL   0x20
+#define SolLRTableFieldFlag_TYPE_PRODUCT  0x30
 
 typedef struct _SolSLRParser {
     SolLRParser *lr;
@@ -21,12 +22,13 @@ typedef struct _SolSLRParser {
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
     SolRBTuple *table; // parser table
+    SolList *fields;
 } SolSLRParser;
 
-struct _SolSLRTableField {
+typedef struct _SolSLRTableField {
     int flag; // flag
     void *t; // target
-};
+} SolSLRTableField;
 
 SolSLRParser* solSLRParser_new();
 void solSLRParser_free(SolSLRParser*);
@@ -39,6 +41,9 @@ int solSLRParser_prepare(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser*);
 SolLRItemCol* _solSLRParser_generate_items_collection(void*);
+
+SolSLRTableField* solSLRParserTableField_new(SolSLRParser*);
+void solSLRParserTableField_free();
 
 int solSLRParser_set_begin_product(SolSLRParser*, SolLRProduct*);
 //int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
