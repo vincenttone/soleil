@@ -52,7 +52,7 @@ void print_rb_tuple(SolRBTuple *t)
     solRBTree_travelsal_inorder(tree, solRBTree_root(tree), &prvx, i);
 }
 
-int _echo(void *v, SolRBTuple *t, size_t level)
+int _echo(void *v, SolRBTuple *t, size_t level, void *d)
 {
     int i;
     printf("|");
