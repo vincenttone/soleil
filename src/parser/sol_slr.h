@@ -7,26 +7,19 @@
 #include "sol_stack.h"
 #include "sol_rb_tuple.h"
 
-// action list
-#define SolLRTableFieldFlag_ACTION_ACCEPT 0x1
-#define SolLRTableFieldFlag_ACTION_GOTO   0x2
-#define SolLRTableFieldFlag_ACTION_SHIFT  0x4
-#define SolLRTableFieldFlag_ACTION_REDUCE 0x8
-#define SolLRTableFieldFlag_TYPE_STATE    0x10
-#define SolLRTableFieldFlag_TYPE_SYMBOL   0x20
-
 typedef struct _SolSLRParser {
     SolLRParser *lr;
     size_t state; // current state
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
     SolRBTuple *table; // parser table
+    SolList *fields;
 } SolSLRParser;
 
-struct _SolSLRTableField {
+typedef struct _SolSLRTableField {
     int flag; // flag
     void *t; // target
-};
+} SolSLRTableField;
 
 SolSLRParser* solSLRParser_new();
 void solSLRParser_free(SolSLRParser*);
@@ -39,6 +32,9 @@ int solSLRParser_prepare(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser*);
 SolLRItemCol* _solSLRParser_generate_items_collection(void*);
+
+SolSLRTableField* solSLRParserTableField_new(SolSLRParser*);
+void solSLRParserTableField_free();
 
 int solSLRParser_set_begin_product(SolSLRParser*, SolLRProduct*);
 //int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
@@ -54,16 +50,14 @@ int solSLRParser_compute_parsing_table(SolSLRParser*);
 
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
-int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
-void _solSLRParserField_free(void*);
 int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
+int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
+void _solSLRSymbol_free(void*);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
 int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
 int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
-
-int _solLRItemCols_compare(void*, void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 #define solSLRParser_set_compare_symbol_val_func(p, f) p->lr->f_compare_symbol_val = f

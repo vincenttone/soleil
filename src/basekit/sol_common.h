@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#include <assert.h>
 
 #define SolNil NULL
 
@@ -31,6 +32,12 @@ typedef struct _SolVal {
     } v; // val
     enum SolValType t; // type
 } SolVal;
+
+#ifdef __SOL_DEBUG__
+#define _DEBUG_ALARM_ assert(0)
+#else
+#define _DEBUG_ALARM_ //
+#endif
 
 #define solVal_is_type_(v, type) (v)->t == type
 #define solVal_is_str(v) solVal_is_type_(v, SolValTypeStr)

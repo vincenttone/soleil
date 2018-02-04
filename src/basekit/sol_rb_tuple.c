@@ -105,6 +105,14 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
                 cur->level = pre->level + 1;
             }
             solRBTree_insert(tree, cur);
+            /*
+        } else {
+            if (solRBTree_insert_conflict_fix_func(t->n)) {
+                if (solRBTree_insert_conflict_fix(t->n, v, cur->v) != 0) {
+                    return 2;
+                }
+            }
+            */
         }
         tree = cur->n;
         pre = cur;
@@ -136,6 +144,37 @@ SolRBTupleRecord* solRBTuple_get(SolRBTuple *t, size_t l, ...)
 	}
 	va_end(al);
 	return r;
+}
+
+void* solRBTuple_get_first(SolRBTuple *t, size_t l, ...)
+{
+	if (t == NULL) {
+		return NULL;
+	}
+    SolRBTree *tree = t->n;
+    SolRBTupleRecord *r;
+    void *v;
+	va_list al;
+	va_start(al, l);
+    while (l--) {
+        if (tree == NULL) {
+            return NULL;
+        }
+		v = va_arg(al, void*);
+		r = (SolRBTupleRecord*)(solRBTree_search(tree, v));
+		if (r == NULL) {
+			return NULL;
+		}
+        tree = r->n;
+	}
+	va_end(al);
+    if (r && r->n && solRBTree_count(r->n)) {
+        r = solRBTree_min(r->n);
+        if (r) {
+            return r->v;
+        }
+    }
+	return NULL;
 }
 
 int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
@@ -179,10 +218,18 @@ int solRBTuple_travelsal(SolRBTuple *t, void *d)
     return 0;
 }
 
+int solRBTuple_record_travelsal(SolRBTuple *t, SolRBTupleRecord *r, void *d)
+{
+    if (solRBTree_travelsal_inorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal, d)) {
+        return 1;
+    }
+    return 0;
+}
+
 int _solRBTupleRecord_travelsal(SolRBTree *tree, SolRBTreeNode *node, void *d)
 {
     SolRBTupleRecord *r = solRBTreeNode_val(node);
-    if ((*(((SolRBTuple*)tree->ex)->f_travelsal_act))(r->v, ((SolRBTuple*)tree->ex), r->level) != 0) {
+    if ((*(((SolRBTuple*)tree->ex)->f_travelsal_act))(r->v, ((SolRBTuple*)tree->ex), r->level, d) != 0) {
         return 1;
     }
     if (r->n) {

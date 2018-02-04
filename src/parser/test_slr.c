@@ -45,6 +45,8 @@ void out_symbol(SolLRSymbol *s, SolLRParser *p)
         printf("Origin");
     } else if (s == p->empty) {
         printf("Empty");
+    } else if (s == p->end) {
+        printf("$");
     } else {
         out_symbol_val(s->v, "", "");
     }
@@ -62,22 +64,24 @@ void out_product(SolLRProduct *product, SolLRParser *p)
     printf("\n");
 }
 
-int _travelsal_fileds(void *f, SolRBTuple *t, size_t level)
+int _travelsal_fileds(void *f, SolRBTuple *t, size_t level, void *d)
 {
     int i;
-    printf("|");
+    printf("|-");
     for (i = 0; i < level; i++) {
-        printf("-");
+        printf("\t");
     }
     int flag = ((struct _SolSLRTableField*)f)->flag;
     if (flag & SolLRTableFieldFlag_TYPE_STATE) {
         SolLRItemCol *c = ((struct _SolSLRTableField*)f)->t;
-        printf("<%zu>\tflag %d\t", c->state, ((struct _SolSLRTableField*)f)->flag);
+        printf("<%zu>\t", c->state);
+        // printf("<%zu>\t[%d]\t", c->state, ((struct _SolSLRTableField*)f)->flag);
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
         SolLRSymbol *s = ((struct _SolSLRTableField*)f)->t;
         printf("[");
         out_symbol(s, (SolLRParser*)((SolSLRParser*)(t->ex))->lr);
-        printf("]\tflag %d\t", ((struct _SolSLRTableField*)f)->flag);
+        printf("]\t");
+        //printf("]\t[%d]\t", ((struct _SolSLRTableField*)f)->flag);
     }
     if (flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
         printf("ACCEPT");
@@ -112,10 +116,10 @@ void out_item(SolLRItem *item, SolLRParser *p)
         printf("\t[FINAL]");
     }
     if (item->flag & 0x4) {
-        printf("\t[FKL]");
+        printf("\t[FKNL]");
     }
     if (item->flag & 0x8) {
-        printf("\t[FNKL]");
+        printf("\t[FNKNL]");
     }
     printf("\t[%zu:%zu]", item->pos, item->p->len);
     printf("\n");

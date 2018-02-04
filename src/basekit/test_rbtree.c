@@ -51,9 +51,18 @@ void print_free_val(void *val)
 
 int cmp(void *v1, void *v2, SolRBTree *tree, int flag)
 {
+    if (flag & 0x2) {
+        printf("insert compare %d\n", conv_val(v1));
+    }
     if (conv_val(v1) == conv_val(v2)) return 0;
     if (conv_val(v1) < conv_val(v2)) return -1;
     return 1;
+}
+
+int conflict_fix(void *v1, void *v2)
+{
+    printf("insert conflict %d\n", conv_val(v1));
+    return 0;
 }
 
 int main()
@@ -62,12 +71,14 @@ int main()
     SolRBTree *tree = solRBTree_new();
     solRBTree_set_compare_func(tree, &cmp);
     solRBTree_set_val_free_func(tree, &print_free_val);
+    solRBTree_set_insert_conflict_fix_func(tree, &conflict_fix);
     int counts[CLEN];
     int i;
     for (i = 1; i <= CLEN; i++) {
         counts[i] = i;
         solRBTree_insert(tree, &counts[i]);
     }
+    solRBTree_insert(tree, &counts[3]);
     printf("ROOT is %d, count: %zu\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))), solRBTree_count(tree));
     printf("---preorder travelsal---\n");
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_key, NULL);
