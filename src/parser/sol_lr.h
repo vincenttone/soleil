@@ -125,7 +125,6 @@ int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRPars
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
-int _solLRParser_compute_items_collections(void*, SolRBTuple*, size_t, void*);
 int _solLRParserField_compare(void*, void*, SolRBTuple*, int);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)

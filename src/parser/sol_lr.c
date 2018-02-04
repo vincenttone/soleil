@@ -392,6 +392,7 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
         _DEBUG_ALARM_;
         return -2;
     }
+    SolStack *stk = solStack_new();
     SolListNode *n = solList_head(c->items);
     SolLRItemCol *col;
     SolLRItem *item;
@@ -443,31 +444,16 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
                 }
             }
         }
+        solStack_push(stk, col);
         item->flag |= 0x2;
     } while ((n = solListNode_next(n)));
-    SolRBTupleRecord *r = solRBTuple_get(p->col_rel, 1, c);
-    if (r == NULL) {
-        _DEBUG_ALARM_;
-        return 4;
-    }
-    if (solRBTuple_record_travelsal(p->col_rel, r, p)) {
-        _DEBUG_ALARM_;
-        return 5;
+    while ((col = solStack_pop(stk))) {
+        if (solLRParser_compute_items_collections(p, col)) {
+            _DEBUG_ALARM_;
+            return 4;
+        }
     }
     return 0;
-}
-
-int _solLRParser_compute_items_collections(void *field, SolRBTuple *t, size_t level, void *p)
-{
-    if (t == NULL || field == NULL || p == NULL) {
-        _DEBUG_ALARM_;
-        return -1;
-    }
-    if ((((SolLRTableField*)field)->flag & SolLRTableFieldFlag_TYPE_COL) == 0) {
-        _DEBUG_ALARM_;
-        return -2;
-    }
-    return solLRParser_compute_items_collections((SolLRParser*)p, ((SolLRTableField*)field)->target);
 }
 
 int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSymbol *s)
@@ -533,7 +519,6 @@ SolLRParser* solLRParser_new()
     if (p->col_rel == NULL) {
         goto oops;
     }
-    p->col_rel->f_travelsal_act = &_solLRParser_compute_items_collections;
     solRBTuple_set_compare_val_func(p->col_rel, &_solLRParserField_compare);
     p->col_rel->ex = p;
     p->fields = solList_new();
