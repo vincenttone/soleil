@@ -5,6 +5,7 @@
 #include "sol_common.h"
 #include "sol_rbtree.h"
 #include "sol_list.h"
+#include "sol_rb_tuple.h"
 
 #define SolLRSymbolFlag_ORIGIN               0x1
 #define SolLRSymbolFlag_START                0x2
@@ -21,7 +22,17 @@
 #define SolLRItemCol_FLAG_END  0x1
 #define SolLRItemCol_FLAG_BUSY  0x2
 
-#define SolLRParserItemCol_INIT_SIZE 32
+// action list
+#define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
+#define SolLRTableFieldFlag_ACTION_GOTO             0x2
+#define SolLRTableFieldFlag_ACTION_SHIFT            0x4
+#define SolLRTableFieldFlag_ACTION_REDUCE           0x8
+#define SolLRTableFieldFlag_TYPE_STATE              0x10
+#define SolLRTableFieldFlag_TYPE_SYMBOL             0x20
+#define SolLRTableFieldFlag_TYPE_PRODUCT            0x30
+#define SolLRTableFieldFlag_TYPE_COL                0x40
+#define SolLRTableFieldFlag_COL_FROM_NONKERNEL      0x100
+#define SolLRTableFieldFlag_COL_FROM_KERNEL         0x200
 
 typedef struct _SolLRSymbol {
     int flag;   // flag
@@ -55,6 +66,8 @@ typedef struct _SolLRItemCol { // items collection
 typedef struct _SolLRParser {
     size_t gen; // state generate
     SolList *collections; // items collection
+    SolRBTuple *col_rel; // items colletion relations
+    SolList *fields;
     SolLRSymbol *origin; // start symbol
     SolLRSymbol *empty; // empty symbol
     SolLRSymbol *end; // end symbol
@@ -67,9 +80,14 @@ typedef struct _SolLRParser {
 #endif
 } SolLRParser;
 
+typedef struct _SolLRTableField {
+    void *target;
+    int flag;
+} SolLRTableField;
+
 SolLRParser* solLRParser_new();
 void solLRParser_free(SolLRParser*);
-SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*);
+SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*, SolLRSymbol*, int);
 int _solLRParser_compare_cols(void*, void*, SolRBTree*, int);
 int solLRParser_compare_symbol(SolLRParser*, SolLRSymbol*, SolLRSymbol*);
 
@@ -90,6 +108,9 @@ SolLRItemCol* solLRItemCol_new();
 void solLRItemCol_free(SolLRItemCol*);
 void _solLRItemCol_free(void*);
 
+SolLRTableField* solLRParserTableField_new(SolLRParser*, void*, int);
+void solLRParserTableField_free(SolLRTableField*);
+
 int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 
@@ -104,7 +125,8 @@ int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRPars
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
-int _solLRParser_compute_items_collections(SolRBTree*, SolRBTreeNode*, void*);
+int _solLRParser_compute_items_collections(void*, SolRBTuple*, size_t, void*);
+int _solLRParserField_compare(void*, void*, SolRBTuple*, int);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 

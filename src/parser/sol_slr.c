@@ -178,24 +178,6 @@ int _solSLRParser_compare_symbols(void *s1, void *s2, SolRBTree *tree, int flag)
     return (*p->lr->f_compare_symbol_val)(((SolLRSymbol*)s1)->v, ((SolLRSymbol*)s2)->v);
 }
 
-int _solLRItemCols_compare(void *s1, void *s2)
-{
-    if (s1 > s2) return 1;
-    if (s2 > s1) return -1;
-    return 0;
-}
-
-void _solSLRParserField_free(void *field)
-{
-    sol_free(((struct _SolSLRTableField*)field));
-}
-
-int _solSLRField_conflict(void *f1, void *f2)
-{
-    sol_free(((struct _SolSLRTableField*)f1));
-    return 0;
-}
-
 int solSLRParser_prepare(SolSLRParser *p)
 {
     if (p == NULL || p->lr->origin == NULL) {
@@ -209,7 +191,7 @@ int solSLRParser_prepare(SolSLRParser *p)
     }
     SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->lr->origin->productions)));
     SolLRItem *i = solLRProduct_item(product, 0);
-    SolLRItemCol *c = solLRParser_generate_items_collection(p->lr);
+    SolLRItemCol *c = solLRParser_generate_items_collection(p->lr, p->lr->origin, 0x0);
     if (c == NULL) {
         solLRItemCol_free(c);
     }
@@ -312,12 +294,6 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRItemCol *c, SolLRSymbol *sy
     sym1->t = symbol;
     sym1->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
     sym1->flag |= SolLRTableFieldFlag_ACTION_REDUCE;
-    /*
-    struct _SolSLRTableField *sym_end = solSLRParserTableField_new(p);
-    sym_end->t = p->lr->end;
-    sym_end->flag |= SolLRTableFieldFlag_TYPE_SYMBOL;
-    sym_end->flag |= SolLRTableFieldFlag_ACTION_REDUCE;
-    */
     struct _SolSLRTableField *sym2;
     SolRBTreeIter *i = solRBTreeIter_new(symbol->follows, solRBTree_root(symbol->follows), SolRBTreeIterTT_preorder);
     do {

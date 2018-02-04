@@ -7,15 +7,6 @@
 #include "sol_stack.h"
 #include "sol_rb_tuple.h"
 
-// action list
-#define SolLRTableFieldFlag_ACTION_ACCEPT 0x1
-#define SolLRTableFieldFlag_ACTION_GOTO   0x2
-#define SolLRTableFieldFlag_ACTION_SHIFT  0x4
-#define SolLRTableFieldFlag_ACTION_REDUCE 0x8
-#define SolLRTableFieldFlag_TYPE_STATE    0x10
-#define SolLRTableFieldFlag_TYPE_SYMBOL   0x20
-#define SolLRTableFieldFlag_TYPE_PRODUCT  0x30
-
 typedef struct _SolSLRParser {
     SolLRParser *lr;
     size_t state; // current state
@@ -61,16 +52,12 @@ SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
 int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
-void _solSLRParserField_free(void*);
-int _solSLRField_conflict(void*, void*);
 void _solSLRSymbol_free(void*);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
 int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
 int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
 int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
-
-int _solLRItemCols_compare(void*, void*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 #define solSLRParser_set_compare_symbol_val_func(p, f) p->lr->f_compare_symbol_val = f
