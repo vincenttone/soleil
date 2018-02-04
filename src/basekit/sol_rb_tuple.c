@@ -146,6 +146,37 @@ SolRBTupleRecord* solRBTuple_get(SolRBTuple *t, size_t l, ...)
 	return r;
 }
 
+void* solRBTuple_get_first(SolRBTuple *t, size_t l, ...)
+{
+	if (t == NULL) {
+		return NULL;
+	}
+    SolRBTree *tree = t->n;
+    SolRBTupleRecord *r;
+    void *v;
+	va_list al;
+	va_start(al, l);
+    while (l--) {
+        if (tree == NULL) {
+            return NULL;
+        }
+		v = va_arg(al, void*);
+		r = (SolRBTupleRecord*)(solRBTree_search(tree, v));
+		if (r == NULL) {
+			return NULL;
+		}
+        tree = r->n;
+	}
+	va_end(al);
+    if (r && r->n && solRBTree_count(r->n)) {
+        r = solRBTree_min(r->n);
+        if (r) {
+            return r->v;
+        }
+    }
+	return NULL;
+}
+
 int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
 {
 	if (t == NULL) {

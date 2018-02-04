@@ -31,6 +31,7 @@ int _solRBTuple_compare_node_val(void*, void*, SolRBTree*, int);
 int solRBTuple_put(SolRBTuple*, size_t, ...);
 SolRBTupleRecord* solRBTuple_get(SolRBTuple*, size_t, ...);
 int solRBTuple_remove(SolRBTuple*, size_t, ...);
+void* solRBTuple_get_first(SolRBTuple*, size_t, ...);
 
 int solRBTuple_travelsal(SolRBTuple*, void*);
 int _solRBTupleRecord_travelsal(SolRBTree*, SolRBTreeNode*, void*);

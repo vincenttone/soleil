@@ -116,6 +116,8 @@ int main()
     printf("Remove b:\n");
     solRBTuple_remove(t, 1, b);
     print_rb_tuple(t);
+    char *val = solRBTuple_get_first(t, 2, a, b);
+    printf("get first of a,b: %s\n", val);
 	solRBTuple_free(t);
 	return 0;
 }
