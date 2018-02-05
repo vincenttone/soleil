@@ -674,6 +674,9 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
         } else if (c1->state < c2->state) {
             return -1;
         }
+        if (c1 > c2) return 1;
+        if (c1 < c2) return -1;
+        return 0;
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
         int c = solLRParser_compare_symbol(
             ((SolLRParser*)(t->ex)),
