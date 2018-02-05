@@ -459,6 +459,7 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
 int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSymbol *s)
 {
     SolStack *stk = solStack_new();
+    SolStack *col_stk = solStack_new();
     SolListNode *n = solList_head(s->productions);
     SolLRProduct *product;
     SolLRSymbol *sym;
@@ -477,7 +478,9 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
             f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
             f3->flag |= SolLRTableFieldFlag_COL_FROM_NONKERNEL;
             if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
+                _DEBUG_ALARM_;
                 solStack_free(stk);
+                solStack_free(col_stk);
                 return 1;
             }
         } else {
@@ -486,6 +489,9 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
         item = solLRProduct_item(product, 1);
         item->flag |= 0x8;
         if (solList_add(col->items, item) == NULL) {
+            _DEBUG_ALARM_;
+            solStack_free(stk);
+            solStack_free(col_stk);
             return 3;
         }
         if (solLRSymbol_is_nonterminal(sym) && solLRSymbol_is_idle(sym)) {
@@ -494,15 +500,27 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
                 solStack_push(stk, sym);
             }
         }
+        solStack_push(col_stk, col);
     } while ((n = solListNode_next(n)));
     while ((sym = solStack_pop(stk))) {
         if (solLRParser_compute_nonkernel_items(p, c, sym)) {
+            _DEBUG_ALARM_;
             solStack_free(stk);
+            solStack_free(col_stk);
             return 2;
         }
         solLRSymbol_set_is_idle(sym);
     }
+    while ((col = solStack_pop(col_stk))) {
+        if (solLRParser_compute_items_collections(p, col)) {
+            _DEBUG_ALARM_;
+            solStack_free(stk);
+            solStack_free(col_stk);
+            return 4;
+        }
+    }
     solStack_free(stk);
+    solStack_free(col_stk);
     return 0;
 }
 
@@ -668,13 +686,10 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
     } else {
         _DEBUG_ALARM_;
     }
-    if (((struct _SolLRTableField*)f1)->flag > ((struct _SolLRTableField*)f1)->flag) {
+    if (f1 > f2) {
         return 1;
-    } else if (((struct _SolLRTableField*)f1)->flag < ((struct _SolLRTableField*)f1)->flag) {
+    } else if (f1 < f2) {
         return -1;
-    }
-    if (ext & 0x2) {
-        sol_free((struct _SolLRTableField*)f1);
     }
     return 0;
 }
