@@ -406,7 +406,7 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
         if (item->flag & 0x2) { // processed
             continue;
         }
-        if (item->pos > item->p->len) {
+        if (item->pos >= item->p->len) {
             continue;
         }
         if (item->pos == item->p->len) { // the end of product
@@ -417,7 +417,7 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
             if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
                 _DEBUG_ALARM_;
-                return 1;
+                goto oops;
             }
         } else {
             s = *(solLRProduct_find_symbol(item->p, item->pos));
@@ -425,10 +425,15 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             f3 = solRBTuple_get_first(p->col_rel, 2, f1, f2);
             if (f3 == NULL) {
                 col = solLRParser_generate_items_collection(p, s, 0x0);
+                if (col->flag & SolLRItemCol_FLAG_COMPTUED) continue;
                 f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
                 if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
                     _DEBUG_ALARM_;
-                    return 2;
+                    goto oops;
+                }
+                if (solRBTuple_put(p->col_rel, 1, f3)) {
+                    _DEBUG_ALARM_;
+                    goto oops;
                 }
                 if (col->flag & 0x8) continue;
             } else {
@@ -440,19 +445,25 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
                 if (solLRParser_compute_nonkernel_items(p, c, s)) {
                     _DEBUG_ALARM_;
-                    return 3;
+                    goto oops;
                 }
             }
         }
         solStack_push(stk, col);
         item->flag |= 0x2;
+        continue;
+    oops:
+        solStack_free(stk);
+        return 1;
     } while ((n = solListNode_next(n)));
     while ((col = solStack_pop(stk))) {
         if (solLRParser_compute_items_collections(p, col)) {
             _DEBUG_ALARM_;
-            return 4;
+            solStack_free(stk);
+            return 2;
         }
     }
+    solStack_free(stk);
     return 0;
 }
 
@@ -475,14 +486,18 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
         f3 = solRBTuple_get_first(p->col_rel, 2, f1, f2);
         if (f3 == NULL) {
             col = solLRParser_generate_items_collection(p, sym, 0x4);
+            if (col->flag & SolLRItemCol_FLAG_COMPTUED) continue;
             f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
-            f3->flag |= SolLRTableFieldFlag_COL_FROM_NONKERNEL;
+            f3->flag |= SolLRTableFieldFlag_COL_REPEATABLE;
             if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
                 _DEBUG_ALARM_;
-                solStack_free(stk);
-                solStack_free(col_stk);
-                return 1;
+                goto oops;
             }
+            if (solRBTuple_put(p->col_rel, 1, f3)) {
+                _DEBUG_ALARM_;
+                goto oops;
+            }
+            col->flag |= SolLRItemCol_FLAG_COMPTUED;
         } else {
             col = f3->target;
         }
@@ -490,9 +505,7 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
         item->flag |= 0x8;
         if (solList_add(col->items, item) == NULL) {
             _DEBUG_ALARM_;
-            solStack_free(stk);
-            solStack_free(col_stk);
-            return 3;
+            goto oops;
         }
         if (solLRSymbol_is_nonterminal(sym) && solLRSymbol_is_idle(sym)) {
             solLRSymbol_set_is_busy(sym);
@@ -501,6 +514,11 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
             }
         }
         solStack_push(col_stk, col);
+        continue;
+    oops:
+        solStack_free(stk);
+        solStack_free(col_stk);
+        return 1;
     } while ((n = solListNode_next(n)));
     while ((sym = solStack_pop(stk))) {
         if (solLRParser_compute_nonkernel_items(p, c, sym)) {
@@ -575,16 +593,35 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p, SolLRSymbol 
         return NULL;
     }
     SolLRItemCol *c;
+    if (solRBTree_count(p->col_rel->n)) {
+        SolRBTreeIter *iter = solRBTreeIter_new(p->col_rel->n, solRBTree_root(p->col_rel->n), SolRBTreeIterTT_inorder);
+        SolRBTupleRecord *record;
+        SolLRTableField *field;
+        SolLRItemCol *c;
+        do {
+            record = solRBTreeIter_current_val(iter);
+            field = record->v;
+            c = field->target;
+            if (field->flag & SolLRTableFieldFlag_COL_REPEATABLE
+                && c->sym == s) {
+                return c;
+            }
+        } while (solRBTreeIter_next(iter));
+        solRBTreeIter_free(iter);
+    }
+    /*
     if (from == 0x4 && solList_len(p->collections)) {
         SolListNode *n = solList_head(p->collections);
         do {
             c = solListNode_val(n);
             if ((c->flag & 0x4) && c->sym == s) {
                 c->flag |= 0x8; // computed
+                printf("chhhhh\n");
                 return c;
             }
         } while ((n = solListNode_next(n)));
     }
+    */
     c = solLRItemCol_new();
     if (c == NULL) {
         goto oops;
@@ -604,7 +641,7 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p, SolLRSymbol 
     c->nc->ex = p;
     solRBTree_set_compare_func(c->nc, &_solLRParser_compare_cols);
     if (from == 0x4) {
-        c->flag |= 0x4;
+        //c->flag |= 0x4;
     }
     c->sym = s;
     return c;
@@ -669,6 +706,7 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
         ) { // state
         SolLRItemCol *c1 = (SolLRItemCol*)(((struct _SolLRTableField*)f1)->target);
         SolLRItemCol *c2 = (SolLRItemCol*)(((struct _SolLRTableField*)f2)->target);
+        if (c1 == c2) return 0;
         if (c1->state > c2->state) {
             return 1;
         } else if (c1->state < c2->state) {

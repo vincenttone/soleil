@@ -19,8 +19,9 @@
 #define SolLRSymbolFlag_FIRST_COMPUTED       0x300
 #define SolLRSymbolFlag_FOLLOW_COMPUTED      0x400
 
-#define SolLRItemCol_FLAG_END  0x1
-#define SolLRItemCol_FLAG_BUSY  0x2
+#define SolLRItemCol_FLAG_END         0x1
+#define SolLRItemCol_FLAG_BUSY        0x2
+#define SolLRItemCol_FLAG_COMPTUED    0x4
 
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
@@ -31,8 +32,7 @@
 #define SolLRTableFieldFlag_TYPE_SYMBOL             0x20
 #define SolLRTableFieldFlag_TYPE_PRODUCT            0x30
 #define SolLRTableFieldFlag_TYPE_COL                0x40
-#define SolLRTableFieldFlag_COL_FROM_NONKERNEL      0x100
-#define SolLRTableFieldFlag_COL_FROM_KERNEL         0x200
+#define SolLRTableFieldFlag_COL_REPEATABLE          0x100
 
 typedef struct _SolLRSymbol {
     int flag;   // flag

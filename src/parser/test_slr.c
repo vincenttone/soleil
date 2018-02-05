@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "sol_lr.h"
 #include "sol_slr.h"
+#include "sol_rbtree_iter.h"
 
 enum _Symbol {
     _E = 1,
@@ -186,6 +187,19 @@ int main()
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p->lr);
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
+    SolRBTreeIter *iter = solRBTreeIter_new(p->lr->col_rel->n, solRBTree_root(p->lr->col_rel->n), SolRBTreeIterTT_inorder);
+    SolRBTupleRecord *record;
+    SolLRTableField *field;
+    do {
+        record = solRBTreeIter_current_val(iter);
+        field = record->v;
+        if (field->flag & SolLRTableFieldFlag_COL_REPEATABLE) {
+            printf("*******REPEATABLE********\n");
+        }
+        out_item_collections((SolLRItemCol*)(field->target), p->lr);
+    } while (solRBTreeIter_next(iter));
+    solRBTreeIter_free(iter);
+    /*
     SolLRItemCol *col;
     SolListNode *n = solList_head(p->lr->collections);
     do {
@@ -194,6 +208,7 @@ int main()
     } while ((n = solListNode_next(n)));
     p->table->f_travelsal_act = &_travelsal_fileds;
     solRBTuple_travelsal(p->table, NULL);
+    */
 
     solSLRParser_free(p);
     return 0;
