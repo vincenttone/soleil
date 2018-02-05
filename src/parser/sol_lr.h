@@ -5,6 +5,7 @@
 #include "sol_common.h"
 #include "sol_rbtree.h"
 #include "sol_list.h"
+#include "sol_stack.h"
 #include "sol_rb_tuple.h"
 
 #define SolLRSymbolFlag_ORIGIN               0x1
@@ -23,6 +24,7 @@
 #define SolLRItemCol_FLAG_COMPUTING          0x2
 #define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x4
 #define SolLRItemCol_FLAG_COMPTUED           0x8
+#define SolLRItemCol_FLAG_REPEATABLE         0x10
 
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
@@ -66,6 +68,7 @@ typedef struct _SolLRItemCol { // items collection
 
 typedef struct _SolLRParser {
     size_t gen; // state generate
+    SolStack *stk;
     SolList *collections; // items collection
     SolRBTuple *col_rel; // items colletion relations
     SolList *fields;

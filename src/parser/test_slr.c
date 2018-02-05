@@ -170,7 +170,10 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     }
     if (col->flag & SolLRItemCol_FLAG_END) {
         printf("\t(with END FLAG)");
-    } 
+    }
+    if (col->flag & SolLRItemCol_FLAG_REPEATABLE) {
+        printf("\t*REPEATABLE*\t");
+    }
     if (col->items && solList_len(col->items)) {
         printf("\nItem(s):\n");
         n = solList_head(col->items);

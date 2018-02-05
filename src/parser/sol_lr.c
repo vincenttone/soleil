@@ -400,7 +400,6 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
     printf("==========compute items collection==========\n");
     (*p->f_debug_item_col)(c, p);
 #endif
-    SolList *list = solList_new();
     SolListNode *n = solList_head(c->items);
     SolLRItemCol *col;
     SolLRItem *item;
@@ -467,7 +466,7 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
             item1->flag |= 0x4;
             solList_add(col->items, item1);
             if ((col->flag & SolLRItemCol_FLAG_COMPUTING) == 0) {
-                solList_add(list, col);
+                solStack_push(p->stk, col);
                 col->flag |= SolLRItemCol_FLAG_COMPUTING;
 #ifdef __SOL_DEBUG__
                 printf(" hold on collection of state %zu:\n", col->state);
@@ -486,32 +485,25 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
         }
         continue;
     oops:
-        solList_free(list);
         return 1;
     } while ((n = solListNode_next(n)));
     c->flag |= SolLRItemCol_FLAG_KERNEL_COMPUTED;
-    if (solList_len(list)) {
-        n = solList_head(list);
-        do {
-            col = solListNode_val(n);
+    while ((col = solStack_pop(p->stk))) {
 #ifdef __SOL_DEBUG__
-            printf(" prepare to compute col of state: %zu\n", col->state);
+        printf(" prepare to compute col of state: %zu\n", col->state);
 #endif
-            if (solLRParser_compute_items_collections(p, col)) {
-                _DEBUG_ALARM_;
-                solList_free(list);
-                return 2;
-            }
-        } while ((n = solListNode_next(n)));
+        if (solLRParser_compute_items_collections(p, col)) {
+            _DEBUG_ALARM_;
+            return 2;
+        }
+        col->flag |= (~SolLRItemCol_FLAG_COMPUTING);
     }
-    solList_free(list);
     return 0;
 }
 
 int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSymbol *s)
 {
     SolStack *stk = solStack_new();
-    SolStack *col_stk = solStack_new();
     SolListNode *n = solList_head(s->productions);
     SolLRProduct *product;
     SolLRSymbol *sym;
@@ -530,6 +522,7 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
             if (col->flag & SolLRItemCol_FLAG_COMPTUED) continue;
             f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
             f3->flag |= SolLRTableFieldFlag_COL_REPEATABLE;
+            col->flag |= SolLRItemCol_FLAG_REPEATABLE;
             if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
                 _DEBUG_ALARM_;
                 goto oops;
@@ -558,32 +551,23 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
                 solStack_push(stk, sym);
             }
         }
-        solStack_push(col_stk, col);
+        if ((col->flag & SolLRItemCol_FLAG_COMPUTING) == 0) {
+            solStack_push(p->stk, col);
+        }
         continue;
     oops:
         solStack_free(stk);
-        solStack_free(col_stk);
         return 1;
     } while ((n = solListNode_next(n)));
     while ((sym = solStack_pop(stk))) {
         if (solLRParser_compute_nonkernel_items(p, c, sym)) {
             _DEBUG_ALARM_;
             solStack_free(stk);
-            solStack_free(col_stk);
             return 2;
         }
         solLRSymbol_set_is_idle(sym);
     }
-    while ((col = solStack_pop(col_stk))) {
-        if (solLRParser_compute_items_collections(p, col)) {
-            _DEBUG_ALARM_;
-            solStack_free(stk);
-            solStack_free(col_stk);
-            return 4;
-        }
-    }
     solStack_free(stk);
-    solStack_free(col_stk);
     return 0;
 }
 
@@ -591,6 +575,10 @@ SolLRParser* solLRParser_new()
 {
     SolLRParser *p = sol_calloc(1, sizeof(SolLRParser));
     p->gen = 0;
+    p->stk = solStack_new();
+    if (p->stk == NULL) {
+        goto oops;
+    }
     p->collections = solList_new();
     if (p->collections == NULL) {
         goto oops;
@@ -616,6 +604,9 @@ void solLRParser_free(SolLRParser *p)
 {
     if (p == NULL) {
         return;
+    }
+    if (p->stk) {
+        solStack_free(p->stk);
     }
     if (p->collections) {
         solList_free(p->collections);
