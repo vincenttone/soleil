@@ -19,9 +19,10 @@
 #define SolLRSymbolFlag_FIRST_COMPUTED       0x300
 #define SolLRSymbolFlag_FOLLOW_COMPUTED      0x400
 
-#define SolLRItemCol_FLAG_END         0x1
-#define SolLRItemCol_FLAG_BUSY        0x2
-#define SolLRItemCol_FLAG_COMPTUED    0x4
+#define SolLRItemCol_FLAG_END                0x1
+#define SolLRItemCol_FLAG_COMPUTING          0x2
+#define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x4
+#define SolLRItemCol_FLAG_COMPTUED           0x8
 
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
@@ -29,9 +30,9 @@
 #define SolLRTableFieldFlag_ACTION_SHIFT            0x4
 #define SolLRTableFieldFlag_ACTION_REDUCE           0x8
 #define SolLRTableFieldFlag_TYPE_STATE              0x10
+#define SolLRTableFieldFlag_TYPE_COL                0x10
 #define SolLRTableFieldFlag_TYPE_SYMBOL             0x20
 #define SolLRTableFieldFlag_TYPE_PRODUCT            0x30
-#define SolLRTableFieldFlag_TYPE_COL                0x40
 #define SolLRTableFieldFlag_COL_REPEATABLE          0x100
 
 typedef struct _SolLRSymbol {
@@ -88,7 +89,6 @@ typedef struct _SolLRTableField {
 SolLRParser* solLRParser_new();
 void solLRParser_free(SolLRParser*);
 SolLRItemCol* solLRParser_generate_items_collection(SolLRParser*, SolLRSymbol*, int);
-int _solLRParser_compare_cols(void*, void*, SolRBTree*, int);
 int solLRParser_compare_symbol(SolLRParser*, SolLRSymbol*, SolLRSymbol*);
 
 SolLRSymbol* solLRSymbol_new(void*);

@@ -201,7 +201,7 @@ int solSLRParser_prepare(SolSLRParser *p)
     if (solLRParser_compute_items_collections(p->lr, c) != 0) {
         return 1;
     }
-    if (solSLRParser_compute_parsing_table(p) != 0) {
+    if (0 && solSLRParser_compute_parsing_table(p) != 0) {
         return 2;
     }
     return 0;
@@ -230,34 +230,37 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
         rbti = solRBTreeIter_new(c1->nc, solRBTree_root(c1->nc), SolRBTreeIterTT_preorder);
         do {
             c2 = (SolLRItemCol*)(solRBTreeIter_current_val(rbti));
-            if (c2->flag & SolLRItemCol_FLAG_END) { // reach the end of product, reduce
-                if (solLRSymbol_is_origin(c2->sym)) { // reduce to original, accept
-                    if (solSLRParser_record_accept(p, c1) != 0) {
-                        solRBTreeIter_free(rbti);
-                        return 1;
-                    }
-                } else if (solSLRParser_record_reduce(p, c1, c2->sym) != 0) {
-                    solRBTreeIter_free(rbti);
-                    return 2;
-                }
-                continue;
-            }
-            if (solLRSymbol_is_terminal(c2->sym)) { // terminal, shift
-                if (solSLRParser_record_shift(p, c1, c2->sym, c2) != 0) {
-                    solRBTreeIter_free(rbti);
-                    return 3;
-                }
-            } else if (solLRSymbol_is_nonterminal(c2->sym)) { // nonerminal, goto
-                if (solSLRParser_record_goto(p, c1, c2->sym, c2) != 0) {
-                    solRBTreeIter_free(rbti);
-                    return 4;
-                }
-            } else { // unexpect
-                return 5; // error
-            }
+            
         } while (solRBTreeIter_next(rbti));
         solRBTreeIter_free(rbti);
     } while ((n = solListNode_next(n)));
+    return 0;
+}
+
+int solSLRParser_record(SolSLRParser *p, SolLRItemCol *c1, SolLRItemCol *c2)
+{
+    if (c2->flag & SolLRItemCol_FLAG_END) { // reach the end of product, reduce
+        if (solLRSymbol_is_origin(c2->sym)) { // reduce to original, accept
+            if (solSLRParser_record_accept(p, c1) != 0) {
+                return 1;
+            }
+        } else if (solSLRParser_record_reduce(p, c1, c2->sym) != 0) {
+            return 2;
+        }
+        goto done;
+    }
+    if (solLRSymbol_is_terminal(c2->sym)) { // terminal, shift
+        if (solSLRParser_record_shift(p, c1, c2->sym, c2) != 0) {
+            return 3;
+        }
+    } else if (solLRSymbol_is_nonterminal(c2->sym)) { // nonerminal, goto
+        if (solSLRParser_record_goto(p, c1, c2->sym, c2) != 0) {
+            return 4;
+        }
+    } else { // unexpect
+        return 5; // error
+    }
+done:
     return 0;
 }
 
