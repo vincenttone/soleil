@@ -51,8 +51,10 @@ void print_free_val(void *val)
 
 int cmp(void *v1, void *v2, SolRBTree *tree, int flag)
 {
-    if (flag & 0x2) {
+    if (flag & SolRBTree_CMP_FLAG_INSERT) {
         printf("insert compare %d\n", conv_val(v1));
+    } else if (flag & SolRBTree_CMP_FLAG_COMPARE) {
+        printf("compare's compare %d\n", conv_val(v1));
     }
     if (conv_val(v1) == conv_val(v2)) return 0;
     if (conv_val(v1) < conv_val(v2)) return -1;
@@ -71,14 +73,21 @@ int main()
     SolRBTree *tree = solRBTree_new();
     solRBTree_set_compare_func(tree, &cmp);
     solRBTree_set_val_free_func(tree, &print_free_val);
+    SolRBTree *tree1 = solRBTree_new();
+    solRBTree_set_compare_func(tree1, &cmp);
+    solRBTree_set_val_free_func(tree1, &print_free_val);
     int counts[CLEN];
     int i;
     for (i = 1; i <= CLEN; i++) {
         counts[i] = i;
         solRBTree_insert(tree, &counts[i]);
+        solRBTree_insert(tree1, &counts[i]);
     }
+    printf("compare tree return %d\n", solRBTree_compare_tree(tree, solRBTree_root(tree), tree1, solRBTree_root(tree1)));
     solRBTree_insert(tree, &counts[3]);
-    printf("ROOT is %d, count: %zu\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))), solRBTree_count(tree));
+    printf("compare tree return %d\n", solRBTree_compare_tree(tree, solRBTree_root(tree), tree1, solRBTree_root(tree1)));
+    printf("tree ROOT is %d, count: %zu\n", conv_val(solRBTreeNode_val(solRBTree_root(tree))), solRBTree_count(tree));
+    printf("tree1 ROOT is %d, count: %zu\n", conv_val(solRBTreeNode_val(solRBTree_root(tree1))), solRBTree_count(tree1));
     printf("---preorder travelsal---\n");
     solRBTree_travelsal_preorder(tree, solRBTree_root(tree), &print_key, NULL);
     printf("---inorder travelsal---\n");
@@ -126,6 +135,8 @@ int main()
     } while (solRBTreeIter_next(ib));
     solRBTreeIter_free(ib);
     printf("---------End test iter backorder--------\n");
+    printf("compare tree return %d\n", solRBTree_compare_tree(tree, solRBTree_root(tree), tree1, solRBTree_root(tree1)));
     solRBTree_free(tree);
+    solRBTree_free(tree1);
     return 0;
 }
