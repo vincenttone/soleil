@@ -56,6 +56,7 @@ typedef struct _SolLRItem {
     size_t pos;
     SolLRProduct *p;
     int flag;
+    SolList *cols;
 } SolLRItem;
 
 typedef struct _SolLRItemCol { // items collection

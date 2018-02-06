@@ -102,6 +102,14 @@ void solLRProduct_free(SolLRProduct *p)
         sol_free(p->r);
     }
     if (p->items) {
+        size_t s;
+        SolLRItem *i;
+        for (s = 0; s <= p->len; s++) {
+            i = (p->items + s);
+            if (i->cols) {
+                solList_free(i->cols);
+            }
+        }
         sol_free(p->items);
     }
     sol_free(p);
@@ -122,6 +130,7 @@ SolLRItem* solLRProduct_item(SolLRProduct *product, size_t pos)
     if (i->p == NULL) {
         i->p = product;
         i->pos = pos;
+        i->cols = solList_new();
         if (pos == product->len) {
             i->flag |= 0x1; // end of product
         }
@@ -417,70 +426,54 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
         printf(" compute kernel item: ");
         (*p->f_debug_item)(item, p);
 #endif
-        if (item->pos == item->p->len) { // the end of product
-            // record product nonterminal symbol when reach end
-            col = solLRParser_generate_items_collection(p, item->p->s, 0x0);
-            col->flag |= SolLRItemCol_FLAG_END;
-            f2 = solLRParserTableField_new(p, p->end, SolLRTableFieldFlag_TYPE_SYMBOL);
+        s = *(solLRProduct_find_symbol(item->p, item->pos));
+#ifdef __SOL_DEBUG__
+        printf(" computing symbol: ");
+        (*p->f_debug_symbol)(s, p);
+        printf("\n");
+#endif
+        f2 = solLRParserTableField_new(p, s, SolLRTableFieldFlag_TYPE_SYMBOL);
+        f3 = solRBTuple_get_first(p->col_rel, 2, f1, f2);
+        if (f3 == NULL) {
+            col = solLRParser_generate_items_collection(p, s, 0x0);
+#ifdef __SOL_DEBUG__
+            printf(" gengerate collection of state %zu\n", col->state);
+#endif
             f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
             if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
                 _DEBUG_ALARM_;
                 goto oops;
             }
-            /*
-            item1 = solLRProduct_item(item->p, (item->pos));
-            item1->flag |= 0x4;
-            solList_add(col->items, item);
-            */
+#ifdef __SOL_DEBUG__
+            printf(" record collection of state %zu -> %zu\n", c->state, col->state);
+#endif
+            if (solRBTuple_put(p->col_rel, 1, f3)) {
+                _DEBUG_ALARM_;
+                goto oops;
+            }
+            if (col->flag & 0x8) continue;
         } else {
-            s = *(solLRProduct_find_symbol(item->p, item->pos));
+            col = f3->target;
+        }
+        item1 = solLRProduct_item(item->p, (item->pos) + 1);
+        item1->flag |= 0x4;
+        solList_add(col->items, item1);
+        solList_add(item1->cols, col);
+        if ((col->flag & SolLRItemCol_FLAG_COMPUTING) == 0) {
+            solStack_push(p->stk, col);
+            col->flag |= SolLRItemCol_FLAG_COMPUTING;
 #ifdef __SOL_DEBUG__
-            printf(" computing symbol: ");
-            (*p->f_debug_symbol)(s, p);
-            printf("\n");
+            printf(" hold on collection of state %zu:\n", col->state);
 #endif
-            f2 = solLRParserTableField_new(p, s, SolLRTableFieldFlag_TYPE_SYMBOL);
-            f3 = solRBTuple_get_first(p->col_rel, 2, f1, f2);
-            if (f3 == NULL) {
-                col = solLRParser_generate_items_collection(p, s, 0x0);
+        }
 #ifdef __SOL_DEBUG__
-                printf(" gengerate collection of state %zu\n", col->state);
+        printf(" record item to state %zu: ", col->state);
+        (*p->f_debug_item)(item1, p);
 #endif
-                f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
-                if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
-                    _DEBUG_ALARM_;
-                    goto oops;
-                }
-#ifdef __SOL_DEBUG__
-                printf(" record collection of state %zu -> %zu\n", c->state, col->state);
-#endif
-                if (solRBTuple_put(p->col_rel, 1, f3)) {
-                    _DEBUG_ALARM_;
-                    goto oops;
-                }
-                if (col->flag & 0x8) continue;
-            } else {
-                col = f3->target;
-            }
-            item1 = solLRProduct_item(item->p, (item->pos) + 1);
-            item1->flag |= 0x4;
-            solList_add(col->items, item1);
-            if ((col->flag & SolLRItemCol_FLAG_COMPUTING) == 0) {
-                solStack_push(p->stk, col);
-                col->flag |= SolLRItemCol_FLAG_COMPUTING;
-#ifdef __SOL_DEBUG__
-                printf(" hold on collection of state %zu:\n", col->state);
-#endif
-            }
-#ifdef __SOL_DEBUG__
-            printf(" record item to state %zu: ", col->state);
-            (*p->f_debug_item)(item1, p);
-#endif
-            if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
-                if (solLRParser_compute_nonkernel_items(p, c, s)) {
-                    _DEBUG_ALARM_;
-                    goto oops;
-                }
+        if (solLRSymbol_is_nonterminal(s)) { // gererate nonkernel items
+            if (solLRParser_compute_nonkernel_items(p, c, s)) {
+                _DEBUG_ALARM_;
+                goto oops;
             }
         }
         continue;
@@ -538,6 +531,10 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
         item = solLRProduct_item(product, 1);
         item->flag |= 0x8;
         if (solList_add(col->items, item) == NULL) {
+            _DEBUG_ALARM_;
+            goto oops;
+        }
+        if (solList_add(item->cols, col) == NULL) {
             _DEBUG_ALARM_;
             goto oops;
         }

@@ -155,6 +155,9 @@ void out_item(SolLRItem *item, SolLRParser *p)
         printf("\t[FNKNL]");
     }
     printf("\t[%zu:%zu]", item->pos, item->p->len);
+    if (item->cols && solList_len(item->cols)) {
+        printf("\t[Cc:%zu]", solList_len(item->cols));
+    }
     printf("\n");
 }
 
