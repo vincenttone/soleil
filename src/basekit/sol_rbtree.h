@@ -41,6 +41,9 @@ SolRBTreeNode* solRBTree_search_min_node(SolRBTree*, SolRBTreeNode*);
 SolRBTreeNode* solRBTree_search_max_node(SolRBTree*, SolRBTreeNode*);
 SolRBTreeNode* solRBTree_search_successor(SolRBTree*, SolRBTreeNode*);
 
+int solRBTree_equal(SolRBTree*, SolRBTreeNode*, SolRBTree*, SolRBTreeNode*);
+int _solRBTree_compare_node(SolRBTree*, SolRBTreeNode*, void*);
+
 void* solRBTree_min(SolRBTree*);
 void* solRBTree_max(SolRBTree*);
 

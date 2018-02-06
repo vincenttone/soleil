@@ -492,3 +492,17 @@ int solRBTree_travelsal_backorder(SolRBTree *tree, SolRBTreeNode *node, solRBTre
     if (r != 0) return r;
     return 0;
 }
+
+int solRBTree_equal(SolRBTree *t1, SolRBTreeNode *n1, SolRBTree *t2, SolRBTreeNode *n2)
+{
+    if (t1->f_compare != t2->f_compare) {
+        return -2;
+    }
+    return solRBTree_travelsal_preorder(t1, n1, &_solRBTree_compare_node, n2);
+}
+
+int _solRBTree_compare_node(SolRBTree *t, SolRBTreeNode *n, void *d)
+{
+    if (n->val == ((SolRBTreeNode*)d)->val) return 0;
+    return (*t->f_compare)(n->val, ((SolRBTreeNode*)d)->val, t, 0x4);
+}
