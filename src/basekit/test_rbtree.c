@@ -71,7 +71,6 @@ int main()
     SolRBTree *tree = solRBTree_new();
     solRBTree_set_compare_func(tree, &cmp);
     solRBTree_set_val_free_func(tree, &print_free_val);
-    solRBTree_set_insert_conflict_fix_func(tree, &conflict_fix);
     int counts[CLEN];
     int i;
     for (i = 1; i <= CLEN; i++) {

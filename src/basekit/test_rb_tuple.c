@@ -78,7 +78,6 @@ int main()
 	SolRBTuple *t = solRBTuple_new();
 	solRBTuple_set_compare_val_func(t, &cmp);
     solRBTuple_set_free_val_func(t, &pf);
-    solRBTuple_set_insert_conflict_fix_func(t, &conflit_fix);
 	printf("put ret: %d\n", solRBTuple_put(t, 4, a, b, c, d));
 	printf("put ret: %d\n", solRBTuple_put(t, 3, b, c, d));
 	solRBTuple_put(t, 3, a, c, d);
