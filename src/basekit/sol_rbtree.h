@@ -3,6 +3,11 @@
 
 #include "sol_common.h"
 
+#define SolRBTree_CMP_FLAG_SEARCH        0x1
+#define SolRBTree_CMP_FLAG_INSERT        0x2
+#define SolRBTree_CMP_FLAG_DEL           0x4
+#define SolRBTree_CMP_FLAG_COMPARE       0x8
+
 enum _SolRBTreeCol {
     _SolRBTreeCol_red = 1,
     _SolRBTreeCol_black,

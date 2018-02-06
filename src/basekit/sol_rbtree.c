@@ -185,7 +185,7 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     SolRBTreeNode *pre_node = solRBTree_nil(tree);
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
         pre_node = current_node;
-        w = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), 0x2);
+        w = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), SolRBTree_CMP_FLAG_INSERT);
         // w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
@@ -201,7 +201,7 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     if (solRBTree_node_is_nil(tree, pre_node)) {
         // empty tree
         solRBTree_set_root(tree, node);
-    } else if (solRBTree_node_val_compare(tree, solRBTreeNode_val(node), solRBTreeNode_val(pre_node), 0x2) < 0) {
+    } else if (solRBTree_node_val_compare(tree, solRBTreeNode_val(node), solRBTreeNode_val(pre_node), SolRBTree_CMP_FLAG_INSERT) < 0) {
         // is left child
         solRBTreeNode_set_left(pre_node, node);
     } else {
@@ -241,7 +241,7 @@ SolRBTreeNode* solRBTree_search_node(SolRBTree *tree, void *val)
     SolRBTreeNode *current_node = solRBTree_root(tree);
     int i = 0;
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
-        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), 0x1);
+        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), SolRBTree_CMP_FLAG_SEARCH);
         if (i < 0) {
             current_node =  solRBTreeNode_left(current_node);
         } else if (i > 0) {
@@ -403,7 +403,7 @@ int solRBTree_del(SolRBTree *tree, void *val)
     SolRBTreeNode *del_node = solRBTree_root(tree);
     int i = 0;
     while (solRBTree_node_is_NOT_nil(tree, del_node)) {
-        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(del_node), 0x4);
+        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(del_node), SolRBTree_CMP_FLAG_DEL);
         if (i < 0) {
             del_node =  solRBTreeNode_left(del_node);
         } else if (i > 0) {
@@ -504,5 +504,5 @@ int solRBTree_equal(SolRBTree *t1, SolRBTreeNode *n1, SolRBTree *t2, SolRBTreeNo
 int _solRBTree_compare_node(SolRBTree *t, SolRBTreeNode *n, void *d)
 {
     if (n->val == ((SolRBTreeNode*)d)->val) return 0;
-    return (*t->f_compare)(n->val, ((SolRBTreeNode*)d)->val, t, 0x4);
+    return (*t->f_compare)(n->val, ((SolRBTreeNode*)d)->val, t, SolRBTree_CMP_FLAG_COMPARE);
 }
