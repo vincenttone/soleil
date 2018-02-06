@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "sol_lr.h"
 #include "sol_slr.h"
+#include "sol_rbtree_iter.h"
 
 enum _Symbol {
     _E = 1,
@@ -96,6 +97,38 @@ int _travelsal_fileds(void *f, SolRBTuple *t, size_t level, void *d)
     return 0;
 }
 
+int _travelsal_lr_fileds(void *f, SolRBTuple *t, size_t level, void *d)
+{
+    int i;
+    printf("|-");
+    for (i = 0; i < level; i++) {
+        printf("\t");
+    }
+    int flag = ((SolLRTableField*)f)->flag;
+    if (flag & SolLRTableFieldFlag_TYPE_STATE) {
+        SolLRItemCol *c = ((SolLRTableField*)f)->target;
+        printf(" <%zu>\t", c->state);
+        // printf("<%zu>\t[%d]\t", c->state, ((struct _SolSLRTableField*)f)->flag);
+    } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+        SolLRSymbol *s = ((SolLRTableField*)f)->target;
+        printf("[");
+        out_symbol(s, (SolLRParser*)(t->ex));
+        printf("]\t");
+        //printf("]\t[%d]\t", ((struct _SolSLRTableField*)f)->flag);
+    }
+    if (flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
+        printf("ACCEPT");
+    } else if (flag & SolLRTableFieldFlag_ACTION_REDUCE) {
+        printf("REDUCE");
+    } else if (flag & SolLRTableFieldFlag_ACTION_GOTO) {
+        printf("GOTO");
+    } else if (flag & SolLRTableFieldFlag_ACTION_SHIFT) {
+        printf("SHIFT");
+    }
+    printf("\n");
+    return 0;
+}
+
 void out_item(SolLRItem *item, SolLRParser *p)
 {
     SolLRProduct *product = item->p;
@@ -122,6 +155,9 @@ void out_item(SolLRItem *item, SolLRParser *p)
         printf("\t[FNKNL]");
     }
     printf("\t[%zu:%zu]", item->pos, item->p->len);
+    if (item->cols && solList_len(item->cols)) {
+        printf("\t[Cc:%zu]", solList_len(item->cols));
+    }
     printf("\n");
 }
 
@@ -137,7 +173,10 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     }
     if (col->flag & SolLRItemCol_FLAG_END) {
         printf("\t(with END FLAG)");
-    } 
+    }
+    if (col->flag & SolLRItemCol_FLAG_REPEATABLE) {
+        printf("\t*REPEATABLE*\t");
+    }
     if (col->items && solList_len(col->items)) {
         printf("\nItem(s):\n");
         n = solList_head(col->items);
@@ -186,6 +225,21 @@ int main()
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p->lr);
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
+    p->lr->col_rel->f_travelsal_act = &_travelsal_lr_fileds;
+    solRBTuple_travelsal(p->lr->col_rel, NULL);
+    SolRBTreeIter *iter = solRBTreeIter_new(p->lr->col_rel->n, solRBTree_root(p->lr->col_rel->n), SolRBTreeIterTT_inorder);
+    SolRBTupleRecord *record;
+    SolLRTableField *field;
+    do {
+        record = solRBTreeIter_current_val(iter);
+        field = record->v;
+        if (field->flag & SolLRTableFieldFlag_COL_REPEATABLE) {
+            printf("*******REPEATABLE********\n");
+        }
+        out_item_collections((SolLRItemCol*)(field->target), p->lr);
+    } while (solRBTreeIter_next(iter));
+    solRBTreeIter_free(iter);
+    /*
     SolLRItemCol *col;
     SolListNode *n = solList_head(p->lr->collections);
     do {
@@ -194,6 +248,7 @@ int main()
     } while ((n = solListNode_next(n)));
     p->table->f_travelsal_act = &_travelsal_fileds;
     solRBTuple_travelsal(p->table, NULL);
+    */
 
     solSLRParser_free(p);
     return 0;
