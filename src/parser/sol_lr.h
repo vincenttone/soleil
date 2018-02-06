@@ -108,7 +108,7 @@ void _solLRProduct_free(void*);
 
 SolLRItem* solLRProduct_item(SolLRProduct*, size_t);
 
-SolLRItemCol* solLRItemCol_new();
+SolLRItemCol* solLRItemCol_new(SolLRSymbol*);
 void solLRItemCol_free(SolLRItemCol*);
 void _solLRItemCol_free(void*);
 

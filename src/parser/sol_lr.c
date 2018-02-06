@@ -138,9 +138,13 @@ SolLRItem* solLRProduct_item(SolLRProduct *product, size_t pos)
     return i;
 }
 
-SolLRItemCol* solLRItemCol_new()
+SolLRItemCol* solLRItemCol_new(SolLRSymbol *s)
 {
     SolLRItemCol *c = sol_calloc(1, sizeof(SolLRItemCol));
+    if (c == NULL) {
+        return NULL;
+    }
+    c->sym = s;
     return c;
 }
 
@@ -647,7 +651,7 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p, SolLRSymbol 
         } while (solRBTreeIter_next(iter));
         solRBTreeIter_free(iter);
     }
-    c = solLRItemCol_new();
+    c = solLRItemCol_new(s);
     if (c == NULL) {
         goto oops;
     }
@@ -662,7 +666,6 @@ SolLRItemCol* solLRParser_generate_items_collection(SolLRParser *p, SolLRSymbol 
     if (from == 0x4) {
         //c->flag |= 0x4;
     }
-    c->sym = s;
     return c;
 oops:
     if (c) {
