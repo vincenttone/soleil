@@ -191,7 +191,8 @@ int solSLRParser_prepare(SolSLRParser *p)
     }
     SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->lr->origin->productions)));
     SolLRItem *i = solLRProduct_item(product, 0);
-    SolLRItemCol *c = solLRParser_generate_items_collection(p->lr, p->lr->origin, 0x0);
+    SolLRItemCol *c = solLRItemCol_new(p->lr->origin);
+    c = solLRParser_record_items_collection_relations(p->lr, c, NULL);
     if (c == NULL) {
         solLRItemCol_free(c);
     }
