@@ -191,12 +191,12 @@ int solSLRParser_prepare(SolSLRParser *p)
     }
     SolLRProduct *product = (SolLRProduct*)(solListNode_val(solList_head(p->lr->origin->productions)));
     SolLRItem *i = solLRProduct_item(product, 0);
-    SolLRItemCol *c = solLRItemCol_new(p->lr->origin);
+    SolLRItemCol *c = solLRParser_itemCol_new(p->lr, p->lr->origin);
     c = solLRParser_record_items_collection_relations(p->lr, c, NULL);
     if (c == NULL) {
         solLRItemCol_free(c);
     }
-    if (solList_add(c->items, i) == NULL) {
+    if (solRBTree_insert(c->items, i)) {
         return -3;
     }
     if (solLRParser_compute_items_collections(p->lr, c) != 0) {
@@ -216,6 +216,7 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
     if (solList_len(p->lr->collections) == 0) {
         return -2;
     }
+    /*
     SolLRItemCol *c1;
     SolLRItemCol *c2;
     SolRBTreeIter* rbti;
@@ -235,6 +236,7 @@ int solSLRParser_compute_parsing_table(SolSLRParser *p)
         } while (solRBTreeIter_next(rbti));
         solRBTreeIter_free(rbti);
     } while ((n = solListNode_next(n)));
+    */
     return 0;
 }
 
