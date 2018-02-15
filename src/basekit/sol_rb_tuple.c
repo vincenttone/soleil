@@ -91,7 +91,6 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
             tree = pre->n;
             tree->ex = t;
             solRBTree_set_compare_func(tree, solRBTree_node_val_compare_func(t->n));
-            solRBTree_set_insert_conflict_fix_func(tree, solRBTree_insert_conflict_fix_func(t->n));
             solRBTree_set_val_free_func(tree, solRBTree_node_val_free_func(t->n));
         }
         if (cur == NULL) {
@@ -105,14 +104,6 @@ int solRBTuple_put(SolRBTuple *t, size_t l, ...)
                 cur->level = pre->level + 1;
             }
             solRBTree_insert(tree, cur);
-            /*
-        } else {
-            if (solRBTree_insert_conflict_fix_func(t->n)) {
-                if (solRBTree_insert_conflict_fix(t->n, v, cur->v) != 0) {
-                    return 2;
-                }
-            }
-            */
         }
         tree = cur->n;
         pre = cur;

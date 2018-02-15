@@ -185,15 +185,10 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     SolRBTreeNode *pre_node = solRBTree_nil(tree);
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
         pre_node = current_node;
-        w = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), 0x2);
+        w = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), SolRBTree_CMP_FLAG_INSERT);
         // w = solRBTree_node_compare(tree, node, current_node);
         if (w == 0) {
             // has this node
-			if (solRBTree_insert_conflict_fix_func(tree)) {
-				if (solRBTree_insert_conflict_fix(tree, val, solRBTreeNode_val(current_node)) !=0) {
-					return 1;
-				}
-			}
             solRBTree_node_free(tree, node);
             return 0;
         } else if (w < 0) {
@@ -206,7 +201,7 @@ int solRBTree_insert(SolRBTree *tree, void *val)
     if (solRBTree_node_is_nil(tree, pre_node)) {
         // empty tree
         solRBTree_set_root(tree, node);
-    } else if (solRBTree_node_val_compare(tree, solRBTreeNode_val(node), solRBTreeNode_val(pre_node), 0x2) < 0) {
+    } else if (solRBTree_node_val_compare(tree, solRBTreeNode_val(node), solRBTreeNode_val(pre_node), SolRBTree_CMP_FLAG_INSERT) < 0) {
         // is left child
         solRBTreeNode_set_left(pre_node, node);
     } else {
@@ -246,7 +241,7 @@ SolRBTreeNode* solRBTree_search_node(SolRBTree *tree, void *val)
     SolRBTreeNode *current_node = solRBTree_root(tree);
     int i = 0;
     while (solRBTree_node_is_NOT_nil(tree, current_node)) {
-        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), 0x1);
+        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(current_node), SolRBTree_CMP_FLAG_SEARCH);
         if (i < 0) {
             current_node =  solRBTreeNode_left(current_node);
         } else if (i > 0) {
@@ -408,7 +403,7 @@ int solRBTree_del(SolRBTree *tree, void *val)
     SolRBTreeNode *del_node = solRBTree_root(tree);
     int i = 0;
     while (solRBTree_node_is_NOT_nil(tree, del_node)) {
-        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(del_node), 0x4);
+        i = solRBTree_node_val_compare(tree, val, solRBTreeNode_val(del_node), SolRBTree_CMP_FLAG_DEL);
         if (i < 0) {
             del_node =  solRBTreeNode_left(del_node);
         } else if (i > 0) {
@@ -495,5 +490,58 @@ int solRBTree_travelsal_backorder(SolRBTree *tree, SolRBTreeNode *node, solRBTre
     solRBTree_travelsal_backorder(tree, solRBTreeNode_right(node), f, d);
     int r = (*f)(tree, node, d);
     if (r != 0) return r;
+    return 0;
+}
+
+int solRBTree_compare_tree(SolRBTree *t1, SolRBTreeNode *n1, SolRBTree *t2, SolRBTreeNode *n2)
+{
+    if (t1 == NULL || t2 == NULL || n1 == NULL || n2 == NULL) {
+        return -10;
+    }
+    if (t1->f_compare != t2->f_compare) {
+        return -11;
+    }
+    if (solRBTree_count(t1) > solRBTree_count(t2)) {
+        return 1;
+    } else if (solRBTree_count(t1) < solRBTree_count(t2)) {
+        return -1;
+    }
+    return _solRBTree_compare_tree(t1, n1, t2, n2);
+}
+
+int _solRBTree_compare_tree(SolRBTree *t1, SolRBTreeNode *n1, SolRBTree *t2, SolRBTreeNode *n2)
+{
+    if (solRBTree_node_is_nil(t1, n1)) {
+        if (solRBTree_node_is_nil(t2, n2)) {
+            return 0;
+        } else {
+            return 2;
+        }
+    }
+    int c;
+    if (n1->val != n2->val)  {
+        c = (*t1->f_compare)(n1->val, n2->val, t1, SolRBTree_CMP_FLAG_COMPARE);
+        if (c != 0) return c;
+    }
+    if (solRBTree_node_is_nil(t1, solRBTreeNode_left(n1))) {
+        if (solRBTree_node_is_NOT_nil(t2, solRBTreeNode_left(n2))) {
+            return 2;
+        }
+    } else if (solRBTree_node_is_nil(t2, solRBTreeNode_left(n2))) {
+        return -2;
+    } else {
+        c = _solRBTree_compare_tree(t1, solRBTreeNode_left(n1), t2, solRBTreeNode_left(n2));
+        if (c != 0) return c;
+    }
+    if (solRBTree_node_is_nil(t1, solRBTreeNode_right(n1))) {
+        if (solRBTree_node_is_NOT_nil(t2, solRBTreeNode_right(n2))) {
+            return 2;
+        }
+    } else if (solRBTree_node_is_nil(t2, solRBTreeNode_right(n2))) {
+        return -2;
+    } else {
+        c = _solRBTree_compare_tree(t1, solRBTreeNode_right(n1), t2, solRBTreeNode_right(n2));
+        if (c != 0) return c;
+    }
     return 0;
 }

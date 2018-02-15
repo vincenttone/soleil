@@ -161,11 +161,19 @@ void out_item(SolLRItem *item, SolLRParser *p)
     printf("\n");
 }
 
+int _out_rbtree_item(SolRBTree *tree, SolRBTreeNode *node, void *d)
+{
+    out_item((SolLRItem*)(solRBTreeNode_val(node)), (SolLRParser*)d);
+    return 0;
+}
+
 void out_item_collections(SolLRItemCol *col, SolLRParser *p)
 {
-    SolLRItem *item;
-    SolListNode *n;
-    printf("Collection of state %zu, symbol: ", col->state);
+    if (col->state) {
+        printf("Collection of state %zu, symbol: ", col->state);
+    } else {
+        printf("Collection of symbol: ");
+    }
     if (col->sym) {
         out_symbol(col->sym, p);
     } else {
@@ -177,14 +185,9 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     if (col->flag & SolLRItemCol_FLAG_REPEATABLE) {
         printf("\t*REPEATABLE*\t");
     }
-    if (col->items && solList_len(col->items)) {
+    if (col->items && solRBTree_count(col->items)) {
         printf("\nItem(s):\n");
-        n = solList_head(col->items);
-        do {
-            item = solListNode_val(n);
-            printf("\t");
-            out_item(item, p);
-        } while ((n = solListNode_next(n)));
+        solRBTree_travelsal_inorder(col->items, solRBTree_root(col->items), &_out_rbtree_item, p);
     } else {
         printf("\nNo item now\n");
     }

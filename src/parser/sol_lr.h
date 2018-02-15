@@ -62,8 +62,7 @@ typedef struct _SolLRItem {
 typedef struct _SolLRItemCol { // items collection
     size_t state; // state
     size_t flag; // flag
-    SolList *items; // items
-    SolRBTree *nc; // next items collection
+    SolRBTree *items; // items
     SolLRSymbol *sym; // pre symbol
 } SolLRItemCol;
 
@@ -108,19 +107,29 @@ void _solLRProduct_free(void*);
 
 SolLRItem* solLRProduct_item(SolLRProduct*, size_t);
 
-SolLRItemCol* solLRItemCol_new();
+SolLRItemCol* solLRParser_itemCol_new(SolLRParser*, SolLRSymbol*);
+SolLRItemCol* solLRItemCol_new(SolLRSymbol*);
 void solLRItemCol_free(SolLRItemCol*);
 void _solLRItemCol_free(void*);
+
+int _solLRItemsCols_collect_item(SolRBTree*, SolRBTreeNode*, void*);
+int solLRParser_collect_kernel_item(SolLRParser*, SolList*, SolLRItem*);
 
 SolLRTableField* solLRParserTableField_new(SolLRParser*, void*, int);
 void solLRParserTableField_free(SolLRTableField*);
 
 int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 int solLRSymbol_record_follow(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
+SolLRItemCol* solLRParser_record_items_collection_relations(SolLRParser*, SolLRItemCol*, SolLRItemCol*);
+
+int solLRItem_compare(SolLRItem*, SolLRItem*);
 
 int _solLRSymbol_share_firsts(SolRBTree*, SolRBTreeNode*, void*);
 int _solLRSymbol_share_follows(SolRBTree*, SolRBTreeNode*, void*);
+
 int _solLRParser_compare_symbols(void*, void*, SolRBTree*, int);
+int _solLRParserField_compare(void*, void*, SolRBTuple*, int);
+int _solLRItem_compare(void*, void*, SolRBTree*, int);
 
 int solLRSymbol_compute_nullable(SolLRSymbol*);
 int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
@@ -128,8 +137,6 @@ int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRPars
 
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
-
-int _solLRParserField_compare(void*, void*, SolRBTuple*, int);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 

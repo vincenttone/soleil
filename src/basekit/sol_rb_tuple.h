@@ -40,7 +40,6 @@ int solRBTuple_record_travelsal(SolRBTuple*, SolRBTupleRecord*, void*);
 
 #define solRBTuple_set_compare_val_func(t, f) ((t)->f_cmp_val = f)
 #define solRBTuple_set_free_val_func(t, f) ((t)->f_free_val = f)
-#define solRBTuple_set_insert_conflict_fix_func(t, f) solRBTree_set_insert_conflict_fix_func((t)->n, f)
 
 #define solRBTupleRecord_set_free_val_func(r, f) (r)->f_free_val = f
 

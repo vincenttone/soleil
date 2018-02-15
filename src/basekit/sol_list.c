@@ -88,37 +88,28 @@ int solList_remove(SolList *l, void *v)
 {
     SolListNode *n = solList_head(l);
     SolListNode *pn = NULL;
-    SolListNode *nn;
-    while (n) {
-        nn = solListNode_next(n);
+    do {
         if (solListVal_match_func(l)) {
             if (solListVal_match(l, solListNode_val(n), v) == 0) {
-                if (pn == NULL) {
-                    solList_set_head(l, nn);
-                } else {
-                    solListNode_set_next(pn, nn);
-                }
-                if (nn == NULL) {
-                    solList_set_tail(l, NULL);
-                }
-                solListNode_free(l, n);
+                goto remove;
             }
-        } else {
-            if (solListNode_val(n) == v) {
-                if (pn == NULL) {
-                    solList_set_head(l, nn);
-                } else {
-                    solListNode_set_next(pn, nn);
-                }
-                if (nn == NULL) {
-                    solList_set_tail(l, NULL);
-                }
-                solListNode_free(l, n);
-            }
+        } else if (solListNode_val(n) == v) {
+            goto remove;
         }
+    next:
         pn = n;
-        n = nn;
-    }
+        continue;
+    remove:
+        if (pn == NULL) {
+            solList_set_head(l, n);
+        } else if (solListNode_next(n)) {
+            solListNode_set_next(pn, solListNode_next(n));
+        } else {
+            solList_set_tail(l, pn);
+        }
+        solListNode_free(l, n);
+        goto next;
+    } while ((n = solListNode_next(n)));
     return 1;
 }
 
