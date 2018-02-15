@@ -550,12 +550,20 @@ int solLRParser_compute_nonkernel_items(SolLRParser *p, SolLRItemCol *c, SolLRSy
     SolList *cols = solList_new();
     SolListNode *ln;
     do {
+        col = NULL;
         product = (SolLRProduct*)(solListNode_val(n));
         sym = *(product->r);
+#ifdef __SOL_DEBUG__
+        printf("  target product: ");
+        (*p->f_debug_product)(product, p);
+        printf("  target symbol: ");
+        (*p->f_debug_symbol)(sym, p);
+        printf("\n");
+#endif
         if (solList_len(cols)) {
             ln = solList_head(cols);
             do {
-                if (((SolLRItemCol*)(solListNode_val(ln)))->sym == s) {
+                if (((SolLRItemCol*)(solListNode_val(ln)))->sym == sym) {
                     col = solListNode_val(ln);
                     break;
                 }
