@@ -445,10 +445,6 @@ int solLRParser_compute_items_collections(SolLRParser *p, SolLRItemCol *c)
         ln = solList_head(cols);
         while ((ln = solListNode_next(ln))) { // first node is c
             col = solListNode_val(ln);
-#ifdef __SOL_DEBUG__
-            printf("try record relations of col sym:");
-            (*p->f_debug_symbol)(col->sym, p);
-#endif
             col = solLRParser_record_items_collection_relations(p, col, c);
             if (col == NULL) {
                 _DEBUG_ALARM_;
@@ -527,6 +523,7 @@ int solLRParser_collect_kernel_item(SolLRParser *p, SolList *cols, SolLRItem *it
     item = solLRProduct_item(item->p, (item->pos) + 1);
     item->flag |= 0x4;
     solRBTree_insert(col->items, item);
+    solList_add(item->cols, col);
     if (solLRSymbol_is_nonterminal(col->sym)) { // gererate nonkernel items
         if (solLRParser_compute_nonkernel_items(p, c, col->sym)) {
             _DEBUG_ALARM_;
@@ -673,9 +670,17 @@ SolLRItemCol* solLRParser_record_items_collection_relations(SolLRParser *p, SolL
     }
     SolLRTableField *f3;
     if (pre_col == NULL) {
+        col->state = ++p->gen;
         f3 = solLRParserTableField_new(p, col, SolLRTableFieldFlag_TYPE_COL);
         goto record;
     }
+#ifdef __SOL_DEBUG__
+    printf("try record relations of cols:\n");
+    (*p->f_debug_item_col)(col, p);
+    printf("\n");
+    (*p->f_debug_item_col)(pre_col, p);
+    printf("\n");
+#endif
     SolLRTableField *f1 = solLRParserTableField_new(p, pre_col, SolLRTableFieldFlag_TYPE_COL);
     SolLRTableField *f2 = solLRParserTableField_new(p, col->sym, SolLRTableFieldFlag_TYPE_SYMBOL);
     SolLRItem *item = solRBTreeNode_val(solRBTree_root(col->items));
@@ -684,11 +689,36 @@ SolLRItemCol* solLRParser_record_items_collection_relations(SolLRParser *p, SolL
         SolLRItemCol *c;
         do {
             c = solListNode_val(n);
-            if (solRBTree_compare_tree(col->items, solRBTree_root(col->items), c->items, solRBTree_root(c->items)) == 0) {
+            if (c == col) continue;
+#ifdef __SOL_DEBUG__
+            printf(" ---------------------------------\n");
+            printf(" compare cols:\n");
+            (*p->f_debug_item_col)(col, p);
+            printf("\n");
+            (*p->f_debug_item_col)(c, p);
+            printf("\n");
+            printf(" ---------------------------------\n");
+#endif
+            if (solRBTree_compare_tree(
+                    col->items,
+                    solRBTree_root(col->items),
+                    c->items,
+                    solRBTree_root(c->items)
+                    ) == 0
+                ) {
                 f3 = solLRParserTableField_new(p, c, SolLRTableFieldFlag_TYPE_COL);
                 if (solRBTuple_put(p->col_rel, 3, f1, f2, f3)) {
                     return NULL;
                 }
+#ifdef __SOL_DEBUG__
+                printf(" >>>> use record of col:");
+                (*p->f_debug_item_col)(c, p);
+                printf("\n");
+                printf(" >>>> replace col:");
+                (*p->f_debug_item_col)(col, p);
+                printf("\n");
+#endif
+                solList_remove(item->cols, col);
                 solLRItemCol_free(col);
                 return c;
             }
@@ -703,6 +733,10 @@ SolLRItemCol* solLRParser_record_items_collection_relations(SolLRParser *p, SolL
         goto oops;
     }
 record:
+#ifdef __SOL_DEBUG__
+    printf(" >>>> record new col:");
+    (*p->f_debug_item_col)(col, p);
+#endif
     if (solRBTuple_put(p->col_rel, 1, f3)) {
         goto oops;
     }

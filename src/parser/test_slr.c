@@ -169,7 +169,11 @@ int _out_rbtree_item(SolRBTree *tree, SolRBTreeNode *node, void *d)
 
 void out_item_collections(SolLRItemCol *col, SolLRParser *p)
 {
-    printf("Collection of state %zu, symbol: ", col->state);
+    if (col->state) {
+        printf("Collection of state %zu, symbol: ", col->state);
+    } else {
+        printf("Collection of symbol: ");
+    }
     if (col->sym) {
         out_symbol(col->sym, p);
     } else {
