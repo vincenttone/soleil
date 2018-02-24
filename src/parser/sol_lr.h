@@ -23,7 +23,7 @@
 #define SolLRItemCol_FLAG_END                0x1
 #define SolLRItemCol_FLAG_COMPUTING          0x2
 #define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x4
-#define SolLRItemCol_FLAG_COMPTUED           0x8
+#define SolLRItemCol_FLAG_COMPUTED           0x8
 #define SolLRItemCol_FLAG_REPEATABLE         0x10
 
 // action list
@@ -131,12 +131,14 @@ int _solLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 int _solLRParserField_compare(void*, void*, SolRBTuple*, int);
 int _solLRItem_compare(void*, void*, SolRBTree*, int);
 
+int _solLRItem_register_collection(SolRBTree*, SolRBTreeNode*, void*);
+
 int solLRSymbol_compute_nullable(SolLRSymbol*);
 int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRParser*);
 
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
-int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
+int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRItemCol*);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
