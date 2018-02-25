@@ -179,12 +179,6 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     } else {
         printf("NULL");
     }
-    if (col->flag & SolLRItemCol_FLAG_END) {
-        printf("\t(with END FLAG)");
-    }
-    if (col->flag & SolLRItemCol_FLAG_REPEATABLE) {
-        printf("\t*REPEATABLE*\t");
-    }
     if (col->items && solRBTree_count(col->items)) {
         printf("\nItem(s):\n");
         solRBTree_travelsal_inorder(col->items, solRBTree_root(col->items), &_out_rbtree_item, p);
