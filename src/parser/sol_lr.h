@@ -24,7 +24,8 @@
 #define SolLRItemCol_FLAG_COMPUTING          0x2
 #define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x4
 #define SolLRItemCol_FLAG_COMPUTED           0x8
-#define SolLRItemCol_FLAG_REPEATABLE         0x10
+#define SolLRItemCol_FLAG_RECORDED           0x10
+#define SolLRItemCol_FLAG_FROM_NONKERNEL     0x20
 
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
@@ -139,7 +140,7 @@ int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRParser*);
 
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
-int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRItemCol*);
+int solLRParser_collect_from_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
