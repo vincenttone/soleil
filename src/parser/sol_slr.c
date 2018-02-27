@@ -83,11 +83,14 @@ void solSLRParser_free(SolSLRParser *p)
     if (p->table) {
         solRBTuple_free(p->table);
     }
-    if (p->fields && solList_len(p->fields)) {
-        SolListNode *n = solList_head(p->fields);
-        do {
-            solSLRParserTableField_free((SolSLRTableField*)(solListNode_val(n)));
-        } while ((n = solListNode_next(n)));
+    if (p->fields) {
+        if (solList_len(p->fields)) {
+            SolListNode *n = solList_head(p->fields);
+            do {
+                solSLRParserTableField_free((SolSLRTableField*)(solListNode_val(n)));
+            } while ((n = solListNode_next(n)));
+        }
+        solList_free(p->fields);
     }
     if (p) {
         sol_free(p);
