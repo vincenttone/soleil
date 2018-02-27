@@ -20,12 +20,10 @@
 #define SolLRSymbolFlag_FIRST_COMPUTED       0x300
 #define SolLRSymbolFlag_FOLLOW_COMPUTED      0x400
 
-#define SolLRItemCol_FLAG_END                0x1
-#define SolLRItemCol_FLAG_COMPUTING          0x2
-#define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x4
-#define SolLRItemCol_FLAG_COMPUTED           0x8
-#define SolLRItemCol_FLAG_RECORDED           0x10
-#define SolLRItemCol_FLAG_FROM_NONKERNEL     0x20
+#define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x1
+#define SolLRItemCol_FLAG_RECORDED           0x2
+#define SolLRItemCol_FLAG_NONKERNEL_COMPUTED 0x4
+#define SolLRItemCol_FLAG_END                0x8
 
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
@@ -174,6 +172,7 @@ int solLRParser_collect_from_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRS
                                                                         &_solLRSymbol_share_follows, \
                                                                         symbol)
 
-#define solLRProduct_find_symbol(p, s)  (SolLRSymbol**)((p)->r + s)
+#define solLRProduct_find_symbol_ptr(p, s)  (SolLRSymbol**)((p)->r + s)
+#define solLRProduct_find_symbol(p, s)  (*(SolLRSymbol**)((p)->r + s))
 
 #endif
