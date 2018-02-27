@@ -163,6 +163,7 @@ void out_item(SolLRItem *item, SolLRParser *p)
 
 int _out_rbtree_item(SolRBTree *tree, SolRBTreeNode *node, void *d)
 {
+    printf("\t");
     out_item((SolLRItem*)(solRBTreeNode_val(node)), (SolLRParser*)d);
     return 0;
 }
@@ -179,17 +180,11 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     } else {
         printf("NULL");
     }
-    if (col->flag & SolLRItemCol_FLAG_END) {
-        printf("\t(with END FLAG)");
-    }
-    if (col->flag & SolLRItemCol_FLAG_REPEATABLE) {
-        printf("\t*REPEATABLE*\t");
-    }
     if (col->items && solRBTree_count(col->items)) {
-        printf("\nItem(s):\n");
+        printf("\n - Item(s):\n");
         solRBTree_travelsal_inorder(col->items, solRBTree_root(col->items), &_out_rbtree_item, p);
     } else {
-        printf("\nNo item now\n");
+        printf("\n - None item\n");
     }
 }
 

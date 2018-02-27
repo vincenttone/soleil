@@ -20,11 +20,10 @@
 #define SolLRSymbolFlag_FIRST_COMPUTED       0x300
 #define SolLRSymbolFlag_FOLLOW_COMPUTED      0x400
 
-#define SolLRItemCol_FLAG_END                0x1
-#define SolLRItemCol_FLAG_COMPUTING          0x2
-#define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x4
-#define SolLRItemCol_FLAG_COMPUTED           0x8
-#define SolLRItemCol_FLAG_REPEATABLE         0x10
+#define SolLRItemCol_FLAG_KERNEL_COMPUTED    0x1
+#define SolLRItemCol_FLAG_RECORDED           0x2
+#define SolLRItemCol_FLAG_NONKERNEL_COMPUTED 0x4
+#define SolLRItemCol_FLAG_END                0x8
 
 // action list
 #define SolLRTableFieldFlag_ACTION_ACCEPT           0x1
@@ -64,6 +63,7 @@ typedef struct _SolLRItemCol { // items collection
     size_t flag; // flag
     SolRBTree *items; // items
     SolLRSymbol *sym; // pre symbol
+    SolList *nexts; // next cols
 } SolLRItemCol;
 
 typedef struct _SolLRParser {
@@ -113,7 +113,7 @@ void solLRItemCol_free(SolLRItemCol*);
 void _solLRItemCol_free(void*);
 
 int _solLRItemsCols_collect_item(SolRBTree*, SolRBTreeNode*, void*);
-int solLRParser_collect_kernel_item(SolLRParser*, SolList*, SolLRItem*);
+int solLRParser_collect_kernel_item(SolLRParser*, SolLRItemCol*, SolLRItem*);
 
 SolLRTableField* solLRParserTableField_new(SolLRParser*, void*, int);
 void solLRParserTableField_free(SolLRTableField*);
@@ -138,7 +138,7 @@ int solLRSymbol_compute_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);
 int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRParser*);
 
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
-int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRItemCol*);
+int solLRParser_collect_from_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
@@ -172,6 +172,7 @@ int solLRParser_compute_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRItemCo
                                                                         &_solLRSymbol_share_follows, \
                                                                         symbol)
 
-#define solLRProduct_find_symbol(p, s)  (SolLRSymbol**)((p)->r + s)
+#define solLRProduct_find_symbol_ptr(p, s)  (SolLRSymbol**)((p)->r + s)
+#define solLRProduct_find_symbol(p, s)  (*(SolLRSymbol**)((p)->r + s))
 
 #endif
