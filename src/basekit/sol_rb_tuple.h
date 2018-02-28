@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include "sol_common.h"
 #include "sol_rbtree.h"
+#include "sol_list.h"
 
 typedef struct _SolRBTupleRecord {
     size_t level;
@@ -21,7 +22,14 @@ typedef struct _SolRBTuple {
 
 struct _SolRBTupleTravelsalData {
     void* ext;
+    SolList *list;
     int (*f_travelsal_act)(void*, struct _SolRBTuple*, size_t, void*);
+};
+
+struct _SolRBTupleListData {
+    void* ext;
+    SolList *list;
+    int (*f_list_act)(SolList*, struct _SolRBTuple*, void*);
 };
 
 SolRBTuple* solRBTuple_new();
@@ -41,6 +49,9 @@ int solRBTuple_travelsal(SolRBTuple*, int (*f_travelsal_act)(void*, struct _SolR
 int _solRBTupleRecord_travelsal(SolRBTree*, SolRBTreeNode*, void*);
 
 int solRBTuple_record_travelsal(SolRBTuple*, SolRBTupleRecord*, void*);
+
+int solRBTuple_list(SolRBTuple*, int (*f_list_act)(SolList*, struct _SolRBTuple*, void*), void*);
+int _solRBTupleRecord_travelsal_list(SolRBTree*, SolRBTreeNode*, void*);
 
 #define solRBTuple_set_compare_val_func(t, f) ((t)->f_cmp_val = f)
 #define solRBTuple_set_free_val_func(t, f) ((t)->f_free_val = f)
