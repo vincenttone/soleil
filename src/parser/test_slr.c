@@ -223,16 +223,14 @@ int main()
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p->lr);
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
-    p->lr->col_rel->f_travelsal_act = &_travelsal_lr_fileds;
-    solRBTuple_travelsal(p->lr->col_rel, NULL);
+    solRBTuple_travelsal(p->lr->col_rel, &_travelsal_lr_fileds, NULL);
     SolLRItemCol *col;
     SolListNode *n = solList_head(p->lr->collections);
     do {
         col = solListNode_val(n);
         out_item_collections(col, p->lr);
     } while ((n = solListNode_next(n)));
-    //p->table->f_travelsal_act = &_travelsal_fileds;
-    //solRBTuple_travelsal(p->table, NULL);
+    //solRBTuple_travelsal(p->table, &_travelsal_fileds, NULL);
 
     solSLRParser_free(p);
     return 0;
