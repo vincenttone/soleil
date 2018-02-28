@@ -201,11 +201,16 @@ int solRBTuple_remove(SolRBTuple *t, size_t l, ...)
 	return 0;
 }
 
-int solRBTuple_travelsal(SolRBTuple *t, void *d)
+int solRBTuple_travelsal(SolRBTuple *t, int (*f_travelsal_act)(void*, struct _SolRBTuple*, size_t, void*), void *d)
 {
-    if (solRBTree_travelsal_inorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal, d)) {
+    struct _SolRBTupleTravelsalData* data = sol_alloc(sizeof(struct _SolRBTupleTravelsalData));
+    data->f_travelsal_act = f_travelsal_act;
+    data->ext = d;
+    if (solRBTree_travelsal_inorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal, data)) {
+        sol_free(data);
         return 1;
     }
+    sol_free(data);
     return 0;
 }
 
@@ -220,11 +225,65 @@ int solRBTuple_record_travelsal(SolRBTuple *t, SolRBTupleRecord *r, void *d)
 int _solRBTupleRecord_travelsal(SolRBTree *tree, SolRBTreeNode *node, void *d)
 {
     SolRBTupleRecord *r = solRBTreeNode_val(node);
-    if ((*(((SolRBTuple*)tree->ex)->f_travelsal_act))(r->v, ((SolRBTuple*)tree->ex), r->level, d) != 0) {
+    if ((*(((struct _SolRBTupleTravelsalData*)d)->f_travelsal_act))(
+            r->v,
+            ((SolRBTuple*)tree->ex),
+            r->level,
+            (((struct _SolRBTupleTravelsalData*)d))->ext
+            ) != 0
+        ) {
         return 1;
     }
     if (r->n) {
         if (solRBTree_travelsal_inorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal, d) != 0) {
+            return 2;
+        }
+    }
+    return 0;
+}
+
+int solRBTuple_list(SolRBTuple *t, int (*f_list_act)(SolList*, struct _SolRBTuple*, void*), void *d)
+{
+    struct _SolRBTupleListData* data = sol_alloc(sizeof(struct _SolRBTupleTravelsalData));
+    data->f_list_act = f_list_act;
+    data->ext = d;
+    data->list = solList_new();
+    if (solRBTree_travelsal_inorder(t->n, solRBTree_root(t->n), &_solRBTupleRecord_travelsal_list, data)) {
+        sol_free(data);
+        return 1;
+    }
+    if ((*f_list_act)(data->list, t, d) != 0) {
+        return 1;
+    }
+    solList_free(data->list);
+    sol_free(data);
+    return 0;
+}
+
+int _solRBTupleRecord_travelsal_list(SolRBTree *tree, SolRBTreeNode *node, void *d)
+{
+    SolRBTupleRecord *r = solRBTreeNode_val(node);
+    SolList *list = ((struct _SolRBTupleListData*)d)->list;
+    if (r->level < solList_len(list)) {
+        if ((*(((struct _SolRBTupleListData*)d)->f_list_act))(
+                list,
+                ((SolRBTuple*)tree->ex),
+                (((struct _SolRBTupleListData*)d))->ext
+                ) != 0
+            ) {
+            return 1;
+        }
+        do {
+            if (solList_del_node(list, solList_tail(list))) {
+                return 1;
+            }
+        } while (r->level < solList_len(list));
+    }
+    if (solList_add(list, r->v) == NULL) {
+        return 2;
+    }
+    if (r->n) {
+        if (solRBTree_travelsal_inorder(r->n, solRBTree_root(r->n), &_solRBTupleRecord_travelsal_list, d) != 0) {
             return 2;
         }
     }

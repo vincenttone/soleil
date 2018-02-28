@@ -76,6 +76,7 @@ int solList_del_node(SolList *l, SolListNode *n)
                 solList_set_tail(l, pn);
             }
             solListNode_free(l, n);
+            solList_decr_len(l);
             return 0;
         }
         pn = cn;
@@ -108,6 +109,7 @@ int solList_remove(SolList *l, void *v)
             solList_set_tail(l, pn);
         }
         solListNode_free(l, n);
+        solList_decr_len(l);
         goto next;
     } while ((n = solListNode_next(n)));
     return 1;

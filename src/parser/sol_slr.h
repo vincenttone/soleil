@@ -13,7 +13,6 @@ typedef struct _SolSLRParser {
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
     SolRBTuple *table; // parser table
-    SolList *fields;
 } SolSLRParser;
 
 typedef struct _SolSLRTableField {
@@ -33,9 +32,6 @@ int solSLRParser_prepare(SolSLRParser*);
 SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser*);
 SolLRItemCol* _solSLRParser_generate_items_collection(void*);
 
-SolSLRTableField* solSLRParserTableField_new(SolSLRParser*);
-void solSLRParserTableField_free();
-
 int solSLRParser_set_begin_product(SolSLRParser*, SolLRProduct*);
 //int solSLRParser_compute_items_collections(SolSLRParser*, SolLRItemCol*);
 //int solSLRParser_compute_nonkernel_items(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
@@ -51,13 +47,12 @@ int solSLRParser_compute_parsing_table(SolSLRParser*);
 SolLRItemCol* solSLRParser_find_items_collection(SolSLRParser*, size_t);
 
 int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
-int _solSLRParserField_compare(void*, void*, SolRBTuple*, int);
 void _solSLRSymbol_free(void*);
 
-int solSLRParser_record_accept(SolSLRParser*, SolLRItemCol*);
-int solSLRParser_record_reduce(SolSLRParser*, SolLRItemCol*, SolLRSymbol*);
-int solSLRParser_record_shift(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
-int solSLRParser_record_goto(SolSLRParser*, SolLRItemCol*, SolLRSymbol*, SolLRItemCol*);
+int solSLRParser_record_accept(SolSLRParser*, SolLRTableField*);
+int solSLRParser_record_reduce(SolSLRParser*, SolLRTableField*, SolLRTableField*);
+int solSLRParser_record_shift(SolSLRParser*, SolLRTableField*, SolLRTableField*, SolLRTableField*);
+int solSLRParser_record_goto(SolSLRParser*, SolLRTableField*, SolLRTableField*, SolLRTableField*);
 
 #define solSLRParser_generate_state(p) (++((p)->gen))
 #define solSLRParser_set_compare_symbol_val_func(p, f) p->lr->f_compare_symbol_val = f

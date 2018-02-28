@@ -59,7 +59,23 @@ int _echo(void *v, SolRBTuple *t, size_t level, void *d)
     for (i = 0; i < level; i++) {
         printf("-");
     }
-    printf("%s\n", (char*)v);
+    printf("%s (%zu)\n", (char*)v, level);
+    return 0;
+}
+
+int _list(SolList *l, SolRBTuple *t, void *d)
+{
+    if (solList_len(l) == 0) {
+        printf("whats up????\n");
+        return 0;
+    }
+    SolListNode *n = solList_head((SolList*)l);
+    char *v;
+    do {
+        v = solListNode_val(n);
+        printf("%s ", v);
+    } while ((n = solListNode_next(n)));
+    printf("\n");
     return 0;
 }
 
@@ -86,8 +102,9 @@ int main()
 	solRBTuple_put(t, 4, b, d, a, c);
 	solRBTuple_put(t, 3, c, d, a);
     print_rb_tuple(t);
-    t->f_travelsal_act = &_echo;
-    solRBTuple_travelsal(t, NULL);
+    solRBTuple_travelsal(t, &_echo, NULL);
+    printf("list tuple:\n");
+    solRBTuple_list(t, &_list, NULL);
 
     SolRBTupleRecord *x = solRBTuple_get(t, 2, a, b);
     printf("try get a, b:\n");
@@ -106,6 +123,8 @@ int main()
     printf("Remove a,c:\n");
     solRBTuple_remove(t, 2, a, c);
     print_rb_tuple(t);
+    printf("list tuple:\n");
+    solRBTuple_list(t, &_list, NULL);
     x = solRBTuple_get(t, 1, b);
     printf("try get b:\n");
     if (x) {

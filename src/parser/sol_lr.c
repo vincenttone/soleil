@@ -728,7 +728,6 @@ SolLRItemCol* solLRParser_record_items_collection_relations(SolLRParser *p, SolL
                 (*p->f_debug_item_col)(c, p);
                 printf("\n");
 #endif
-                // solLRItemCol_free(col);
                 return c;
             }
         } while ((n = solListNode_next(n)));
@@ -755,7 +754,12 @@ record:
         goto oops;
     }
     col->flag |= SolLRItemCol_FLAG_RECORDED;
-    solRBTree_travelsal_inorder(col->items, solRBTree_root(col->items), &_solLRItem_register_collection, col);
+    if (solRBTree_travelsal_inorder(col->items, solRBTree_root(col->items), &_solLRItem_register_collection, col)) {
+        goto oops;
+    }
+    if (solList_add(p->collections, col) == NULL) {
+        goto oops;
+    }
     return col;
 oops:
     return NULL;
