@@ -65,6 +65,20 @@ void out_product(SolLRProduct *product, SolLRParser *p)
     printf("\n");
 }
 
+int out_field(SolLRTableField *f, SolLRParser *p)
+{
+    int flag = f->flag;
+    if (flag & SolLRTableFieldFlag_TYPE_STATE) {
+        SolLRItemCol *c = f->target;
+        printf("%zu\t", c->state);
+    } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+        SolLRSymbol *s = f->target;
+        out_symbol(s, p);
+        printf("\t");
+    }
+    return 0;
+}
+
 int _travelsal_fileds(void *f, SolRBTuple *t, size_t level, void *d)
 {
     int i;
@@ -188,6 +202,22 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     }
 }
 
+int _list(SolList *l, SolRBTuple *t, void *d)
+{
+    if (solList_len(l) == 0) {
+        printf("whats up????\n");
+        return 0;
+    }
+    SolListNode *n = solList_head((SolList*)l);
+    SolLRTableField *f;
+    do {
+        f = solListNode_val(n);
+        out_field(f, (SolLRParser*)t->ex);
+    } while ((n = solListNode_next(n)));
+    printf("\n");
+    return 0;
+}
+
 int main()
 {
     int symbols[] = {_E, _T, _F, _lc, _rc, _plus, _mul, _id};
@@ -230,6 +260,8 @@ int main()
         col = solListNode_val(n);
         out_item_collections(col, p->lr);
     } while ((n = solListNode_next(n)));
+    printf("List relations:\n");
+    solRBTuple_list(p->lr->col_rel, &_list, NULL);
     //solRBTuple_travelsal(p->table, &_travelsal_fileds, NULL);
 
     solSLRParser_free(p);
