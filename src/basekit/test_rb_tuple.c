@@ -86,8 +86,7 @@ int main()
 	solRBTuple_put(t, 4, b, d, a, c);
 	solRBTuple_put(t, 3, c, d, a);
     print_rb_tuple(t);
-    t->f_travelsal_act = &_echo;
-    solRBTuple_travelsal(t, NULL);
+    solRBTuple_travelsal(t, &_echo, NULL);
 
     SolRBTupleRecord *x = solRBTuple_get(t, 2, a, b);
     printf("try get a, b:\n");

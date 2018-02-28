@@ -17,8 +17,12 @@ typedef struct _SolRBTuple {
     void *ex; // for extend
     int (*f_cmp_val)(void*, void*, struct _SolRBTuple*, int);
     sol_f_free_ptr f_free_val; // free node val func
-    int (*f_travelsal_act)(void*, struct _SolRBTuple*, size_t, void*);
 } SolRBTuple;
+
+struct _SolRBTupleTravelsalData {
+    void* ext;
+    int (*f_travelsal_act)(void*, struct _SolRBTuple*, size_t, void*);
+};
 
 SolRBTuple* solRBTuple_new();
 void solRBTuple_free(SolRBTuple*);
@@ -33,7 +37,7 @@ SolRBTupleRecord* solRBTuple_get(SolRBTuple*, size_t, ...);
 int solRBTuple_remove(SolRBTuple*, size_t, ...);
 void* solRBTuple_get_first(SolRBTuple*, size_t, ...);
 
-int solRBTuple_travelsal(SolRBTuple*, void*);
+int solRBTuple_travelsal(SolRBTuple*, int (*f_travelsal_act)(void*, struct _SolRBTuple*, size_t, void*), void*);
 int _solRBTupleRecord_travelsal(SolRBTree*, SolRBTreeNode*, void*);
 
 int solRBTuple_record_travelsal(SolRBTuple*, SolRBTupleRecord*, void*);
