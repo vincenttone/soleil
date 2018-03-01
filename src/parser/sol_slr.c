@@ -37,6 +37,7 @@ SolSLRParser* solSLRParser_new()
     }
     p->table->ex = p->lr;
     solRBTuple_set_compare_val_func(p->table, &_solLRParserField_compare);
+    //solRBTuple_set_compare_val_func(p->table, &_solSLRParser_compare_fields);
     // start symbol
     p->lr->origin = solLRSymbol_nonterminal_new(NULL);
     if (p->lr->origin == NULL) {
@@ -301,4 +302,13 @@ int solSLRParser_record_goto(SolSLRParser *p, SolLRTableField *s1, SolLRTableFie
 void _solSLRSymbol_free(void *symbol)
 {
     solLRSymbol_free((SolLRSymbol*)symbol);
+}
+
+int _solSLRParser_compare_fields(void *f1, void *f2, SolRBTuple *t, int ext)
+{
+    return solLRParserField_compare(
+        ((SolSLRParser*)(t->ex))->lr,
+        (SolLRTableField*)f1,
+        (SolLRTableField*)f2
+        );
 }

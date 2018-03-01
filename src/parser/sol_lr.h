@@ -118,6 +118,7 @@ int solLRParser_collect_kernel_item(SolLRParser*, SolLRItemCol*, SolLRItem*);
 
 SolLRTableField* solLRParserTableField_new(SolLRParser*, void*, int);
 SolLRTableField* solLRParserTableField_clone(SolLRParser*, SolLRTableField*, int);
+int solLRParserField_compare(SolLRParser*, SolLRTableField*, SolLRTableField*);
 void solLRParserTableField_free(SolLRTableField*);
 
 int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);

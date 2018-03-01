@@ -839,12 +839,21 @@ int _solLRParser_compare_symbols(void *s1, void *s2, SolRBTree *tree, int flag)
 
 int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
 {
-    int flag = ((SolLRTableField*)f1)->flag & ((SolLRTableField*)f2)->flag;
+    return solLRParserField_compare(
+        (SolLRParser*)(t->ex),
+        (SolLRTableField*)f1,
+        (SolLRTableField*)f2
+        );
+}
+
+int solLRParserField_compare(SolLRParser *p, SolLRTableField *f1, SolLRTableField *f2)
+{
+    int flag = f1->flag & f2->flag;
     if ((flag & SolLRTableFieldFlag_TYPE_STATE)
         || (flag & SolLRTableFieldFlag_TYPE_COL)
         ) { // state
-        SolLRItemCol *c1 = (SolLRItemCol*)(((struct _SolLRTableField*)f1)->target);
-        SolLRItemCol *c2 = (SolLRItemCol*)(((struct _SolLRTableField*)f2)->target);
+        SolLRItemCol *c1 = f1->target;
+        SolLRItemCol *c2 = f2->target;
         if (c1 == c2) return 0;
         if (c1->state > c2->state) {
             return 1;
@@ -855,11 +864,7 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
         if (c1 < c2) return -1;
         return 0;
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
-        int c = solLRParser_compare_symbol(
-            ((SolLRParser*)(t->ex)),
-            (SolLRSymbol*)(((SolLRTableField*)f1)->target),
-            (SolLRSymbol*)(((SolLRTableField*)f2)->target)
-            );
+        int c = solLRParser_compare_symbol(p, (SolLRSymbol*)(f1->target), (SolLRSymbol*)(f2->target));
         if (c != 0) {
             return c;
         }
