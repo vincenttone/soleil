@@ -64,6 +64,7 @@ typedef struct _SolLRItemCol { // items collection
     SolRBTree *items; // items
     SolLRSymbol *sym; // pre symbol
     SolList *nexts; // next cols
+    SolList *ends; // item tail list
 } SolLRItemCol;
 
 typedef struct _SolLRParser {
@@ -116,6 +117,8 @@ int _solLRItemsCols_collect_item(SolRBTree*, SolRBTreeNode*, void*);
 int solLRParser_collect_kernel_item(SolLRParser*, SolLRItemCol*, SolLRItem*);
 
 SolLRTableField* solLRParserTableField_new(SolLRParser*, void*, int);
+SolLRTableField* solLRParserTableField_clone(SolLRParser*, SolLRTableField*, int);
+int solLRParserField_compare(SolLRParser*, SolLRTableField*, SolLRTableField*);
 void solLRParserTableField_free(SolLRTableField*);
 
 int solLRSymbol_record_first(SolLRSymbol*, SolLRSymbol*, SolLRParser*);

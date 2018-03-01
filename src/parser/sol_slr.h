@@ -54,6 +54,11 @@ int solSLRParser_record_reduce(SolSLRParser*, SolLRTableField*, SolLRTableField*
 int solSLRParser_record_shift(SolSLRParser*, SolLRTableField*, SolLRTableField*, SolLRTableField*);
 int solSLRParser_record_goto(SolSLRParser*, SolLRTableField*, SolLRTableField*, SolLRTableField*);
 
+int solSLRParser_record(SolSLRParser*, SolList*);
+int _solSLRParser_record(SolList*, SolRBTuple*, void*);
+
+int _solSLRParser_compare_fields(void*, void*, SolRBTuple*, int);
+
 #define solSLRParser_generate_state(p) (++((p)->gen))
 #define solSLRParser_set_compare_symbol_val_func(p, f) p->lr->f_compare_symbol_val = f
 

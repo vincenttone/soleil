@@ -166,6 +166,9 @@ void solLRItemCol_free(SolLRItemCol *c)
     if (c->nexts) {
         solList_free(c->nexts);
     }
+    if (c->ends) {
+        solList_free(c->ends);
+    }
     sol_free(c);
 }
 
@@ -511,12 +514,10 @@ int solLRParser_collect_kernel_item(SolLRParser *p, SolLRItemCol *current_col, S
     if (item->pos >= item->p->len) {
         return 0;
     }
+    SolLRSymbol *s = solLRProduct_find_symbol(item->p, item->pos);
 #ifdef __SOL_DEBUG__
     printf("+ compute kernel item: ");
     (*p->f_debug_item)(item, p);
-#endif
-    SolLRSymbol *s = solLRProduct_find_symbol(item->p, item->pos);
-#ifdef __SOL_DEBUG__
     printf("> item symbol: ");
     (*p->f_debug_symbol)(s, p);
     printf("\n");
@@ -544,6 +545,13 @@ int solLRParser_collect_kernel_item(SolLRParser *p, SolLRItemCol *current_col, S
     }
     item = solLRProduct_item(item->p, (item->pos) + 1);
     item->flag |= 0x4;
+    if (item->pos == item->p->len) {
+        col->flag |= SolLRItemCol_FLAG_END;
+        if (col->ends == NULL) {
+            col->ends = solList_new();
+        }
+        solList_add(col->ends, item);
+    }
 #ifdef __SOL_DEBUG__
     printf("> register item to col: ");
     (*p->f_debug_item)(item, p);
@@ -601,6 +609,13 @@ int solLRParser_collect_from_nonkernel_items(SolLRParser *p, SolLRItemCol *pre_c
         col->flag |= SolLRItemCol_FLAG_NONKERNEL_COMPUTED;
         item = solLRProduct_item(product, 1);
         item->flag |= 0x8;
+        if (item->pos == item->p->len) {
+            col->flag |= SolLRItemCol_FLAG_END;
+            if (col->ends == NULL) {
+                col->ends = solList_new();
+            }
+            solList_add(col->ends, item);
+        }
 #ifdef __SOL_DEBUG__
         printf("> register item to col: ");
         (*p->f_debug_item)(item, p);
@@ -824,12 +839,21 @@ int _solLRParser_compare_symbols(void *s1, void *s2, SolRBTree *tree, int flag)
 
 int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
 {
-    int flag = ((SolLRTableField*)f1)->flag & ((SolLRTableField*)f2)->flag;
+    return solLRParserField_compare(
+        (SolLRParser*)(t->ex),
+        (SolLRTableField*)f1,
+        (SolLRTableField*)f2
+        );
+}
+
+int solLRParserField_compare(SolLRParser *p, SolLRTableField *f1, SolLRTableField *f2)
+{
+    int flag = f1->flag & f2->flag;
     if ((flag & SolLRTableFieldFlag_TYPE_STATE)
         || (flag & SolLRTableFieldFlag_TYPE_COL)
         ) { // state
-        SolLRItemCol *c1 = (SolLRItemCol*)(((struct _SolLRTableField*)f1)->target);
-        SolLRItemCol *c2 = (SolLRItemCol*)(((struct _SolLRTableField*)f2)->target);
+        SolLRItemCol *c1 = f1->target;
+        SolLRItemCol *c2 = f2->target;
         if (c1 == c2) return 0;
         if (c1->state > c2->state) {
             return 1;
@@ -840,11 +864,7 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
         if (c1 < c2) return -1;
         return 0;
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
-        int c = solLRParser_compare_symbol(
-            ((SolLRParser*)(t->ex)),
-            (SolLRSymbol*)(((SolLRTableField*)f1)->target),
-            (SolLRSymbol*)(((SolLRTableField*)f2)->target)
-            );
+        int c = solLRParser_compare_symbol(p, (SolLRSymbol*)(f1->target), (SolLRSymbol*)(f2->target));
         if (c != 0) {
             return c;
         }
@@ -857,6 +877,9 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
 SolLRTableField* solLRParserTableField_new(SolLRParser *p, void *target, int flag)
 {
     SolLRTableField *f = sol_calloc(1, sizeof(SolLRTableField));
+    if (f == NULL) {
+        return NULL;
+    }
     if (solList_add(p->fields, f) == NULL) {
         solLRParserTableField_free(f);
         return NULL;
@@ -864,6 +887,20 @@ SolLRTableField* solLRParserTableField_new(SolLRParser *p, void *target, int fla
     f->target = target;
     f->flag |= flag;
     return f;
+}
+SolLRTableField* solLRParserTableField_clone(SolLRParser *p, SolLRTableField *f, int flag)
+{
+    SolLRTableField *field = sol_calloc(1, sizeof(SolLRTableField));
+    if (field == NULL) {
+        return NULL;
+    }
+    if (solList_add(p->fields, field) == NULL) {
+        solLRParserTableField_free(field);
+        return NULL;
+    }
+    memcpy(field, f, sizeof(SolLRTableField));
+    field->flag |= flag;
+    return field;
 }
 
 void solLRParserTableField_free(SolLRTableField *f)
