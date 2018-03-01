@@ -18,6 +18,8 @@ enum _Symbol {
 #define solSLRParser_NONTERMINAL(v, p, x) SolLRSymbol *v = solSLRParser_nonterminal_new(p, &(x[_##v - 1]))
 #define solSLRParser_TERMINAL(v, p, x)    SolLRSymbol *v = solSLRParser_terminal_new(p, &(x[_##v - 1]))
 
+void out_item(SolLRItem *item, SolLRParser *p);
+
 void out_symbol_val(void *v, char *pre, char *after)
 {
     char *s;
@@ -55,14 +57,13 @@ int cmp(void *v1, void *v2)
 
 void out_product(SolLRProduct *product, SolLRParser *p)
 {
-    printf("Product:\t");
+    //printf("Product:\t");
     out_symbol(product->s, p);
     printf(" => ");
     size_t i;
     for (i = 0; i < product->len; i++) {
         out_symbol(*((SolLRSymbol**)(product->r + i)), p);
     }
-    printf("\n");
 }
 
 int out_field(SolLRTableField *f, SolLRParser *p)
@@ -75,39 +76,9 @@ int out_field(SolLRTableField *f, SolLRParser *p)
         SolLRSymbol *s = f->target;
         out_symbol(s, p);
         printf("\t");
+    } else if (flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
+        out_product((SolLRProduct*)(f->target), p);
     }
-    return 0;
-}
-
-int _travelsal_fileds(void *f, SolRBTuple *t, size_t level, void *d)
-{
-    int i;
-    printf("|-");
-    for (i = 0; i < level; i++) {
-        printf("\t");
-    }
-    int flag = ((struct _SolSLRTableField*)f)->flag;
-    if (flag & SolLRTableFieldFlag_TYPE_STATE) {
-        SolLRItemCol *c = ((struct _SolSLRTableField*)f)->t;
-        printf("<%zu>\t", c->state);
-        // printf("<%zu>\t[%d]\t", c->state, ((struct _SolSLRTableField*)f)->flag);
-    } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
-        SolLRSymbol *s = ((struct _SolSLRTableField*)f)->t;
-        printf("[");
-        out_symbol(s, (SolLRParser*)((SolSLRParser*)(t->ex))->lr);
-        printf("]\t");
-        //printf("]\t[%d]\t", ((struct _SolSLRTableField*)f)->flag);
-    }
-    if (flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
-        printf("ACCEPT");
-    } else if (flag & SolLRTableFieldFlag_ACTION_REDUCE) {
-        printf("REDUCE");
-    } else if (flag & SolLRTableFieldFlag_ACTION_GOTO) {
-        printf("GOTO");
-    } else if (flag & SolLRTableFieldFlag_ACTION_SHIFT) {
-        printf("SHIFT");
-    }
-    printf("\n");
     return 0;
 }
 
@@ -129,6 +100,10 @@ int _travelsal_lr_fileds(void *f, SolRBTuple *t, size_t level, void *d)
         out_symbol(s, (SolLRParser*)(t->ex));
         printf("]\t");
         //printf("]\t[%d]\t", ((struct _SolSLRTableField*)f)->flag);
+    } else if (flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
+        printf("{");
+        out_product((SolLRProduct*)(((SolLRTableField*)f)->target), (SolLRParser*)(t->ex));
+        printf("}\t");
     }
     if (flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
         printf("ACCEPT");
@@ -244,17 +219,23 @@ int main()
     // productions
     SolLRProduct *product = solLRProduct_new(E, 3, E, plus, T); // E -> E + T
     out_product(product, p->lr);
+    printf("\n");
     printf("set begin product ret: %d\n", solSLRParser_set_begin_product(p, product));
     product = solLRProduct_new(E, 1, T);          // E -> T
     out_product(product, p->lr);
+    printf("\n");
     product = solLRProduct_new(T, 3, T, mul, F);  // T -> T * F
     out_product(product, p->lr);
+    printf("\n");
     product = solLRProduct_new(T, 1, F);          // T -> F
     out_product(product, p->lr);
+    printf("\n");
     product = solLRProduct_new(F, 3, lc, E, rc);  // F -> (E)
     out_product(product, p->lr);
+    printf("\n");
     product = solLRProduct_new(F, 1, id);         // F -> id
     out_product(product, p->lr);
+    printf("\n");
     printf("prepare return %d, collection count: %zu\n", solSLRParser_prepare(p), solList_len(p->lr->collections));
     solRBTuple_travelsal(p->lr->col_rel, &_travelsal_lr_fileds, NULL);
     SolLRItemCol *col;

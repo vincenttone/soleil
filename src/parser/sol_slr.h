@@ -9,7 +9,7 @@
 
 typedef struct _SolSLRParser {
     SolLRParser *lr;
-    size_t state; // current state
+    SolLRItemCol *state; // current state
     SolStack *stk; // stack
     SolRBTree *symbols; // symbols
     SolRBTuple *table; // parser table
@@ -50,7 +50,7 @@ int _solSLRParser_compare_symbols(void*, void*, SolRBTree*, int);
 void _solSLRSymbol_free(void*);
 
 int solSLRParser_record_accept(SolSLRParser*, SolLRTableField*);
-int solSLRParser_record_reduce(SolSLRParser*, SolLRTableField*, SolLRTableField*);
+int solSLRParser_record_reduce(SolSLRParser*, SolLRTableField*, SolLRProduct*);
 int solSLRParser_record_shift(SolSLRParser*, SolLRTableField*, SolLRTableField*, SolLRTableField*);
 int solSLRParser_record_goto(SolSLRParser*, SolLRTableField*, SolLRTableField*, SolLRTableField*);
 

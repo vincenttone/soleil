@@ -37,7 +37,7 @@ SolSLRParser* solSLRParser_new()
     }
     p->table->ex = p->lr;
     solRBTuple_set_compare_val_func(p->table, &_solLRParserField_compare);
-    //solRBTuple_set_compare_val_func(p->table, &_solSLRParser_compare_fields);
+    // solRBTuple_set_compare_val_func(p->table, &_solSLRParser_compare_fields);
     // start symbol
     p->lr->origin = solLRSymbol_nonterminal_new(NULL);
     if (p->lr->origin == NULL) {
@@ -87,6 +87,29 @@ void solSLRParser_free(SolSLRParser *p)
     if (p) {
         sol_free(p);
     }
+}
+
+int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
+{
+    SolLRTableField *current_field = solStack_pop(p->lr->stk);
+    SolLRTableField *field = solLRParserTableField_new(p->lr, s, SolLRTableFieldFlag_TYPE_SYMBOL);
+    SolLRTableField *f = solRBTuple_get_first(p->table, 2, current_field, field);
+    if (f->flag & SolLRTableFieldFlag_ACTION_SHIFT) {
+        // solStack_push(p->lr->stk, field); // shift symbol
+        solStack_push(p->lr->stk, f);
+    } else if (f->flag & SolLRTableFieldFlag_ACTION_GOTO) {
+        solStack_push(p->lr->stk, f);
+    } else if (f->flag & SolLRTableFieldFlag_ACTION_REDUCE) {
+        // solStack_pop(p->lr->stk); // symbol
+        // output(p->lr->stk, f);
+        field = solStack_top_val(p->lr->stk);
+        f = solRBTuple_get_first(p->table, 2, field, f);
+        solStack_push(p->lr->stk, f);
+        // output
+    } else if (f->flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
+        // accept
+    }
+    return 0;
 }
 
 SolLRSymbol* solSLRParser_terminal_new(SolSLRParser *p, void *v)
@@ -163,8 +186,11 @@ int solSLRParser_prepare(SolSLRParser *p)
     if (solLRParser_compute_items_collections(p->lr, c) != 0) {
         return 1;
     }
-    if (solSLRParser_compute_parsing_table(p) != 0) {
+    if (solStack_push(p->lr->stk, c)) {
         return 2;
+    }
+    if (solSLRParser_compute_parsing_table(p) != 0) {
+        return 3;
     }
     return 0;
 }
@@ -200,8 +226,7 @@ int solSLRParser_record(SolSLRParser *p, SolList *l)
                     return 2;
                 }
             } else { // reduce
-                f2 = solLRParserTableField_new(p->lr, item->p->s, SolLRTableFieldFlag_TYPE_SYMBOL);
-                if (solSLRParser_record_reduce(p, f1, f2)) {
+                if (solSLRParser_record_reduce(p, f1, item->p)) {
                     _DEBUG_ALARM_;
                     return 3;
                 }
@@ -250,24 +275,28 @@ int solSLRParser_record_accept(SolSLRParser *p, SolLRTableField *state)
     return 0;
 }
 
-int solSLRParser_record_reduce(SolSLRParser *p, SolLRTableField *state, SolLRTableField *symbol)
+int solSLRParser_record_reduce(SolSLRParser *p, SolLRTableField *state, SolLRProduct *product)
 {
-    if (p == NULL || symbol == NULL || state == NULL) {
+    if (p == NULL || product == NULL || state == NULL) {
         return -1;
     }
-    if (solLRSymbol_compute_follow(((SolLRSymbol*)symbol->target), p->symbols, p->lr->empty, p->lr) != 0) {
+    if (solLRSymbol_compute_follow(product->s, p->symbols, p->lr->empty, p->lr) != 0) {
         return 1;
     }
-    SolLRTableField *sf = solLRParserTableField_clone(p->lr, symbol, SolLRTableFieldFlag_ACTION_REDUCE);
+    SolLRTableField *field = solLRParserTableField_new(
+        p->lr,
+        product,
+        SolLRTableFieldFlag_ACTION_REDUCE | SolLRTableFieldFlag_TYPE_PRODUCT
+        );
     SolLRTableField *sym;
     SolRBTreeIter *i = solRBTreeIter_new(
-        ((SolLRSymbol*)symbol->target)->follows,
-        solRBTree_root(((SolLRSymbol*)symbol->target)->follows),
+        product->s->follows,
+        solRBTree_root(product->s->follows),
         SolRBTreeIterTT_preorder
         );
     do {
         sym = solLRParserTableField_new(p->lr, (SolLRSymbol*)(solRBTreeIter_current_val(i)), SolLRTableFieldFlag_TYPE_SYMBOL);
-        if (solRBTuple_put(p->table, 3, state, sym, sf) != 0) {
+        if (solRBTuple_put(p->table, 3, state, sym, field) != 0) {
             return 1;
         }
     } while (solRBTreeIter_next(i));

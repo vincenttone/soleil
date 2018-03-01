@@ -860,16 +860,37 @@ int solLRParserField_compare(SolLRParser *p, SolLRTableField *f1, SolLRTableFiel
         } else if (c1->state < c2->state) {
             return -1;
         }
-        if (c1 > c2) return 1;
-        if (c1 < c2) return -1;
+        //if (c1 > c2) return 1;
+        //if (c1 < c2) return -1;
         return 0;
     } else if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) { // symbol
         int c = solLRParser_compare_symbol(p, (SolLRSymbol*)(f1->target), (SolLRSymbol*)(f2->target));
         if (c != 0) {
             return c;
         }
+    } else if (flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
+        if (f1->target > f2->target) {
+            return 1;
+        } else if (f1->target < f2->target) {
+            return -1;
+        }
+        return 0;
     } else {
-        _DEBUG_ALARM_;
+        if ((f1->flag & SolLRTableFieldFlag_TYPE_STATE)
+            || (f1->flag & SolLRTableFieldFlag_TYPE_COL)
+            ) {
+            return 1;
+        } else if ((f2->flag & SolLRTableFieldFlag_TYPE_STATE)
+                   || (f2->flag & SolLRTableFieldFlag_TYPE_COL)
+            ) {
+            return -1;
+        }
+        if (f1->flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+            return 1;
+        } else if (f2->flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+            return -1;
+        }
+        return -1;
     }
     return 0;
 }
