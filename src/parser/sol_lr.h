@@ -33,8 +33,8 @@
 #define SolLRTableFieldFlag_TYPE_STATE              0x10
 #define SolLRTableFieldFlag_TYPE_COL                0x10
 #define SolLRTableFieldFlag_TYPE_SYMBOL             0x20
-#define SolLRTableFieldFlag_TYPE_PRODUCT            0x30
-#define SolLRTableFieldFlag_COL_REPEATABLE          0x100
+#define SolLRTableFieldFlag_TYPE_PRODUCT            0x40
+#define SolLRTableFieldFlag_TYPE_ITEM               0x80
 
 typedef struct _SolLRSymbol {
     int flag;   // flag
