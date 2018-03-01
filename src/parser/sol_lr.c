@@ -872,6 +872,9 @@ int _solLRParserField_compare(void *f1, void *f2, SolRBTuple *t, int ext)
 SolLRTableField* solLRParserTableField_new(SolLRParser *p, void *target, int flag)
 {
     SolLRTableField *f = sol_calloc(1, sizeof(SolLRTableField));
+    if (f == NULL) {
+        return NULL;
+    }
     if (solList_add(p->fields, f) == NULL) {
         solLRParserTableField_free(f);
         return NULL;
@@ -879,6 +882,20 @@ SolLRTableField* solLRParserTableField_new(SolLRParser *p, void *target, int fla
     f->target = target;
     f->flag |= flag;
     return f;
+}
+SolLRTableField* solLRParserTableField_clone(SolLRParser *p, SolLRTableField *f, int flag)
+{
+    SolLRTableField *field = sol_calloc(1, sizeof(SolLRTableField));
+    if (field == NULL) {
+        return NULL;
+    }
+    if (solList_add(p->fields, field) == NULL) {
+        solLRParserTableField_free(field);
+        return NULL;
+    }
+    memcpy(field, f, sizeof(SolLRTableField));
+    field->flag |= flag;
+    return field;
 }
 
 void solLRParserTableField_free(SolLRTableField *f)

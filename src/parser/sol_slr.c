@@ -257,7 +257,7 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRTableField *state, SolLRTab
     if (solLRSymbol_compute_follow(((SolLRSymbol*)symbol->target), p->symbols, p->lr->empty, p->lr) != 0) {
         return 1;
     }
-    symbol->flag |= SolLRTableFieldFlag_ACTION_REDUCE;
+    SolLRTableField *sf = solLRParserTableField_clone(p->lr, symbol, SolLRTableFieldFlag_ACTION_REDUCE);
     SolLRTableField *sym;
     SolRBTreeIter *i = solRBTreeIter_new(
         ((SolLRSymbol*)symbol->target)->follows,
@@ -265,9 +265,8 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRTableField *state, SolLRTab
         SolRBTreeIterTT_preorder
         );
     do {
-        ;
         sym = solLRParserTableField_new(p->lr, (SolLRSymbol*)(solRBTreeIter_current_val(i)), SolLRTableFieldFlag_TYPE_SYMBOL);
-        if (solRBTuple_put(p->table, 3, state, sym, symbol) != 0) {
+        if (solRBTuple_put(p->table, 3, state, sym, sf) != 0) {
             return 1;
         }
     } while (solRBTreeIter_next(i));
@@ -280,8 +279,8 @@ int solSLRParser_record_shift(SolSLRParser *p, SolLRTableField *s1, SolLRTableFi
     if (p == NULL || sym == NULL || s1 == NULL || s2 == NULL) {
         return -1;
     }
-    s2->flag |= SolLRTableFieldFlag_ACTION_SHIFT;
-    if (solRBTuple_put(p->table, 3, s1, sym, s2) != 0) {
+    SolLRTableField *sf = solLRParserTableField_clone(p->lr, s2, SolLRTableFieldFlag_ACTION_SHIFT);
+    if (solRBTuple_put(p->table, 3, s1, sym, sf) != 0) {
         return 1;
     }
     return 0;
@@ -292,8 +291,8 @@ int solSLRParser_record_goto(SolSLRParser *p, SolLRTableField *s1, SolLRTableFie
     if (p == NULL || sym == NULL || s1 == NULL || s2 == NULL) {
         return -1;
     }
-    s2->flag |= SolLRTableFieldFlag_ACTION_GOTO;
-    if (solRBTuple_put(p->table, 3, s1, sym, s2) != 0) {
+    SolLRTableField *sf = solLRParserTableField_clone(p->lr, s2, SolLRTableFieldFlag_ACTION_GOTO);
+    if (solRBTuple_put(p->table, 3, s1, sym, sf) != 0) {
         return 1;
     }
     return 0;
