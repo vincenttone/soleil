@@ -18,16 +18,6 @@ enum _Symbol {
 #define solSLRParser_NONTERMINAL(v, p, x) SolLRSymbol *v = solSLRParser_nonterminal_new(p, &(x[_##v - 1]))
 #define solSLRParser_TERMINAL(v, p, x)    SolLRSymbol *v = solSLRParser_terminal_new(p, &(x[_##v - 1]))
 
-int cmp(void *v1, void *v2)
-{
-    if (*(int*)v1 > *(int*)v2) {
-        return 1;
-    } else if (*(int*)v1 < *(int*)v2) {
-        return -1;
-    }
-    return 0;
-}
-
 void out_symbol_val(void *v, char *pre, char *after)
 {
     char *s;
@@ -51,6 +41,16 @@ void out_symbol(SolLRSymbol *s, SolLRParser *p)
     } else {
         out_symbol_val(s->v, "", "");
     }
+}
+
+int cmp(void *v1, void *v2)
+{
+    if (*(int*)v1 > *(int*)v2) {
+        return 1;
+    } else if (*(int*)v1 < *(int*)v2) {
+        return -1;
+    }
+    return 0;
 }
 
 void out_product(SolLRProduct *product, SolLRParser *p)
@@ -194,6 +194,9 @@ void out_item_collections(SolLRItemCol *col, SolLRParser *p)
     } else {
         printf("NULL");
     }
+    if (col->flag & SolLRItemCol_FLAG_END) {
+        printf("\t[END FLAG]");
+    }
     if (col->items && solRBTree_count(col->items)) {
         printf("\n - Item(s):\n");
         solRBTree_travelsal_inorder(col->items, solRBTree_root(col->items), &_out_rbtree_item, p);
@@ -262,7 +265,8 @@ int main()
     } while ((n = solListNode_next(n)));
     printf("List relations:\n");
     solRBTuple_list(p->lr->col_rel, &_list, NULL);
-    //solRBTuple_travelsal(p->table, &_travelsal_fileds, NULL);
+    printf("Parser table:\n");
+    solRBTuple_travelsal(p->table, &_travelsal_lr_fileds, NULL);
 
     solSLRParser_free(p);
     return 0;

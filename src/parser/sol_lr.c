@@ -166,6 +166,9 @@ void solLRItemCol_free(SolLRItemCol *c)
     if (c->nexts) {
         solList_free(c->nexts);
     }
+    if (c->ends) {
+        solList_free(c->ends);
+    }
     sol_free(c);
 }
 
@@ -511,12 +514,10 @@ int solLRParser_collect_kernel_item(SolLRParser *p, SolLRItemCol *current_col, S
     if (item->pos >= item->p->len) {
         return 0;
     }
+    SolLRSymbol *s = solLRProduct_find_symbol(item->p, item->pos);
 #ifdef __SOL_DEBUG__
     printf("+ compute kernel item: ");
     (*p->f_debug_item)(item, p);
-#endif
-    SolLRSymbol *s = solLRProduct_find_symbol(item->p, item->pos);
-#ifdef __SOL_DEBUG__
     printf("> item symbol: ");
     (*p->f_debug_symbol)(s, p);
     printf("\n");
@@ -544,6 +545,13 @@ int solLRParser_collect_kernel_item(SolLRParser *p, SolLRItemCol *current_col, S
     }
     item = solLRProduct_item(item->p, (item->pos) + 1);
     item->flag |= 0x4;
+    if (item->pos == item->p->len) {
+        col->flag |= SolLRItemCol_FLAG_END;
+        if (col->ends == NULL) {
+            col->ends = solList_new();
+        }
+        solList_add(col->ends, item);
+    }
 #ifdef __SOL_DEBUG__
     printf("> register item to col: ");
     (*p->f_debug_item)(item, p);
@@ -601,6 +609,13 @@ int solLRParser_collect_from_nonkernel_items(SolLRParser *p, SolLRItemCol *pre_c
         col->flag |= SolLRItemCol_FLAG_NONKERNEL_COMPUTED;
         item = solLRProduct_item(product, 1);
         item->flag |= 0x8;
+        if (item->pos == item->p->len) {
+            col->flag |= SolLRItemCol_FLAG_END;
+            if (col->ends == NULL) {
+                col->ends = solList_new();
+            }
+            solList_add(col->ends, item);
+        }
 #ifdef __SOL_DEBUG__
         printf("> register item to col: ");
         (*p->f_debug_item)(item, p);

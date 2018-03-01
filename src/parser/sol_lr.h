@@ -64,6 +64,7 @@ typedef struct _SolLRItemCol { // items collection
     SolRBTree *items; // items
     SolLRSymbol *sym; // pre symbol
     SolList *nexts; // next cols
+    SolList *ends; // item tail list
 } SolLRItemCol;
 
 typedef struct _SolLRParser {
