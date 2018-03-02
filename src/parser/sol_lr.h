@@ -143,6 +143,8 @@ int solLRSymbol_compute_follow(SolLRSymbol*, SolRBTree*, SolLRSymbol*, SolLRPars
 int solLRParser_compute_items_collections(SolLRParser*, SolLRItemCol*);
 int solLRParser_collect_from_nonkernel_items(SolLRParser*, SolLRItemCol*, SolLRSymbol*);
 
+void solLRParser_debug_table_field(SolLRParser*, SolLRTableField*);
+
 #define solLRSymbol_set_flag(s, f) ((s)->flag |= f)
 
 #define solLRSymbol_is_terminal(s)   ((s)->flag & SolLRSymbolFlag_TERMINAL)

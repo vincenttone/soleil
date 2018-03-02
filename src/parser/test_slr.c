@@ -248,6 +248,26 @@ int main()
     solRBTuple_list(p->lr->col_rel, &_list, NULL);
     printf("Parser table:\n");
     solRBTuple_travelsal(p->table, &_travelsal_lr_fileds, NULL);
+    // read symbols
+    solSLRParser_read_symbol(p, id);
+    col = solStack_top_val(p->lr->stk);
+    printf("stack top state: %zu\n\n", col->state);
+
+    solSLRParser_read_symbol(p, mul);
+    col = solStack_top_val(p->lr->stk);
+    printf("stack top state: %zu\n\n", col->state);
+
+    solSLRParser_read_symbol(p, id);
+    col = solStack_top_val(p->lr->stk);
+    printf("stack top state: %zu\n\n", col->state);
+
+    solSLRParser_read_symbol(p, plus);
+    col = solStack_top_val(p->lr->stk);
+    printf("stack top state: %zu\n\n", col->state);
+
+    solSLRParser_read_symbol(p, id);
+    col = solStack_top_val(p->lr->stk);
+    printf("stack top state: %zu\n\n", col->state);
 
     solSLRParser_free(p);
     return 0;

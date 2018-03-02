@@ -928,3 +928,16 @@ void solLRParserTableField_free(SolLRTableField *f)
 {
     sol_free(f);
 }
+
+void solLRParser_debug_table_field(SolLRParser *p, SolLRTableField *f)
+{
+    if (f->flag & SolLRTableFieldFlag_TYPE_STATE) {
+        SolLRItemCol *c = f->target;
+        (*p->f_debug_item_col)(c, p);
+    } else if (f->flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+        SolLRSymbol *s = f->target;
+        (*p->f_debug_symbol)(s, p);
+    } else if (f->flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
+        (*p->f_debug_product)((SolLRProduct*)(f->target), p);
+    }
+}
