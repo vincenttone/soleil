@@ -790,6 +790,7 @@ int _solLRItem_register_collection(SolRBTree *tree, SolRBTreeNode *node, void *c
 
 int solLRParser_compare_symbol(SolLRParser *p, SolLRSymbol *s1, SolLRSymbol *s2)
 {
+    if (s1 == s2) return 0;
     if (s1 == p->origin) {
         return 1;
     } else if (s2 == p->origin) {
@@ -927,4 +928,17 @@ SolLRTableField* solLRParserTableField_clone(SolLRParser *p, SolLRTableField *f,
 void solLRParserTableField_free(SolLRTableField *f)
 {
     sol_free(f);
+}
+
+void solLRParser_debug_table_field(SolLRParser *p, SolLRTableField *f)
+{
+    if (f->flag & SolLRTableFieldFlag_TYPE_STATE) {
+        SolLRItemCol *c = f->target;
+        (*p->f_debug_item_col)(c, p);
+    } else if (f->flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+        SolLRSymbol *s = f->target;
+        (*p->f_debug_symbol)(s, p);
+    } else if (f->flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
+        (*p->f_debug_product)((SolLRProduct*)(f->target), p);
+    }
 }

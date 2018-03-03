@@ -9,8 +9,7 @@
 
 typedef struct _SolSLRParser {
     SolLRParser *lr;
-    SolLRItemCol *state; // current state
-    SolStack *stk; // stack
+    SolLRItemCol *origin_state; // current state
     SolRBTree *symbols; // symbols
     SolRBTuple *table; // parser table
 } SolSLRParser;
@@ -28,6 +27,7 @@ SolLRSymbol* solSLRParser_nonterminal_new(SolSLRParser*, void*);
 int solSLRParser_regiter_symbol(SolSLRParser*, SolLRSymbol*);
 
 int solSLRParser_prepare(SolSLRParser*);
+int solSLRParser_read_symbol(SolSLRParser*, SolLRSymbol*);
 
 SolLRItemCol* solSLRParser_generate_items_collection(SolSLRParser*);
 SolLRItemCol* _solSLRParser_generate_items_collection(void*);
