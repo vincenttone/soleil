@@ -955,6 +955,7 @@ void solLRParserTableField_free(SolLRTableField *f)
 
 void solLRParser_debug_table_field(SolLRParser *p, SolLRTableField *f)
 {
+#ifdef __SOL_DEBUG__
     if (f->flag & SolLRTableFieldFlag_TYPE_STATE) {
         SolLRItemCol *c = f->target;
         (*p->f_debug_item_col)(c, p);
@@ -964,4 +965,5 @@ void solLRParser_debug_table_field(SolLRParser *p, SolLRTableField *f)
     } else if (f->flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
         (*p->f_debug_product)((SolLRProduct*)(f->target), p);
     }
+#endif
 }
