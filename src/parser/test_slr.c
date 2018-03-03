@@ -249,30 +249,22 @@ int main()
     printf("Parser table:\n");
     solRBTuple_travelsal(p->table, &_travelsal_lr_fileds, NULL);
     // read symbols
-    solSLRParser_read_symbol(p, id);
-    col = solStack_top_val(p->lr->stk);
-    printf("stack top state: %zu\n\n", col->state);
-
-    solSLRParser_read_symbol(p, mul);
-    col = solStack_top_val(p->lr->stk);
-    printf("stack top state: %zu\n\n", col->state);
-
-    solSLRParser_read_symbol(p, id);
-    col = solStack_top_val(p->lr->stk);
-    printf("stack top state: %zu\n\n", col->state);
-
-    solSLRParser_read_symbol(p, plus);
-    col = solStack_top_val(p->lr->stk);
-    printf("stack top state: %zu\n\n", col->state);
-
-    solSLRParser_read_symbol(p, id);
-    col = solStack_top_val(p->lr->stk);
-    printf("stack top state: %zu\n\n", col->state);
-
-    solSLRParser_read_symbol(p, p->lr->end);
-    col = solStack_top_val(p->lr->stk);
-    printf("stack top state: %zu\n\n", col->state);
-
+    printf("Read symbol return %d\n", solSLRParser_read_symbol(p, id));
+    printf("Read symbol return %d\n", solSLRParser_read_symbol(p, mul));
+    printf("Read symbol return %d\n", solSLRParser_read_symbol(p, id));
+    printf("Read symbol return %d\n", solSLRParser_read_symbol(p, plus));
+    printf("Read symbol return %d\n", solSLRParser_read_symbol(p, id));
+    printf("Read symbol return %d\n", solSLRParser_read_symbol(p, p->lr->end));
+    // pop stack
+    printf("Output fields in stack:\n");
+    if (solStack_size(p->stack)) {
+        SolLRTableField *field;
+        while ((field = solStack_pop(p->stack))) {
+            out_field(field, p->lr);
+            //solLRParser_debug_table_field(p->lr, field);
+            printf("\n");
+        }
+    }
     solSLRParser_free(p);
     return 0;
 }

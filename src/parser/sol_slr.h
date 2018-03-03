@@ -12,6 +12,7 @@ typedef struct _SolSLRParser {
     SolLRItemCol *origin_state; // current state
     SolRBTree *symbols; // symbols
     SolRBTuple *table; // parser table
+    SolStack *stack; // stack for output
 } SolSLRParser;
 
 typedef struct _SolSLRTableField {

@@ -34,6 +34,11 @@ SolSLRParser* solSLRParser_new()
     p->table->ex = p->lr;
     solRBTuple_set_compare_val_func(p->table, &_solLRParserField_compare);
     // solRBTuple_set_compare_val_func(p->table, &_solSLRParser_compare_fields);
+    // stack
+    p->stack = solStack_new();
+    if (p->stack == NULL) {
+        goto oops;
+    }
     // start symbol
     p->lr->origin = solLRSymbol_nonterminal_new(NULL);
     if (p->lr->origin == NULL) {
@@ -71,6 +76,9 @@ void solSLRParser_free(SolSLRParser *p)
     if (p->symbols) {
         solRBTree_free(p->symbols);
     }
+    if (p->stack) {
+        solStack_free(p->stack);
+    }
     if (p->lr) {
         solLRParser_free(p->lr);
     }
@@ -86,7 +94,7 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
 {
     SolLRItemCol *col = solStack_top_val(p->lr->stk);
 #ifdef __SOL_DEBUG__
-    printf("Read symbol: ");
+    printf("\nRead symbol: ");
     (*p->lr->f_debug_symbol)(s, p->lr);
     printf("\n- State on stack top: %zu\n", col->state);
 #endif
@@ -95,7 +103,7 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
     SolLRTableField *f = solRBTuple_get_first(p->table, 2, current_field, field);
     if (f == NULL) {
         _DEBUG_ALARM_;
-        return 1;
+        return -1;
     }
 #ifdef __SOL_DEBUG__
     printf("Field: ");
@@ -109,8 +117,7 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
         (*p->lr->f_debug_symbol)(s, p->lr);
         printf("\n");
 #endif
-        solStack_push(p->lr->stk, f->target);
-    } else if (f->flag & SolLRTableFieldFlag_ACTION_GOTO) {
+        solStack_push(p->stack, field);
         solStack_push(p->lr->stk, f->target);
     } else if (f->flag & SolLRTableFieldFlag_ACTION_REDUCE) {
         for (size_t i = 0; i < ((SolLRProduct*)(f->target))->len; i++) {
@@ -122,35 +129,40 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
         col = solStack_top_val(p->lr->stk);
 #ifdef __SOL_DEBUG__
         printf("- Reduce - Stack top state %zu\n", col->state);
-        printf("@@@ output product: ");
+        printf("@@@ record product: ");
         (*p->lr->f_debug_product)(((SolLRProduct*)(f->target)), p->lr);
         printf("\n");
 #endif
+        solStack_push(p->stack, f);
         current_field->target = col;
         current_field->flag = SolLRTableFieldFlag_TYPE_COL;
-        field->target = ((SolLRProduct*)(f->target))->s;
-        field->flag = SolLRTableFieldFlag_TYPE_SYMBOL;
+        field = solLRParserTableField_new(
+            p->lr,
+            ((SolLRProduct*)(f->target))->s,
+            SolLRTableFieldFlag_TYPE_SYMBOL
+            );
         f = solRBTuple_get_first(p->table, 2, current_field, field); // GOTO
         if (f == NULL) {
             _DEBUG_ALARM_;
-            return 2;
+            return -2;
         }
 #ifdef __SOL_DEBUG__
         printf("- GOTO - push state %zu to stack\n", ((SolLRItemCol*)(f->target))->state);
 #endif
         solStack_push(p->lr->stk, f->target);
-        solSLRParser_read_symbol(p, s);
+        return solSLRParser_read_symbol(p, s);
         // output
     } else if (f->flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
         // accept
 #ifdef __SOL_DEBUG__
         printf("ACCEPT!!!!\n");
 #endif
+        return 0;
     } else {
         _DEBUG_ALARM_;
-        return 3;
+        return -3;
     }
-    return 0;
+    return 1;
 }
 
 SolLRSymbol* solSLRParser_terminal_new(SolSLRParser *p, void *v)
@@ -313,8 +325,8 @@ int solSLRParser_record_accept(SolSLRParser *p, SolLRTableField *state)
         );
     SolLRTableField *end = solLRParserTableField_new(
         p->lr,
-        p->lr->end,
-        SolLRTableFieldFlag_TYPE_SYMBOL | SolLRTableFieldFlag_ACTION_ACCEPT
+        p->origin_state,
+        SolLRTableFieldFlag_TYPE_COL | SolLRTableFieldFlag_ACTION_ACCEPT
         );
     if (solRBTuple_put(p->table, 3, state, sym, end) != 0) {
         return 1;

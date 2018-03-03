@@ -42,6 +42,7 @@ typedef struct _SolLRSymbol {
     SolList *productions; // productions
     SolRBTree *firsts;
     SolRBTree *follows;
+    struct _SolLRTableField *field; // field of symbol
 } SolLRSymbol;
 
 typedef struct _SolLRProduct {
@@ -49,6 +50,7 @@ typedef struct _SolLRProduct {
     SolLRSymbol *s;
     SolLRSymbol **r; // right
     struct _SolLRItem *items; // items
+    struct _SolLRTableField *field; // field of symbol
 } SolLRProduct;
 
 typedef struct _SolLRItem {
