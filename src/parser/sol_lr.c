@@ -60,6 +60,7 @@ SolLRProduct* solLRProduct_new(SolLRSymbol *s, size_t len, ...)
     if (p == NULL) {
         return NULL;
     }
+    p->field = NULL;
     p->s = s;
     p->len = len;
     p->r = sol_calloc(len, sizeof(SolLRSymbol*));
@@ -898,6 +899,23 @@ int solLRParserField_compare(SolLRParser *p, SolLRTableField *f1, SolLRTableFiel
 
 SolLRTableField* solLRParserTableField_new(SolLRParser *p, void *target, int flag)
 {
+    if ((flag & SolLRTableFieldFlag_TYPE_SYMBOL)
+        && ((SolLRSymbol*)target)->field
+        ) {
+#ifdef __SOL_DEBUG__
+        printf("use pre alloced field of symbol\n");
+#endif
+        //((SolLRSymbol*)target)->field->flag |= flag;
+        return ((SolLRSymbol*)target)->field;
+    } else if ((flag & SolLRTableFieldFlag_TYPE_PRODUCT)
+        && ((SolLRProduct*)target)->field
+        ) {
+#ifdef __SOL_DEBUG__
+        printf("use pre alloced field of product\n");
+#endif
+        //((SolLRProduct*)target)->field->flag |= flag;
+        return ((SolLRProduct*)target)->field;
+    }
     SolLRTableField *f = sol_calloc(1, sizeof(SolLRTableField));
     if (f == NULL) {
         return NULL;
@@ -908,6 +926,11 @@ SolLRTableField* solLRParserTableField_new(SolLRParser *p, void *target, int fla
     }
     f->target = target;
     f->flag |= flag;
+    if (flag & SolLRTableFieldFlag_TYPE_SYMBOL) {
+        ((SolLRSymbol*)target)->field = f;
+    } else if (flag & SolLRTableFieldFlag_TYPE_PRODUCT) {
+        ((SolLRProduct*)target)->field = f;
+    }
     return f;
 }
 SolLRTableField* solLRParserTableField_clone(SolLRParser *p, SolLRTableField *f, int flag)

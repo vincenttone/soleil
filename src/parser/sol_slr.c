@@ -122,14 +122,17 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
         col = solStack_top_val(p->lr->stk);
 #ifdef __SOL_DEBUG__
         printf("- Reduce - Stack top state %zu\n", col->state);
-        printf("@@@ output product: ");
+        printf("@@@ record product: ");
         (*p->lr->f_debug_product)(((SolLRProduct*)(f->target)), p->lr);
         printf("\n");
 #endif
         current_field->target = col;
         current_field->flag = SolLRTableFieldFlag_TYPE_COL;
-        field->target = ((SolLRProduct*)(f->target))->s;
-        field->flag = SolLRTableFieldFlag_TYPE_SYMBOL;
+        field = solLRParserTableField_new(
+            p->lr,
+            ((SolLRProduct*)(f->target))->s,
+            SolLRTableFieldFlag_TYPE_SYMBOL
+            );
         f = solRBTuple_get_first(p->table, 2, current_field, field); // GOTO
         if (f == NULL) {
             _DEBUG_ALARM_;
@@ -313,8 +316,8 @@ int solSLRParser_record_accept(SolSLRParser *p, SolLRTableField *state)
         );
     SolLRTableField *end = solLRParserTableField_new(
         p->lr,
-        p->lr->end,
-        SolLRTableFieldFlag_TYPE_SYMBOL | SolLRTableFieldFlag_ACTION_ACCEPT
+        p->origin_state,
+        SolLRTableFieldFlag_TYPE_COL | SolLRTableFieldFlag_ACTION_ACCEPT
         );
     if (solRBTuple_put(p->table, 3, state, sym, end) != 0) {
         return 1;
