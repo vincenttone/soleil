@@ -269,6 +269,10 @@ int main()
     col = solStack_top_val(p->lr->stk);
     printf("stack top state: %zu\n\n", col->state);
 
+    solSLRParser_read_symbol(p, p->lr->end);
+    col = solStack_top_val(p->lr->stk);
+    printf("stack top state: %zu\n\n", col->state);
+
     solSLRParser_free(p);
     return 0;
 }

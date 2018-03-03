@@ -790,6 +790,7 @@ int _solLRItem_register_collection(SolRBTree *tree, SolRBTreeNode *node, void *c
 
 int solLRParser_compare_symbol(SolLRParser *p, SolLRSymbol *s1, SolLRSymbol *s2)
 {
+    if (s1 == s2) return 0;
     if (s1 == p->origin) {
         return 1;
     } else if (s2 == p->origin) {

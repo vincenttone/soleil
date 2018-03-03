@@ -143,6 +143,9 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
         // output
     } else if (f->flag & SolLRTableFieldFlag_ACTION_ACCEPT) {
         // accept
+#ifdef __SOL_DEBUG__
+        printf("ACCEPT!!!!\n");
+#endif
     } else {
         _DEBUG_ALARM_;
         return 3;
@@ -332,6 +335,11 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRTableField *state, SolLRPro
         product,
         SolLRTableFieldFlag_ACTION_REDUCE | SolLRTableFieldFlag_TYPE_PRODUCT
         );
+    SolLRTableField *end = solLRParserTableField_new(
+        p->lr,
+        p->lr->end,
+        SolLRTableFieldFlag_TYPE_SYMBOL
+        );
     SolLRTableField *sym;
     SolRBTreeIter *i = solRBTreeIter_new(
         product->s->follows,
@@ -341,6 +349,9 @@ int solSLRParser_record_reduce(SolSLRParser *p, SolLRTableField *state, SolLRPro
     do {
         sym = solLRParserTableField_new(p->lr, (SolLRSymbol*)(solRBTreeIter_current_val(i)), SolLRTableFieldFlag_TYPE_SYMBOL);
         if (solRBTuple_put(p->table, 3, state, sym, field) != 0) {
+            return 1;
+        }
+        if (solRBTuple_put(p->table, 3, state, end, field) != 0) {
             return 1;
         }
     } while (solRBTreeIter_next(i));
