@@ -120,7 +120,8 @@ int solSLRParser_read_symbol(SolSLRParser *p, SolLRSymbol *s)
         solStack_push(p->stack, field);
         solStack_push(p->lr->stk, f->target);
     } else if (f->flag & SolLRTableFieldFlag_ACTION_REDUCE) {
-        for (size_t i = 0; i < ((SolLRProduct*)(f->target))->len; i++) {
+        size_t i;
+        for (i = 0; i < ((SolLRProduct*)(f->target))->len; i++) {
             col = solStack_pop(p->lr->stk); // col
 #ifdef __SOL_DEBUG__
             printf("- Reduce - pop state %zu from stack\n", col->state);
