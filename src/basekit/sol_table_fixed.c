@@ -42,7 +42,7 @@ void* solTableFixed_get(SolTableFixed *tbl, size_t cc, size_t rc)
 
 SolTableFixedIter* solTableFixed_get_rows(SolTableFixed *tbl, size_t cc)
 {
-	if (cc >= tbl->rs) {
+	if (cc >= tbl->cs) {
 		return NULL;
 	}
 	return solTableFixedIter_new(tbl, cc, 0, 2);
@@ -50,7 +50,7 @@ SolTableFixedIter* solTableFixed_get_rows(SolTableFixed *tbl, size_t cc)
 
 SolTableFixedIter* solTableFixed_get_columns(SolTableFixed *tbl, size_t rc)
 {
-	if (rc >= tbl->cs) {
+	if (rc >= tbl->rs) {
 		return NULL;
 	}
 	return solTableFixedIter_new(tbl, 0, rc, 1);
@@ -79,7 +79,12 @@ void solTableFixedIter_free(SolTableFixedIter *iter)
 
 void* solTableFixedIter_current(SolTableFixedIter *iter)
 {
-	if ((iter->cc >= iter->tbl->cs) || (iter->rc >= iter->tbl->rs)) {
+    if (iter == NULL) {
+        return NULL;
+    }
+	if ((iter->cc >= iter->tbl->cs)
+        || (iter->rc >= iter->tbl->rs)
+    ) {
 		return NULL;
 	}
 	return *(iter->tbl->vals + (iter->cc * iter->tbl->rs) + iter->rc);
@@ -87,11 +92,11 @@ void* solTableFixedIter_current(SolTableFixedIter *iter)
 
 int solTableFixedIter_next(SolTableFixedIter *iter)
 {
-	if (iter->flag == 0x1) {
+	if (iter->flag & 0x1) {
 		if (++(iter->cc) >= iter->tbl->cs) {
 			return 1;
 		}
-	} else if (iter->flag == 0x2) {
+	} else if (iter->flag & 0x2) {
 		if (++(iter->rc) >= iter->tbl->rs) {
 			return 2;
 		}

@@ -42,6 +42,10 @@ int main()
 	for (x = 0; x < RS; x++) {
 		printf("=======get columns of row: %zu =========\n", x);
 		i = solTableFixed_get_columns(t, x);
+        if (i == NULL) {
+            printf("iter is null!!!\n");
+            break;
+        }
 		do {
 			c = solTableFixedIter_current(i);
 			if (c == NULL) {
