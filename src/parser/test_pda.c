@@ -22,7 +22,9 @@ int main()
 	solPda_add_rule(pda, s1, sbll, s2, SolPdaFieldFlag_push);
 	solPda_add_rule(pda, s2, sblr, s2, SolPdaFieldFlag_pop);
 	solPda_add_rule(pda, s2, sblw, s3, 0);
+	solPda_add_rule(pda, s3, sblw, s3, 0);
 	solPda_add_rule(pda, s2, sblb, s4, 0);
+	solPda_add_rule(pda, s4, sblb, s4, 0);
 	// free moves
 	solPda_add_rule(pda, s2, NULL, s1, 0);
 	solPda_add_rule(pda, s3, NULL, s2, 0);
@@ -30,6 +32,16 @@ int main()
 	
 	solPda_init(pda, s1, s1);
 	printf("Current state: %zu\tAccepting? %d\n", pda->cs->state, solPda_is_accepting(pda));
+
+	SolPdaSymbol* input[9] = {sbll, sblr, sbll, sbll, sblw, sblb, sblw, sblr, sblr};
+	int i;
+	for (i = 0; i < 9; i++) {
+		printf("Read symbol: [%c], return %d\n", *(char*)((input[i]))->symbol, solPda_read(pda, input[i]));
+		printf("Current state: %zu\tAccepting? %d\n", pda->cs->state, solPda_is_accepting(pda));
+	}
+	printf("==========\n");
+
+	solPda_init(pda, s1, s1);
 	
 	printf("Read symbol: [%c], return %d\n", *(char*)(sblw->symbol), solPda_read(pda, sblw));
 	printf("Current state: %zu\tAccepting? %d\n", pda->cs->state, solPda_is_accepting(pda));

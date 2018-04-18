@@ -124,6 +124,7 @@ int solPda_check_state_accepting(SolPda *pda, SolPdaState *s)
 		return -1;
 	}
 	if (pda->as == s) {
+		pda->cs = s;
 		return 0;
 	}
 	if (pda->lc++ > SOL_PDA_MAX_LOOP_COUNT) {
