@@ -56,6 +56,7 @@ int solPda_add_rule(SolPda*, SolPdaState*, SolPdaSymbol*, SolPdaState*, int);
 
 SolPdaSymbol* solPda_register_symbol(SolPda*, void*);
 SolPdaSymbol* solPda_register_symbol_group(SolPda*, size_t, ...);
+int solPda_append_symbol_to_group(SolPda*, void*, SolPdaSymbol*);
 void solPdaSymbol_free(SolPdaSymbol*);
 
 SolPdaState* solPda_generate_state(SolPda*);

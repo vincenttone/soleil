@@ -1,5 +1,4 @@
 #include "sol_pda.h"
-#include <stdio.h>
 
 SolPda* solPda_new(size_t state_count, size_t symbol_count)
 {
@@ -125,9 +124,6 @@ SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *s
 	if (pda->lc++ > SOL_PDA_MAX_LOOP_COUNT) {
 		return NULL;
 	}
-#ifdef __SOL_DEBUG__
-	printf("Try free move from state: %zu, try symbol %c\n", s->state, *(char*)(sbl->symbol));
-#endif
 	SolPdaField *fs;
 	SolListNode *n;
 	if (s && s->free_moves && solList_len(s->free_moves)) {
@@ -136,9 +132,6 @@ SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *s
 			s = solListNode_val(n);
 			fs = solTableFixed_get(pda->rules, s->state, sbl->c);
 			if (fs) {
-#ifdef __SOL_DEBUG__
-				printf("Find field of state: %zu\n", fs->state->state);
-#endif
 				return fs;
 			}
 			fs = solPda_free_moves_find(pda, s, sbl);
@@ -270,6 +263,20 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 		return NULL;
 	}
 	return s;
+}
+
+int solPda_append_symbol_to_group(SolPda *pda, void *s, SolPdaSymbol *sbl)
+{
+	if (solHash_get(pda->symbol_map, s)) {
+		return 0;
+	}
+	if (solList_add(sbl->symbol, s) == NULL) {
+		return 1;
+	}
+	if (solHash_put(pda->symbol_map, s, sbl)) {
+		return 2;
+	}
+	return 0;
 }
 
 void solPdaState_free(SolPdaState *s)

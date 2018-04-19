@@ -40,7 +40,9 @@ int main()
 	SolPdaSymbol *sblw = solPda_register_symbol(pda, &ca);
 	SolPdaSymbol *sblcb = solPda_register_symbol(pda, &cb);
 	SolPdaSymbol *sblb = solPda_register_symbol(pda, &bb);
-	SolPdaSymbol *sblmno = solPda_register_symbol_group(pda, 3, &cm, &cn, &co);
+	SolPdaSymbol *sblmno = solPda_register_symbol_group(pda, 2, &cm, &cn);
+	printf("Append to group return %d\n", solPda_append_symbol_to_group(pda, &co, sblmno));
+	printf("Group symbol count %zu\n", solList_len((SolList*)(sblmno->symbol)));
 
 	// basic rules
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, SolPdaFieldFlag_push));
@@ -101,7 +103,7 @@ int main()
 	char *input2 = "(a b a (m n o))";
 	printf("Input: %s\n", input2);
 	int read;
-	for (i = 0; i < 9; i++) {
+	for (i = 0; i < 15; i++) {
 		read = solPda_read(pda, input2 + i);
 		if (read == 0) {
 			printf("Read symbol: [%c] ok.\t", *(char*)(input2 + i));
