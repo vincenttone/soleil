@@ -1,6 +1,7 @@
 #ifndef _SOL_PDA_H_
 #define _SOL_PDA_H_ 1
 
+#include <stdarg.h>
 #include "sol_common.h"
 #include "sol_table_fixed.h"
 #include "sol_list.h"
@@ -11,6 +12,8 @@
 
 #define SOL_PDA_MAX_LOOP_COUNT 2048
 
+#define SOL_PDA_SYMBOL_FLAG_GROUP 0x1
+
 typedef struct _SolPdaState {
 	size_t state;
 	SolList *free_moves;
@@ -19,6 +22,7 @@ typedef struct _SolPdaState {
 typedef struct _SolPdaSymbol {
 	void *symbol;
 	size_t c;
+	//int flag;
 } SolPdaSymbol;
 	
 typedef struct _SolPdaField {
@@ -33,6 +37,7 @@ typedef struct _SolPda {
 	SolTableFixed *rules;
 	SolList *fields;
 	SolList *states; // states
+	SolList *symbols; // symbols
 	size_t g2; // symbol count generater
 	size_t lc; // loop counter
 } SolPda;
@@ -47,6 +52,8 @@ void solPda_init(SolPda*, SolPdaState*, SolPdaState*);
 int solPda_add_rule(SolPda*, SolPdaState*, SolPdaSymbol*, SolPdaState*, int);
 
 SolPdaSymbol* solPda_register_symbol(SolPda*, void*);
+//SolPdaSymbol* solPda_register_symbol_group(SolPda*, size_t, ...);
+void solPdaSymbol_free(SolPdaSymbol*);
 
 SolPdaState* solPda_generate_state(SolPda*);
 void solPdaState_free(SolPdaState*);
