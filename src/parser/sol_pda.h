@@ -22,6 +22,7 @@ typedef struct _SolPdaState {
 typedef struct _SolPdaSymbol {
 	void *symbol;
 	size_t c;
+	//int flag;
 } SolPdaSymbol;
 	
 typedef struct _SolPdaField {

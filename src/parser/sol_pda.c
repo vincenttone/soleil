@@ -185,6 +185,41 @@ SolPdaSymbol* solPda_register_symbol(SolPda *pda, void *symbol)
 	}
 	return s;
 }
+/*
+SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
+{
+	SolPdaSymbol *s = sol_calloc(1, sizeof(SolPdaSymbol));
+	if (s == NULL) {
+		return NULL;
+	}
+	if (solList_len(pda->symbols)) {
+		SolPdaSymbol *s_pre = solListNode_val(solList_tail(pda->symbols));
+		s->c = s_pre->c + 1;
+	}
+	va_list al;
+	va_start(al, count);
+	if (count == 1) {
+		s->symbol = va_arg(al, void*);
+	} else {
+		s->symbol = solList_new();
+		s->flag = SOL_PDA_SYMBOL_FLAG_GROUP;
+		void *symbol;
+		for (; count > 0; count--) {
+			symbol = va_arg(al, void*);
+			if (solList_add(s->symbol, symbol) == NULL) {
+				solPdaSymbol_free(s);
+				return NULL;
+			}
+		}
+	}
+	va_end(al);
+	if (solList_add(pda->symbols, s) == NULL) {
+		solPdaSymbol_free(s);
+		return NULL;
+	}
+	return s;
+}
+*/
 
 void solPdaState_free(SolPdaState *s)
 {
@@ -217,6 +252,11 @@ void solPdaField_free(SolPdaField *f)
 void solPdaSymbol_free(SolPdaSymbol *s)
 {
 	if (s) {
+		/*
+		if ((s->flag & SOL_PDA_SYMBOL_FLAG_GROUP) && s->symbol) {
+			solList_free((SolList*)(s->symbol));
+		}
+		*/
 		sol_free(s);
 	}
 }
