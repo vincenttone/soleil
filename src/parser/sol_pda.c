@@ -1,4 +1,5 @@
 #include "sol_pda.h"
+#include <stdio.h>
 
 SolPda* solPda_new(size_t state_count, size_t symbol_count)
 {
@@ -11,6 +12,7 @@ SolPda* solPda_new(size_t state_count, size_t symbol_count)
 	pda->symbols = solList_new();
 	pda->rules = solTableFixed_new(state_count, symbol_count);
 	pda->stk = solStack_new();
+	pda->symbol_map = solHash_new();
 	return pda;
 }
 
@@ -45,6 +47,9 @@ void solPda_free(SolPda *pda)
 	if (pda->rules) {
 		solTableFixed_free(pda->rules);
 	}
+	if (pda->symbol_map) {
+		solHash_free(pda->symbol_map);
+	}
 	if (pda) {
 		sol_free(pda);
 	}
@@ -68,34 +73,38 @@ int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState
 		}
 		solList_add(s1->free_moves, s2);
 	} else {
+		if ((s1->state + 1 > pda->rules->cs)
+			|| (sbl->c + 1 > pda->rules->rs)
+		) {
+			return -2;
+		}
 		SolPdaField *fs = solPdaField_new(s2, act);
 		if (solTableFixed_put(pda->rules, s1->state, sbl->c, fs)) {
 			return 1;
 		}
 		if (solList_add(pda->fields, fs) == NULL) {
 			solPdaField_free(fs);
-			return -2;
+			return -3;
 		}
 	}
 	return 0;
 }
 
-int solPda_read(SolPda *pda, SolPdaSymbol *sbl)
+int solPda_read(SolPda *pda, void *s)
+{
+	SolPdaSymbol *symbol = solHash_get(pda->symbol_map, s);
+	if (symbol == NULL) {
+		return -1;
+	}
+	return solPda_read_symbol(pda, symbol);
+}
+
+int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl)
 {
 	SolPdaField *fs = solTableFixed_get(pda->rules, pda->cs->state, sbl->c);
 	if (fs == NULL) {
-		// free moves
-		if (pda->cs && pda->cs->free_moves && solList_len(pda->cs->free_moves)) {
-			SolListNode *n = solList_head(pda->cs->free_moves);
-			SolPdaState *s;
-			do {
-				s = solListNode_val(n);
-				fs = solTableFixed_get(pda->rules, s->state, sbl->c);
-				if (fs) {
-					break;
-				}
-			} while ((n = solListNode_next(n)));
-		}
+		pda->lc = 0;
+		fs = solPda_free_moves_find(pda, pda->cs, sbl);
 	}
 	if (fs == NULL) {
 		return 1;
@@ -109,6 +118,36 @@ int solPda_read(SolPda *pda, SolPdaSymbol *sbl)
 		solStack_pop(pda->stk);
 	}
 	return 0;
+}
+
+SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *sbl)
+{
+	if (pda->lc++ > SOL_PDA_MAX_LOOP_COUNT) {
+		return NULL;
+	}
+#ifdef __SOL_DEBUG__
+	printf("Try free move from state: %zu, try symbol %c\n", s->state, *(char*)(sbl->symbol));
+#endif
+	SolPdaField *fs;
+	SolListNode *n;
+	if (s && s->free_moves && solList_len(s->free_moves)) {
+		n = solList_head(s->free_moves);
+		do {
+			s = solListNode_val(n);
+			fs = solTableFixed_get(pda->rules, s->state, sbl->c);
+			if (fs) {
+#ifdef __SOL_DEBUG__
+				printf("Find field of state: %zu\n", fs->state->state);
+#endif
+				return fs;
+			}
+			fs = solPda_free_moves_find(pda, s, sbl);
+			if (fs) {
+				return fs;
+			}
+		} while ((n = solListNode_next(n)));
+	}
+	return NULL;
 }
 
 int solPda_is_accepting(SolPda *pda)
@@ -156,7 +195,7 @@ SolPdaState* solPda_generate_state(SolPda *pda)
 		return NULL;
 	}
 	if (solList_len(pda->states) == 0) {
-		s->state = 1;
+		s->state = 0;
 	} else {
 		SolPdaState *ls = solListNode_val(solList_tail(pda->states));
 		s->state = ls->state + 1;
@@ -179,13 +218,18 @@ SolPdaSymbol* solPda_register_symbol(SolPda *pda, void *symbol)
 		SolPdaSymbol *s_pre = solListNode_val(solList_tail(pda->symbols));
 		s->c = s_pre->c + 1;
 	}
-	if (solList_add(pda->symbols, s) == NULL) {
+	if (solHash_put(pda->symbol_map, symbol, s)) {
+		solPdaSymbol_free(s);
+		return NULL;
+	}
+	SolListNode *n = solList_add(pda->symbols, s);
+	if (n == NULL) {
 		solPdaSymbol_free(s);
 		return NULL;
 	}
 	return s;
 }
-/*
+
 SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 {
 	SolPdaSymbol *s = sol_calloc(1, sizeof(SolPdaSymbol));
@@ -200,6 +244,10 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 	va_start(al, count);
 	if (count == 1) {
 		s->symbol = va_arg(al, void*);
+		if (solHash_put(pda->symbol_map, s->symbol, s)) {
+			solPdaSymbol_free(s);
+			return NULL;
+		}
 	} else {
 		s->symbol = solList_new();
 		s->flag = SOL_PDA_SYMBOL_FLAG_GROUP;
@@ -207,6 +255,10 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 		for (; count > 0; count--) {
 			symbol = va_arg(al, void*);
 			if (solList_add(s->symbol, symbol) == NULL) {
+				solPdaSymbol_free(s);
+				return NULL;
+			}
+			if (solHash_put(pda->symbol_map, symbol, s)) {
 				solPdaSymbol_free(s);
 				return NULL;
 			}
@@ -219,7 +271,6 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 	}
 	return s;
 }
-*/
 
 void solPdaState_free(SolPdaState *s)
 {
@@ -252,11 +303,9 @@ void solPdaField_free(SolPdaField *f)
 void solPdaSymbol_free(SolPdaSymbol *s)
 {
 	if (s) {
-		/*
 		if ((s->flag & SOL_PDA_SYMBOL_FLAG_GROUP) && s->symbol) {
 			solList_free((SolList*)(s->symbol));
 		}
-		*/
 		sol_free(s);
 	}
 }

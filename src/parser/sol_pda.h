@@ -6,6 +6,7 @@
 #include "sol_table_fixed.h"
 #include "sol_list.h"
 #include "sol_stack.h"
+#include "sol_hash.h"
 
 #define SolPdaFieldFlag_push   0x1
 #define SolPdaFieldFlag_pop    0x2
@@ -22,7 +23,7 @@ typedef struct _SolPdaState {
 typedef struct _SolPdaSymbol {
 	void *symbol;
 	size_t c;
-	//int flag;
+	int flag;
 } SolPdaSymbol;
 	
 typedef struct _SolPdaField {
@@ -38,21 +39,23 @@ typedef struct _SolPda {
 	SolList *fields;
 	SolList *states; // states
 	SolList *symbols; // symbols
-	size_t g2; // symbol count generater
+	SolHash *symbol_map;
 	size_t lc; // loop counter
 } SolPda;
 
 SolPda* solPda_new(size_t state_count, size_t symbol_count);
 void solPda_free(SolPda*);
-int solPda_read(SolPda*, SolPdaSymbol*);
+int solPda_read(SolPda *, void*);
+int solPda_read_symbol(SolPda*, SolPdaSymbol*);
 int solPda_is_accepting(SolPda*);
 int solPda_check_state_accepting(SolPda*, SolPdaState*);
+SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *sbl);
 
 void solPda_init(SolPda*, SolPdaState*, SolPdaState*);
 int solPda_add_rule(SolPda*, SolPdaState*, SolPdaSymbol*, SolPdaState*, int);
 
 SolPdaSymbol* solPda_register_symbol(SolPda*, void*);
-//SolPdaSymbol* solPda_register_symbol_group(SolPda*, size_t, ...);
+SolPdaSymbol* solPda_register_symbol_group(SolPda*, size_t, ...);
 void solPdaSymbol_free(SolPdaSymbol*);
 
 SolPdaState* solPda_generate_state(SolPda*);
