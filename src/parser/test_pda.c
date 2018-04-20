@@ -26,7 +26,7 @@ int main()
 	char cn = 'n';
 	char co = 'o';
 	char bb = ' ';
-	SolPda *pda = solPda_new(4, 6);
+	SolPda *pda = solPda_new();
 	solHash_set_hash_func1(pda->symbol_map, &hash1);
 	solHash_set_hash_func2(pda->symbol_map, &hash2);
 	solHash_set_equal_func(pda->symbol_map, &hash_equal);
@@ -44,6 +44,7 @@ int main()
 	printf("Append to group return %d\n", solPda_append_symbol_to_group(pda, &co, sblmno));
 	printf("Group symbol count %zu\n", solList_len((SolList*)(sblmno->symbol)));
 
+	printf("Gen rules table ret %d\n", solPda_gen_rules_table(pda));
 	// basic rules
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, SolPdaFieldFlag_push));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, SolPdaFieldFlag_pop));

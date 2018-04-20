@@ -43,13 +43,14 @@ typedef struct _SolPda {
 	size_t lc; // loop counter
 } SolPda;
 
-SolPda* solPda_new(size_t state_count, size_t symbol_count);
+SolPda* solPda_new();
 void solPda_free(SolPda*);
 int solPda_read(SolPda *, void*);
 int solPda_read_symbol(SolPda*, SolPdaSymbol*);
 int solPda_is_accepting(SolPda*);
 int solPda_check_state_accepting(SolPda*, SolPdaState*);
 SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *sbl);
+int solPda_gen_rules_table(SolPda*);
 
 void solPda_init(SolPda*, SolPdaState*, SolPdaState*);
 int solPda_add_rule(SolPda*, SolPdaState*, SolPdaSymbol*, SolPdaState*, int);

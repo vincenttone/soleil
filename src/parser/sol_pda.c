@@ -1,6 +1,6 @@
 #include "sol_pda.h"
 
-SolPda* solPda_new(size_t state_count, size_t symbol_count)
+SolPda* solPda_new()
 {
 	SolPda *pda = sol_calloc(1, sizeof(SolPda));
 	if (pda == NULL) {
@@ -9,10 +9,25 @@ SolPda* solPda_new(size_t state_count, size_t symbol_count)
 	pda->fields = solList_new();
 	pda->states = solList_new();
 	pda->symbols = solList_new();
-	pda->rules = solTableFixed_new(state_count, symbol_count);
+	//pda->rules = solTableFixed_new(state_count, symbol_count);
 	pda->stk = solStack_new();
 	pda->symbol_map = solHash_new();
 	return pda;
+}
+
+int solPda_gen_rules_table(SolPda *pda)
+{
+	if (pda == NULL) {
+		return -1;
+	}
+	if (pda->rules) {
+		solTableFixed_free(pda->rules);
+	}
+	pda->rules = solTableFixed_new(solList_len(pda->states), solList_len(pda->symbols));
+	if (pda->rules == NULL) {
+		return 1;
+	}
+	return 0;
 }
 
 void solPda_free(SolPda *pda)
@@ -187,12 +202,7 @@ SolPdaState* solPda_generate_state(SolPda *pda)
 	if (s == NULL) {
 		return NULL;
 	}
-	if (solList_len(pda->states) == 0) {
-		s->state = 0;
-	} else {
-		SolPdaState *ls = solListNode_val(solList_tail(pda->states));
-		s->state = ls->state + 1;
-	}
+	s->state = solList_len(pda->states);
 	if (solList_add(pda->states, s) == NULL) {
 		solPdaState_free(s);
 		return NULL;
@@ -207,10 +217,7 @@ SolPdaSymbol* solPda_register_symbol(SolPda *pda, void *symbol)
 		return NULL;
 	}
 	s->symbol = symbol;
-	if (solList_len(pda->symbols)) {
-		SolPdaSymbol *s_pre = solListNode_val(solList_tail(pda->symbols));
-		s->c = s_pre->c + 1;
-	}
+	s->c = solList_len(pda->symbols);
 	if (solHash_put(pda->symbol_map, symbol, s)) {
 		solPdaSymbol_free(s);
 		return NULL;
@@ -229,10 +236,7 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 	if (s == NULL) {
 		return NULL;
 	}
-	if (solList_len(pda->symbols)) {
-		SolPdaSymbol *s_pre = solListNode_val(solList_tail(pda->symbols));
-		s->c = s_pre->c + 1;
-	}
+	s->c = solList_len(pda->symbols);
 	va_list al;
 	va_start(al, count);
 	if (count == 1) {
