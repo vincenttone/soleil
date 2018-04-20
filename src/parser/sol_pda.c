@@ -237,6 +237,11 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 		return NULL;
 	}
 	s->c = solList_len(pda->symbols);
+	if (count == 0) {
+		s->symbol = solList_new();
+		s->flag = SOL_PDA_SYMBOL_FLAG_GROUP;
+		goto end;
+	}
 	va_list al;
 	va_start(al, count);
 	if (count == 1) {
@@ -262,6 +267,7 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 		}
 	}
 	va_end(al);
+ end:
 	if (solList_add(pda->symbols, s) == NULL) {
 		solPdaSymbol_free(s);
 		return NULL;
