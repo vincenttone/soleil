@@ -78,19 +78,24 @@ void solPda_init(SolPda *pda, SolPdaState *start, SolPdaState *accept)
 
 int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState *s2, int act)
 {
+	if (pda == NULL || s1 == NULL || s2 == NULL) {
+		return -1;
+	}
 	if (sbl == NULL) { // free moves
 		if (s1->free_moves == NULL) {
 			s1->free_moves = solList_new();
 			if (s1->free_moves == NULL) {
-				return -1;
+				return -2;
 			}
 		}
-		solList_add(s1->free_moves, s2);
+		if (solList_add(s1->free_moves, s2) == NULL) {
+			return 1;
+		}
 	} else {
 		if ((s1->state + 1 > pda->rules->cs)
 			|| (sbl->c + 1 > pda->rules->rs)
 		) {
-			return -2;
+			return -3;
 		}
 		SolPdaField *fs = solPdaField_new(s2, act);
 		if (solTableFixed_put(pda->rules, s1->state, sbl->c, fs)) {
@@ -98,7 +103,7 @@ int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState
 		}
 		if (solList_add(pda->fields, fs) == NULL) {
 			solPdaField_free(fs);
-			return -3;
+			return 2;
 		}
 	}
 	return 0;
