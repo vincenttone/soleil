@@ -76,7 +76,7 @@ void solPda_init(SolPda *pda, SolPdaState *start, SolPdaState *accept)
 	while (solStack_pop(pda->stk)) {}
 }
 
-int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState *s2, int act)
+int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState *s2, SolPdaSymbol *symbol_pop, int act)
 {
 	if (pda == NULL || s1 == NULL || s2 == NULL) {
 		return -1;
@@ -97,7 +97,7 @@ int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState
 		) {
 			return -3;
 		}
-		SolPdaField *fs = solPdaField_new(s2, act);
+		SolPdaField *fs = solPdaField_new(s2, symbol_pop, act);
 		if (solTableFixed_put(pda->rules, s1->state, sbl->c, fs)) {
 			return 1;
 		}
@@ -143,14 +143,23 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl)
 	if (fs == NULL) {
 		return 1;
 	}
-	pda->cs = fs->state;
+	pda->act = 0;
 	if ((fs->flag & SolPdaFieldFlag_push)) {
 		if (solStack_push(pda->stk, sbl)) {
 			return 2;
 		}
+		pda->act = SolPdaFieldFlag_push;
 	} else if (fs->flag & SolPdaFieldFlag_pop) {
-		solStack_pop(pda->stk);
+		if (solStack_top_val(pda->stk) == fs->symbol) {
+			if (solStack_pop(pda->stk) == NULL) {
+				return 3;
+			}
+			pda->act = SolPdaFieldFlag_pop;
+		} else {
+			return 4;
+		}
 	}
+	pda->cs = fs->state;
 	return 0;
 }
 
@@ -334,17 +343,20 @@ void solPdaState_free(SolPdaState *s)
 	}
 }
 
-SolPdaField* solPdaField_new(SolPdaState *s, int flag)
+SolPdaField* solPdaField_new(SolPdaState *s, SolPdaSymbol *sbl, int flag)
 {
 	if (s == NULL) {
 		return NULL;
 	}
-	SolPdaField *f = sol_alloc(sizeof(SolPdaField));
+	SolPdaField *f = sol_calloc(1, sizeof(SolPdaField));
 	if (f == NULL) {
 		return NULL;
 	}
 	f->flag = flag;
 	f->state = s;
+	if (flag) {
+		f->symbol = sbl;
+	}
 	return f;
 }
 

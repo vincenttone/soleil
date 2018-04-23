@@ -46,20 +46,20 @@ int main()
 
 	printf("Gen rules table ret %d\n", solPda_gen_rules_table(pda));
 	// basic rules
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, SolPdaFieldFlag_push));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, SolPdaFieldFlag_pop));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblw, s3, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblcb, s3, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblmno, s3, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblb, s4, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblw, s3, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblcb, s3, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblmno, s3, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, sblb, s4, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_push));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, sbll, SolPdaFieldFlag_pop));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblw, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblcb, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblmno, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblb, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblw, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblcb, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblmno, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, sblb, s4, NULL, 0));
 	// free moves
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, NULL, s2, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, NULL, s2, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, NULL, s2, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, NULL, s2, NULL, 0));
 
 	solPda_init(pda, s1, s1);
 	printf("Current state: %zu\tAccepting? %d\n", pda->cs->state, solPda_is_accepting(pda));
@@ -112,7 +112,7 @@ int main()
 			printf("Read symbol: [%c] failed! return %d\n", *(char*)(input2 +i), read);
 			break;
 		}
-		printf("Current state: %zu\tAccepting? %d\n", pda->cs->state, solPda_is_accepting(pda));
+		printf("Current state: %zu, action: %d\tAccepting? %d\n", pda->cs->state, pda->act, solPda_is_accepting(pda));
 	}
 	solPda_free(pda);
 	
