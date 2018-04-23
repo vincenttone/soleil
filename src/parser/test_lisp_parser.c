@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "sol_lisp_parser.h"
 
 size_t solLispParser_symbol_hash1(void *key)
@@ -16,12 +17,8 @@ int solLispParser_symbol_hash_equal(void *v1, void *v2)
 	return *(char*)v1 - (*(char*)v2);
 }
 
-char* init_symbols(SolLispParser *p, size_t sc)
+char* init_symbols(SolLispParser *p, char *symbols, size_t sc)
 {
-	char *symbols = sol_calloc(sc, sizeof(char));
-	solHash_set_hash_func1(p->pda->symbol_map, &solLispParser_symbol_hash1);
-	solHash_set_hash_func2(p->pda->symbol_map, &solLispParser_symbol_hash2);
-	solHash_set_equal_func(p->pda->symbol_map, &solLispParser_symbol_hash_equal);
 	// symbols
 	SolPdaSymbol *left;
 	SolPdaSymbol *right;
@@ -65,20 +62,45 @@ char* init_symbols(SolLispParser *p, size_t sc)
 	solPda_add_rule(p->pda, s3, NULL,   s2, 0);
 	solPda_add_rule(p->pda, s3, others, s3, 0);
 	solPda_add_rule(p->pda, s4, split,  s4, 0);
+	solPda_add_rule(p->pda, s4, NULL,   s2, 0);
+	p->pda->cs = s1;
+	p->pda->as = s1;
 	return symbols;
+}
+
+size_t read_buffer(char *buffer, size_t buffer_size)
+{
+	if (buffer_size) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 int main()
 {
 	SolLispParser *p = solLispParser_new();
+	p->read_char = &read_buffer;
 	size_t sc = 97;
-	char *symbols = init_symbols(p, sc);
+	char *ss = sol_calloc(sc, sizeof(char)); //symbol list
+	solHash_set_hash_func1(p->pda->symbol_map, &solLispParser_symbol_hash1);
+	solHash_set_hash_func2(p->pda->symbol_map, &solLispParser_symbol_hash2);
+	solHash_set_equal_func(p->pda->symbol_map, &solLispParser_symbol_hash_equal);
+	char *symbols = init_symbols(p, ss, sc);
 	size_t i;
 	printf("Chars (%zu): ", sc);
 	for (i = 0; i < sc; i++) {
 		printf("[%c] ", *(char*)((symbols) + i));
 	}
 	printf("\n");
+
+	char *input = "(a b c (1 2 3) m n o)";
+	int read = solLispParser_read(p, input, strlen(input));
+	if (read != 0) {
+		printf("Read return %d\n", read);
+	} else {
+		printf("Accepting? %d\n", solPda_is_accepting(p->pda));
+	}
 	sol_free(symbols);
 	solLispParser_free(p);
 	return 0;

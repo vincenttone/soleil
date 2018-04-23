@@ -2,7 +2,7 @@
 
 SolLispParser* solLispParser_new()
 {
-	SolLispParser *p = sol_alloc(sizeof(SolLispParser));
+	SolLispParser *p = sol_calloc(1, sizeof(SolLispParser));
 	p->pda = solPda_new();
 	p->flag = SolLispParserSymbolType_char;
 	return p;
@@ -10,6 +10,9 @@ SolLispParser* solLispParser_new()
 
 int solLispParser_read(SolLispParser *p, char *buffer, size_t buffer_size)
 {
+	if (p == NULL || buffer == NULL || p->read_char == NULL) {
+		return -1;
+	}
 	SolLispParserChar *c;
 	if ((p->flag & SolLispParserSymbolType_char) == 0) {
 		c = sol_alloc(sizeof(SolLispParserChar));

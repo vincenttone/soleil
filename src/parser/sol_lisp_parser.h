@@ -18,6 +18,7 @@ typedef struct _SolLispParser {
 } SolLispParser;
 
 SolLispParser* solLispParser_new();
+int solLispParser_read(SolLispParser*, char*, size_t);
 void solLispParser_free(SolLispParser*);
 
 #endif
