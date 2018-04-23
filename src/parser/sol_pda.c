@@ -106,15 +106,30 @@ int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState
 
 int solPda_read(SolPda *pda, void *s)
 {
-	SolPdaSymbol *symbol = solHash_get(pda->symbol_map, s);
-	if (symbol == NULL) {
+	if (pda == NULL || s == NULL) {
 		return -1;
 	}
-	return solPda_read_symbol(pda, symbol);
+	SolPdaSymbol *symbol = solHash_get(pda->symbol_map, s);
+	if (symbol == NULL) {
+		return -2;
+	}
+	int read = solPda_read_symbol(pda, symbol);
+	if (read < 0) {
+		return -3;
+	} else if (read > 0) {
+		return 1;
+	}
+	return 0;
 }
 
 int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl)
 {
+	if (pda == NULL || sbl == NULL) {
+		return -1;
+	}
+	if (pda->rules == NULL || pda->cs == NULL) {
+		return -2;
+	}
 	SolPdaField *fs = solTableFixed_get(pda->rules, pda->cs->state, sbl->c);
 	if (fs == NULL) {
 		pda->lc = 0;
@@ -136,6 +151,9 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl)
 
 SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *sbl)
 {
+	if (pda == NULL || s == NULL || sbl == NULL) {
+		return NULL;
+	}
 	if (pda->lc++ > SOL_PDA_MAX_LOOP_COUNT) {
 		return NULL;
 	}
@@ -198,6 +216,9 @@ int solPda_check_state_accepting(SolPda *pda, SolPdaState *s)
 
 SolPdaState* solPda_generate_state(SolPda *pda)
 {
+	if (pda == NULL) {
+		return NULL;
+	}
 	SolPdaState *s = sol_calloc(1, sizeof(SolPdaState));
 	if (s == NULL) {
 		return NULL;
@@ -212,6 +233,9 @@ SolPdaState* solPda_generate_state(SolPda *pda)
 
 SolPdaSymbol* solPda_register_symbol(SolPda *pda, void *symbol)
 {
+	if (pda == NULL) {
+		return NULL;
+	}
 	SolPdaSymbol *s = sol_calloc(1, sizeof(SolPdaSymbol));
 	if (s == NULL) {
 		return NULL;
@@ -232,6 +256,9 @@ SolPdaSymbol* solPda_register_symbol(SolPda *pda, void *symbol)
 
 SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 {
+	if (pda == NULL) {
+		return NULL;
+	}
 	SolPdaSymbol *s = sol_calloc(1, sizeof(SolPdaSymbol));
 	if (s == NULL) {
 		return NULL;
@@ -277,6 +304,9 @@ SolPdaSymbol* solPda_register_symbol_group(SolPda *pda, size_t count, ...)
 
 int solPda_append_symbol_to_group(SolPda *pda, void *s, SolPdaSymbol *sbl)
 {
+	if (pda == NULL) {
+		return -1;
+	}
 	if (solHash_get(pda->symbol_map, s)) {
 		return 0;
 	}
@@ -301,6 +331,9 @@ void solPdaState_free(SolPdaState *s)
 
 SolPdaField* solPdaField_new(SolPdaState *s, int flag)
 {
+	if (s == NULL) {
+		return NULL;
+	}
 	SolPdaField *f = sol_alloc(sizeof(SolPdaField));
 	if (f == NULL) {
 		return NULL;
