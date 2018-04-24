@@ -27,15 +27,18 @@ SolLispParser* solLispParser_new()
 	SolPdaState *s4 = solPda_generate_state(p->pda);
 	// add rules
 	solPda_gen_rules_table(p->pda);
-	solPda_add_rule(p->pda, s1, lc,    s2, NULL, SolPdaFieldFlag_push);
-	solPda_add_rule(p->pda, s2, NULL,  s1, NULL, 0);
-	solPda_add_rule(p->pda, s2, rc,    s2, lc,   SolPdaFieldFlag_pop);
+	solPda_add_rule(p->pda, s1, lc,    s2, NULL, SolPdaFieldFlag_stack_push);
+	solPda_add_rule(p->pda, s1, other, s3, NULL, 0);
+	solPda_add_rule(p->pda, s1, blank, s4, NULL, 0);
+	solPda_add_rule(p->pda, s2, NULL,  s1, NULL, SolPdaFieldFlag_stack_empty);
+	solPda_add_rule(p->pda, s2, lc,    s2, NULL,   SolPdaFieldFlag_stack_push);
+	solPda_add_rule(p->pda, s2, rc,    s2, lc,   SolPdaFieldFlag_stack_pop);
 	solPda_add_rule(p->pda, s2, other, s3, NULL, 0);
 	solPda_add_rule(p->pda, s2, blank, s4, NULL, 0);
 	solPda_add_rule(p->pda, s3, NULL,  s2, NULL, 0);
-	solPda_add_rule(p->pda, s3, other, s3, NULL, 0);
-	solPda_add_rule(p->pda, s4, blank, s4, NULL, 0);
+	solPda_add_rule(p->pda, s3, other, s3, NULL, 0);	
 	solPda_add_rule(p->pda, s4, NULL,  s2, NULL, 0);
+	solPda_add_rule(p->pda, s4, blank, s4, NULL, 0);
 	p->pda->cs = s1;
 	p->pda->as = s1;
 	return p;
