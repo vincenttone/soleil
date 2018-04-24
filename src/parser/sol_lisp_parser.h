@@ -18,10 +18,19 @@ typedef struct _SolLispParserSymbol {
 	char *buffer;
 } SolLispParserSymbol;
 
+typedef struct _SolLispParserAstNode {
+	size_t len;
+	char *val;
+	struct _SolLispParserAstNode *parent;
+	SolList *children;
+} SolLispParserAstNode;
+
 typedef struct _SolLispParser {
-	int flag;
+	int _c;
 	SolPda *pda;
 	SolLispParserSymbol *symbols;
+	SolLispParserAstNode *ast;
+	SolLispParserAstNode *can; // current ast node
 	size_t (*read_char)(char*, size_t);
 	enum SolLispParserSymbolVal (*get_symbol_val)(char*, size_t);
 	int (*block_begin)(struct _SolLispParser*, SolLispParserSymbol*);
@@ -33,6 +42,9 @@ typedef struct _SolLispParser {
 SolLispParser* solLispParser_new();
 int solLispParser_read(SolLispParser*, char*, size_t);
 void solLispParser_free(SolLispParser*);
+
+SolLispParserAstNode* solLispParserAstNode_new(char*, size_t, SolLispParserAstNode*);
+void solLispParserAstNode_free(SolLispParserAstNode*);
 
 size_t solLispParser_symbol_hash1(void*);
 size_t solLispParser_symbol_hash2(void*);

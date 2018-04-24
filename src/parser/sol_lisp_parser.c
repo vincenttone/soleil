@@ -41,6 +41,8 @@ SolLispParser* solLispParser_new()
 	solPda_add_rule(p->pda, s4, blank, s4, NULL, 0, &solLispParser_element_next);
 	p->pda->cs = s1;
 	p->pda->as = s1;
+	p->ast = solLispParserAstNode_new(NULL, 0, NULL);
+	p->can = p->ast;
 	return p;
 }
 
@@ -83,7 +85,49 @@ void solLispParser_free(SolLispParser *p)
 	if (p->pda) {
 		solPda_free(p->pda);
 	}
+	if (p->ast) {
+		solLispParserAstNode_free(p->ast);
+	}
 	sol_free(p);
+}
+
+SolLispParserAstNode* solLispParserAstNode_new(char *v, size_t s, SolLispParserAstNode *n)
+{
+	SolLispParserAstNode *n1 = sol_calloc(1, sizeof(SolLispParserAstNode));
+	if (n1 == NULL) {
+		return NULL;
+	}
+	n1->val = v;
+	n1->len = s;
+	if (n) {
+		if (n->children == NULL) {
+			n->children = solList_new();
+		}
+		if (n->children == NULL) {
+			goto failed;
+		}
+		if (solList_add(n->children, n1) == NULL) {
+			goto failed;
+		}
+		n1->parent = n;
+	}
+	return n1;
+ failed:
+	sol_free(n1);
+	return NULL;
+}
+
+void solLispParserAstNode_free(SolLispParserAstNode *n)
+{
+	if (n == NULL) return;
+	if (n->children && solList_len(n->children)) {
+		SolListNode *node = solList_head(n->children);
+		do {
+			solLispParserAstNode_free((SolLispParserAstNode*)(solListNode_val(node)));
+		} while((node = solListNode_next(node)));
+		solList_free(n->children);
+	}
+	sol_free(n);
 }
 
 size_t solLispParser_symbol_hash1(void *v)
