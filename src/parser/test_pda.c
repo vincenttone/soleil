@@ -44,7 +44,7 @@ int main()
 	char co = 'o';
 	char bb = ' ';
 	SolPda *pda = solPda_new();
-	pda->state_change_cb = &state_change;
+	//pda->state_change_cb = &state_change;
 	solHash_set_hash_func1(pda->symbol_map, &hash1);
 	solHash_set_hash_func2(pda->symbol_map, &hash2);
 	solHash_set_equal_func(pda->symbol_map, &hash_equal);
@@ -64,20 +64,20 @@ int main()
 
 	printf("Gen rules table ret %d\n", solPda_gen_rules_table(pda));
 	// rules
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_stack_push));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblb, s3, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblw, s4, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblcb, s4, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblmno, s4, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, NULL, SolPdaFieldFlag_stack_empty));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sbll, s2, NULL, SolPdaFieldFlag_stack_push));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, sbll, SolPdaFieldFlag_stack_pop));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblb, s3, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblw, s4, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblcb, s4, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblmno, s4, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, NULL, s2, NULL, 0));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, NULL, s2, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_stack_push, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblb, s3, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblw, s4, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblcb, s4, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblmno, s4, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, NULL, SolPdaFieldFlag_stack_empty, &state_change));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sbll, s2, NULL, SolPdaFieldFlag_stack_push, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, sbll, SolPdaFieldFlag_stack_pop, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblb, s3, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblw, s4, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblcb, s4, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblmno, s4, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, NULL, s2, NULL, 0, NULL));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, NULL, s2, NULL, 0, NULL));
 	/*
 	// basic rules
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_stack_push));

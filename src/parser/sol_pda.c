@@ -83,7 +83,14 @@ void solPda_init(SolPda *pda, SolPdaState *start, SolPdaState *accept)
 	while (solStack_pop(pda->stk)) {}
 }
 
-int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState *s2, SolPdaSymbol *symbol_pop, int act)
+int solPda_add_rule(SolPda *pda,
+					SolPdaState *s1,
+					SolPdaSymbol *sbl,
+					SolPdaState *s2,
+					SolPdaSymbol *symbol_pop,
+					int act,
+					int (*_callback)(SolPda*, SolPdaSymbol*, SolPdaState*, SolPdaState*, int, void*)
+					)
 {
 	if (pda == NULL || s1 == NULL || s2 == NULL) {
 		return -1;
@@ -107,7 +114,7 @@ int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState
 		) {
 			return -3;
 		}
-		SolPdaField *fs = solPdaField_new(s2, symbol_pop, act);
+		SolPdaField *fs = solPdaField_new(s2, symbol_pop, act, _callback);
 		if (solTableFixed_put(pda->rules, s1->state, sbl->c, fs)) {
 			return 1;
 		}
@@ -174,6 +181,11 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 			return 5;
 		}
 	}
+	if (fs->_callback) {
+		if ((*(fs->_callback))(pda, sbl, pda->cs, fs->state, pda->act, ext)) {
+			return 6;
+		}
+	}
 	pda->cs = fs->state;
 	if (solStack_empty(pda->stk)) {
 		sbl = solListNode_val(solList_head(pda->symbols));
@@ -183,6 +195,11 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 			if (pda->state_change_cb) {
 				if ((*(pda->state_change_cb))(pda, NULL, pda->cs, fs->state, pda->act, ext)) {
 					return 5;
+				}
+			}
+			if (fs->_callback) {
+				if ((*(fs->_callback))(pda, sbl, pda->cs, fs->state, pda->act, ext)) {
+					return 6;
 				}
 			}
 			pda->cs = fs->state;
@@ -371,7 +388,11 @@ void solPdaState_free(SolPdaState *s)
 	}
 }
 
-SolPdaField* solPdaField_new(SolPdaState *s, SolPdaSymbol *sbl, int flag)
+SolPdaField* solPdaField_new(SolPdaState *s,
+							 SolPdaSymbol *sbl,
+							 int flag,
+							 int (*_callback)(SolPda*, SolPdaSymbol*, SolPdaState*, SolPdaState*, int, void*)
+							 )
 {
 	if (s == NULL) {
 		return NULL;
@@ -385,6 +406,7 @@ SolPdaField* solPdaField_new(SolPdaState *s, SolPdaSymbol *sbl, int flag)
 	if (flag) {
 		f->symbol = sbl;
 	}
+	f->_callback = _callback;
 	return f;
 }
 

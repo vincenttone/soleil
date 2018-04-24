@@ -27,12 +27,6 @@ typedef struct _SolPdaSymbol {
 	size_t c;
 	int flag;
 } SolPdaSymbol;
-	
-typedef struct _SolPdaField {
-	SolPdaState *state;
-	SolPdaSymbol *symbol; // pop or push
-	int flag;
-} SolPdaField;
 
 typedef struct _SolPda {
 	SolPdaState *cs; // current state
@@ -48,6 +42,13 @@ typedef struct _SolPda {
 	int act; // pre action
 } SolPda;
 
+typedef struct _SolPdaField {
+	SolPdaState *state;
+	SolPdaSymbol *symbol; // pop or push
+	int (*_callback)(SolPda*, SolPdaSymbol*, SolPdaState*, SolPdaState*, int, void*);
+	int flag;
+} SolPdaField;
+
 SolPda* solPda_new();
 void solPda_free(SolPda*);
 int solPda_read(SolPda *, void*, void*);
@@ -58,7 +59,14 @@ SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *s
 int solPda_gen_rules_table(SolPda*);
 
 void solPda_init(SolPda*, SolPdaState*, SolPdaState*);
-int solPda_add_rule(SolPda*, SolPdaState*, SolPdaSymbol*, SolPdaState*, SolPdaSymbol*, int);
+int solPda_add_rule(SolPda*,
+					SolPdaState*,
+					SolPdaSymbol*,
+					SolPdaState*,
+					SolPdaSymbol*,
+					int,
+					int (*_callback)(SolPda*, SolPdaSymbol*, SolPdaState*, SolPdaState*, int, void*)
+					);
 
 SolPdaSymbol* solPda_register_symbol(SolPda*, void*);
 SolPdaSymbol* solPda_register_symbol_group(SolPda*, size_t, ...);
@@ -68,7 +76,7 @@ void solPdaSymbol_free(SolPdaSymbol*);
 SolPdaState* solPda_generate_state(SolPda*);
 void solPdaState_free(SolPdaState*);
 
-SolPdaField* solPdaField_new(SolPdaState*, SolPdaSymbol*, int);
+SolPdaField* solPdaField_new(SolPdaState*, SolPdaSymbol*, int, int (*_callback)(struct _SolPda*, SolPdaSymbol*, SolPdaState*, SolPdaState*, int, void*));
 void solPdaField_free(SolPdaField*);
 
 #endif
