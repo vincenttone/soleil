@@ -16,6 +16,23 @@ int hash_equal(void *v1, void *v2)
 	return (*(char*)v1) - (*(char*)v2);
 }
 
+int state_change(SolPda *pda, SolPdaSymbol *sbl, SolPdaState *s1, SolPdaState *s2, int flag, void *ext)
+{
+	printf("-> ");
+	if (flag & SolPdaFieldFlag_stack_empty) {
+		printf("Stack Empty, state: %zu --> %zu\n", s1->state, s2->state);
+		return 0;
+	}
+	printf("Read %c, state: %zu --> %zu\t", *(char*)(sbl->symbol), s1->state, s2->state);
+	if (flag & SolPdaFieldFlag_stack_push) {
+		printf("Stack Push");
+	} else if ((flag & SolPdaFieldFlag_stack_pop)) {
+		printf("Stack Pop");
+	}
+	printf("\n");
+	return 0;
+}
+
 int main()
 {
 	char l = '(';
@@ -27,6 +44,7 @@ int main()
 	char co = 'o';
 	char bb = ' ';
 	SolPda *pda = solPda_new();
+	pda->state_change_cb = &state_change;
 	solHash_set_hash_func1(pda->symbol_map, &hash1);
 	solHash_set_hash_func2(pda->symbol_map, &hash2);
 	solHash_set_equal_func(pda->symbol_map, &hash_equal);

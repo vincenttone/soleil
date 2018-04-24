@@ -170,7 +170,9 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 		}
 	}
 	if (pda->state_change_cb) {
-		(*(pda->state_change_cb))(pda, sbl, pda->cs, fs->state, pda->act, ext);
+		if ((*(pda->state_change_cb))(pda, sbl, pda->cs, fs->state, pda->act, ext)) {
+			return 5;
+		}
 	}
 	pda->cs = fs->state;
 	if (solStack_empty(pda->stk)) {
@@ -179,7 +181,9 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 		if (fs) {
 			pda->act = SolPdaFieldFlag_stack_empty;
 			if (pda->state_change_cb) {
-				(*(pda->state_change_cb))(pda, sbl, pda->cs, fs->state, pda->act, ext);
+				if ((*(pda->state_change_cb))(pda, NULL, pda->cs, fs->state, pda->act, ext)) {
+					return 5;
+				}
 			}
 			pda->cs = fs->state;
 		}
