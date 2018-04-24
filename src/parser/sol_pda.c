@@ -89,7 +89,7 @@ int solPda_add_rule(SolPda *pda,
 					SolPdaState *s2,
 					SolPdaSymbol *symbol_pop,
 					int act,
-					int (*_callback)(void*)
+					int (*_callback)(void*, void*)
 					)
 {
 	if (pda == NULL || s1 == NULL || s2 == NULL) {
@@ -182,7 +182,7 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 		}
 	}
 	if (fs->_callback) {
-		if ((*(fs->_callback))(ext)) {
+		if ((*(fs->_callback))(sbl->symbol, ext)) {
 			return 6;
 		}
 	}
@@ -198,7 +198,7 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 				}
 			}
 			if (fs->_callback) {
-				if ((*(fs->_callback))(ext)) {
+				if ((*(fs->_callback))(sbl->symbol, ext)) {
 					return 6;
 				}
 			}
@@ -391,7 +391,7 @@ void solPdaState_free(SolPdaState *s)
 SolPdaField* solPdaField_new(SolPdaState *s,
 							 SolPdaSymbol *sbl,
 							 int flag,
-							 int (*_callback)(void*)
+							 int (*_callback)(void*, void*)
 							 )
 {
 	if (s == NULL) {

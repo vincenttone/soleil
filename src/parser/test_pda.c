@@ -33,7 +33,7 @@ int state_change(SolPda *pda, SolPdaSymbol *sbl, SolPdaState *s1, SolPdaState *s
 	return 0;
 }
 
-int stack_empty(void *ext)
+int stack_empty(void *s, void *ext)
 {
 	printf("** stack empty **\n");
 	return 0;

@@ -45,7 +45,7 @@ typedef struct _SolPda {
 typedef struct _SolPdaField {
 	SolPdaState *state;
 	SolPdaSymbol *symbol; // pop or push
-	int (*_callback)(void*);
+	int (*_callback)(void*, void*);
 	int flag;
 } SolPdaField;
 
@@ -65,7 +65,7 @@ int solPda_add_rule(SolPda*,
 					SolPdaState*,
 					SolPdaSymbol*,
 					int,
-					int (*_callback)(void*)
+					int (*_callback)(void*, void*)
 					);
 
 SolPdaSymbol* solPda_register_symbol(SolPda*, void*);
@@ -76,7 +76,7 @@ void solPdaSymbol_free(SolPdaSymbol*);
 SolPdaState* solPda_generate_state(SolPda*);
 void solPdaState_free(SolPdaState*);
 
-SolPdaField* solPdaField_new(SolPdaState*, SolPdaSymbol*, int, int (*_callback)(void*));
+SolPdaField* solPdaField_new(SolPdaState*, SolPdaSymbol*, int, int (*_callback)(void*, void*));
 void solPdaField_free(SolPdaField*);
 
 #endif
