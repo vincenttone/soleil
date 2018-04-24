@@ -27,18 +27,18 @@ SolLispParser* solLispParser_new()
 	SolPdaState *s4 = solPda_generate_state(p->pda);
 	// add rules
 	solPda_gen_rules_table(p->pda);
-	solPda_add_rule(p->pda, s1, lc,    s2, NULL, SolPdaFieldFlag_stack_push);
-	solPda_add_rule(p->pda, s1, other, s3, NULL, 0);
-	solPda_add_rule(p->pda, s1, blank, s4, NULL, 0);
-	solPda_add_rule(p->pda, s2, NULL,  s1, NULL, SolPdaFieldFlag_stack_empty);
-	solPda_add_rule(p->pda, s2, lc,    s2, NULL,   SolPdaFieldFlag_stack_push);
-	solPda_add_rule(p->pda, s2, rc,    s2, lc,   SolPdaFieldFlag_stack_pop);
-	solPda_add_rule(p->pda, s2, other, s3, NULL, 0);
-	solPda_add_rule(p->pda, s2, blank, s4, NULL, 0);
-	solPda_add_rule(p->pda, s3, NULL,  s2, NULL, 0);
-	solPda_add_rule(p->pda, s3, other, s3, NULL, 0);	
-	solPda_add_rule(p->pda, s4, NULL,  s2, NULL, 0);
-	solPda_add_rule(p->pda, s4, blank, s4, NULL, 0);
+	solPda_add_rule(p->pda, s1, lc,    s2, NULL, SolPdaFieldFlag_stack_push, &solLispParser_block_begin);
+	solPda_add_rule(p->pda, s1, other, s3, NULL, 0, &solLispParser_element);
+	solPda_add_rule(p->pda, s1, blank, s4, NULL, 0, &solLispParser_element_next);
+	solPda_add_rule(p->pda, s2, NULL,  s1, NULL, SolPdaFieldFlag_stack_empty, NULL);
+	solPda_add_rule(p->pda, s2, lc,    s2, NULL, SolPdaFieldFlag_stack_push, &solLispParser_block_begin);
+	solPda_add_rule(p->pda, s2, rc,    s2, lc,   SolPdaFieldFlag_stack_pop,  &solLispParser_block_end);
+	solPda_add_rule(p->pda, s2, other, s3, NULL, 0, &solLispParser_element);
+	solPda_add_rule(p->pda, s2, blank, s4, NULL, 0, &solLispParser_element_next);
+	solPda_add_rule(p->pda, s3, NULL,  s2, NULL, 0, NULL);
+	solPda_add_rule(p->pda, s3, other, s3, NULL, 0, &solLispParser_element);	
+	solPda_add_rule(p->pda, s4, NULL,  s2, NULL, 0, NULL);
+	solPda_add_rule(p->pda, s4, blank, s4, NULL, 0, &solLispParser_element_next);
 	p->pda->cs = s1;
 	p->pda->as = s1;
 	return p;
@@ -63,7 +63,9 @@ int solLispParser_read(SolLispParser *p, char *buffer, size_t buffer_size)
 			return 2;
 		}
 		symbol = p->symbols + sv - 1;
-		if (solPda_read(p->pda, symbol)) {
+		symbol->buffer = current;
+		symbol->len = n;
+		if (solPda_read(p->pda, symbol, p)) {
 			return 3;
 		}
 		current += n;
@@ -97,4 +99,40 @@ size_t solLispParser_symbol_hash2(void *v)
 int solLispParser_symbol_hash_equal(void *v1, void *v2)
 {
 	return ((SolLispParserSymbol*)v1)->s - ((SolLispParserSymbol*)v2)->s;
+}
+
+int solLispParser_block_begin(void *s, void *ext)
+{
+	SolLispParser *p = ext;
+	if (p->block_begin) {
+		return (*(p->block_begin))(p, (SolLispParserSymbol*)s);
+	}
+	return 0;
+}
+
+int solLispParser_block_end(void *s, void *ext)
+{
+	SolLispParser *p = ext;
+	if (p->block_end) {
+		return (*(p->block_end))(p, (SolLispParserSymbol*)s);
+	}
+	return 0;
+}
+
+int solLispParser_element_next(void *s, void *ext)
+{
+	SolLispParser *p = ext;
+	if (p->element_next) {
+		return (*(p->element_next))(p, (SolLispParserSymbol*)s);
+	}
+	return 0;
+}
+
+int solLispParser_element(void *s, void *ext)
+{
+	SolLispParser *p = ext;
+	if (p->element) {
+		return (*(p->element))(p, (SolLispParserSymbol*)s);
+	}
+	return 0;
 }
