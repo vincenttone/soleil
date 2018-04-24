@@ -119,7 +119,7 @@ int solPda_add_rule(SolPda *pda, SolPdaState *s1, SolPdaSymbol *sbl, SolPdaState
 	return 0;
 }
 
-int solPda_read(SolPda *pda, void *s)
+int solPda_read(SolPda *pda, void *s, void *ext)
 {
 	if (pda == NULL || s == NULL) {
 		return -1;
@@ -128,7 +128,7 @@ int solPda_read(SolPda *pda, void *s)
 	if (symbol == NULL) {
 		return -2;
 	}
-	int read = solPda_read_symbol(pda, symbol);
+	int read = solPda_read_symbol(pda, symbol, ext);
 	if (read < 0) {
 		return -3;
 	} else if (read > 0) {
@@ -137,7 +137,7 @@ int solPda_read(SolPda *pda, void *s)
 	return 0;
 }
 
-int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl)
+int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 {
 	if (pda == NULL || sbl == NULL) {
 		return -1;
@@ -169,11 +169,18 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl)
 			return 4;
 		}
 	}
+	if (pda->state_change_cb) {
+		(*(pda->state_change_cb))(pda, sbl, pda->cs, fs->state, pda->act, ext);
+	}
 	pda->cs = fs->state;
 	if (solStack_empty(pda->stk)) {
 		sbl = solListNode_val(solList_head(pda->symbols));
 		fs = solTableFixed_get(pda->rules, pda->cs->state, sbl->c);
 		if (fs) {
+			pda->act = SolPdaFieldFlag_stack_empty;
+			if (pda->state_change_cb) {
+				(*(pda->state_change_cb))(pda, sbl, pda->cs, fs->state, pda->act, ext);
+			}
 			pda->cs = fs->state;
 		}
 	}

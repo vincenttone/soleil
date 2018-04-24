@@ -43,14 +43,15 @@ typedef struct _SolPda {
 	SolList *states; // states
 	SolList *symbols; // symbols
 	SolHash *symbol_map;
+	int (*state_change_cb)(struct _SolPda*, SolPdaSymbol*, SolPdaState*, SolPdaState*, int, void*);
 	size_t lc; // loop counter
 	int act; // pre action
 } SolPda;
 
 SolPda* solPda_new();
 void solPda_free(SolPda*);
-int solPda_read(SolPda *, void*);
-int solPda_read_symbol(SolPda*, SolPdaSymbol*);
+int solPda_read(SolPda *, void*, void*);
+int solPda_read_symbol(SolPda*, SolPdaSymbol*, void*);
 int solPda_is_accepting(SolPda*);
 int solPda_check_state_accepting(SolPda*, SolPdaState*);
 SolPdaField* solPda_free_moves_find(SolPda *pda, SolPdaState *s, SolPdaSymbol *sbl);

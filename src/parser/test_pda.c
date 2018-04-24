@@ -112,7 +112,7 @@ int main()
 
 	SolPdaSymbol* input[10] = {sbll, sblr, sbll, sbll, sblw, sblb, sblw, sblcb, sblr, sblr};
 	for (i = 0; i < 10; i++) {
-		if (solPda_read_symbol(pda, input[i]) == 0) {
+		if (solPda_read_symbol(pda, input[i], NULL) == 0) {
 			printf("Read symbol: [%c] ok.\t", *(char*)((input[i]))->symbol);
 		} else {
 			printf("Read symbol: [%c] failed!\n", *(char*)((input[i]))->symbol);
@@ -124,7 +124,7 @@ int main()
 	printf("Input: %s\n", input2);
 	int read;
 	for (i = 0; i < 15; i++) {
-		read = solPda_read(pda, input2 + i);
+		read = solPda_read(pda, input2 + i, NULL);
 		if (read == 0) {
 			printf("Read symbol: [%c] ok.\t", *(char*)(input2 + i));
 		} else {
