@@ -45,9 +45,25 @@ int main()
 	printf("Group symbol count %zu\n", solList_len((SolList*)(sblmno->symbol)));
 
 	printf("Gen rules table ret %d\n", solPda_gen_rules_table(pda));
+	// rules
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_stack_push));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblb, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblw, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblcb, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sblmno, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, NULL, SolPdaFieldFlag_stack_empty));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sbll, s2, NULL, SolPdaFieldFlag_stack_push));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, sbll, SolPdaFieldFlag_stack_pop));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblb, s3, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblw, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblcb, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblmno, s4, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, NULL, s2, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, NULL, s2, NULL, 0));
+	/*
 	// basic rules
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_push));
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, sbll, SolPdaFieldFlag_pop));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s1, sbll, s2, NULL, SolPdaFieldFlag_stack_push));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblr, s2, sbll, SolPdaFieldFlag_stack_pop));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblw, s3, NULL, 0));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblcb, s3, NULL, 0));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, sblmno, s3, NULL, 0));
@@ -57,9 +73,10 @@ int main()
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, sblmno, s3, NULL, 0));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, sblb, s4, NULL, 0));
 	// free moves
-	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, NULL, 0));
+	printf("Add rule ret %d\n", solPda_add_rule(pda, s2, NULL, s1, NULL, SolPdaFieldFlag_stack_empty));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s3, NULL, s2, NULL, 0));
 	printf("Add rule ret %d\n", solPda_add_rule(pda, s4, NULL, s2, NULL, 0));
+	*/
 
 	solPda_init(pda, s1, s1);
 	printf("Current state: %zu\tAccepting? %d\n", pda->cs->state, solPda_is_accepting(pda));
@@ -71,8 +88,10 @@ int main()
 	SolPdaSymbol *sx;
 	do {
 		sx = solListNode_val(node);
-		if (sx->flag) {
+		if (sx->flag & SOL_PDA_SYMBOL_FLAG_GROUP) {
 			printf("<<Grp>>\t");
+		} else if (sx->flag & SOL_PDA_SYMBOL_FLAG_VIRTUAL) {
+			printf("<<V>>\t");
 		} else {
 			printf("<<%c>>\t", *(char*)(sx->symbol));
 		}

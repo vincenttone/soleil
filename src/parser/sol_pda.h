@@ -8,12 +8,14 @@
 #include "sol_stack.h"
 #include "sol_hash.h"
 
-#define SolPdaFieldFlag_push   0x1
-#define SolPdaFieldFlag_pop    0x2
+#define SolPdaFieldFlag_stack_push   0x1
+#define SolPdaFieldFlag_stack_pop    0x2
+#define SolPdaFieldFlag_stack_empty  0x4
 
 #define SOL_PDA_MAX_LOOP_COUNT 2048
 
-#define SOL_PDA_SYMBOL_FLAG_GROUP 0x1
+#define SOL_PDA_SYMBOL_FLAG_GROUP   0x1
+#define SOL_PDA_SYMBOL_FLAG_VIRTUAL 0x2
 
 typedef struct _SolPdaState {
 	size_t state;
