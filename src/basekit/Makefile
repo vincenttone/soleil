@@ -16,16 +16,6 @@ sol_rb_tuple.o: sol_rb_tuple.c sol_rbtree.c sol_common.h sol_list.h
 sol_sparse_matrix.o: sol_sparse_matrix.c sol_common.h
 sol_table_fixed.o: sol_table_fixed.c sol_common.h
 
-test_hash: test_hash.c sol_hash.o Hash_fnv.c  Hash_murmur.c
-test_set: test_set.c sol_set.o sol_hash.o Hash_fnv.c  Hash_murmur.c
-test_dl_list: test_dl_list.c sol_dl_list.o
-test_list: test_list.c sol_list.o
-test_stack: test_stack.c sol_stack.o sol_dl_list.o
-test_rbtree: test_rbtree.c sol_rbtree.o sol_rbtree_iter.o sol_stack.o sol_dl_list.o
-test_sparse_matrix: test_sparse_matrix.c sol_sparse_matrix.o
-test_rb_tuple: test_rb_tuple.c sol_rb_tuple.o sol_rbtree.o sol_list.o
-test_table_fixed: test_table_fixed.c sol_table_fixed.o
-
 .PHONY: clean
 clean:
-	-rm -rf output *.o *.gch test_hash test_set test_dl_list test_stack test_list test_rbtree test_sparse_matrix test_rb_tuple test_table_fixed *.dSYM
+	-rm -rf output *.o *.gch *.dSYM
