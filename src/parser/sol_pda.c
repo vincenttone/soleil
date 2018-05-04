@@ -187,7 +187,7 @@ int solPda_read_symbol(SolPda *pda, SolPdaSymbol *sbl, void *ext)
 		}
 	}
 	pda->cs = fs->state;
-	if (solStack_empty(pda->stk)) {
+	if (solStack_is_empty(pda->stk)) {
 		sbl = solListNode_val(solList_head(pda->symbols));
 		fs = solTableFixed_get(pda->rules, pda->cs->state, sbl->c);
 		if (fs) {

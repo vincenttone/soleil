@@ -5,14 +5,26 @@
 #include "sol_common.h"
 #include "sol_dl_list.h"
 
-typedef SolDlList SolStack;
+typedef struct _SolStackNode {
+	void *val;
+	struct _SolStackNode *next;
+} SolStackNode;
 
-#define solStack_new() solDlList_new()
-#define solStack_free(s) solDlList_free(s)
-#define solStack_empty(s) (solDlList_len(s) == 0)
-#define solStack_size(s) solDlList_len(s)
-#define solStack_top_val(s) solDlListNode_val(solDlList_tail(s))
+typedef struct _SolStack {
+	size_t s;
+	SolStackNode *top;
+} SolStack;
+
+SolStack* solStack_new();
+void solStack_free(SolStack*);
 void* solStack_pop(SolStack*);
 int solStack_push(SolStack*, void*);
+void* solStack_top_val(SolStack*);
+
+SolStackNode* solStackNode_new(void *v, SolStackNode *next);
+void solStackNode_free(SolStackNode *n);
+
+#define solStack_is_empty(stk) (stk->s == 0)
+#define solStack_size(stk) (stk->s)
 
 #endif
