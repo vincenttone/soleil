@@ -1,5 +1,5 @@
-#ifndef SOL_BYTECODES
-#define SOL_BYTECODES 1
+#ifndef _SOL_BYTECODES_
+#define _SOL_BYTECODES_ 1
 
 enum SolByteCodes {
 	_illegal = -1,
