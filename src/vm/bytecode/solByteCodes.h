@@ -9,7 +9,6 @@ enum SolByteCodes {
 
 	_load,
 
-	// _store,
 	_store,
 
 	_push,
