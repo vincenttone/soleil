@@ -10,4 +10,6 @@ typedef struct _SolFrame_ {
 	SolStackGroup *groups;
 } SolFrame
 
+
+
 #endif
