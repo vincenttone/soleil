@@ -7,7 +7,7 @@ typedef struct _SolFrame_ {
 	SolLocals *_heap;
 	SolVMStack *_stack;
 	SolVM *vm;
-	SolFrame *pre;
+	struct _SolFrame_ *pre;
 } SolFrame
 
 int SolVMFrameNew(SolVM*);
