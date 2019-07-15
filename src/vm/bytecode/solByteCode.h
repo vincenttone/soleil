@@ -2,7 +2,6 @@
 #define _SOL_BYTECODES_ 1
 
 enum SolByteCode {
-	_breakpoint = -2,
 	_illegal = -1,
 	
 	_nop     = 0,
@@ -147,6 +146,9 @@ enum SolByteCode {
 	_dreturn,
 	_areturn,
 
+	_halt,
+
+	_breakpoint,
 	_number_of_opcodes,
 }
 
