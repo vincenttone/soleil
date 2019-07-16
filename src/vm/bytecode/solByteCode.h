@@ -2,154 +2,154 @@
 #define _SOL_BYTECODES_ 1
 
 enum SolByteCode {
-	_illegal = -1,
+	SOL_BC_ILLEGAL = -1,
 	
-	_nop     = 0,
+	SOL_BC_NOP     = 0,
 
 	// COMMAND FROM TO
 	// load immediate number into register
 	// const imm $reg
-	_iconst,
-	_lconst,
-	_fconst,
-	_dconst,
+	SOL_BC_ICONST,
+	SOL_BC_LCONST,
+	SOL_BC_FCONST,
+	SOL_BC_DCONST,
 	// load from local variable into register
 	// load addr $reg
-	_iload,
-	_lload,
-	_fload,
-	_dload,
+	SOL_BC_ILOAD,
+	SOL_BC_LLOAD,
+	SOL_BC_FLOAD,
+	SOL_BC_DLOAD,
 	// store from register into local variable
 	// store $reg addr
-	_istore,
-	_lstore,
-	_fstore,
-	_dstore,
+	SOL_BC_ISTORE,
+	SOL_BC_LSTORE,
+	SOL_BC_FSTORE,
+	SOL_BC_DSTORE,
 
 	// duplication
 	// dup reg1 reg2
-	_dup,
-	_swap,
-	_push,
-	_pop,
+	SOL_BC_DUP,
+	SOL_BC_SWAP,
+	SOL_BC_PUSH,
+	SOL_BC_POP,
 
 	// type convertion
-	_d2f,
-	_d2i,
-	_d2l,
+	SOL_BC_D2F,
+	SOL_BC_D2I,
+	SOL_BC_D2L,
 
-	_f2d,
-	_f2i,
-	_f2l,
+	SOL_BC_F2D,
+	SOL_BC_F2I,
+	SOL_BC_F2L,
 
-	_i2d,
-	_i2f,
-	_i2l,
+	SOL_BC_I2D,
+	SOL_BC_I2F,
+	SOL_BC_I2L,
 
-	_l2d,
-	_l2f,
-	_l2i,
+	SOL_BC_L2D,
+	SOL_BC_L2F,
+	SOL_BC_L2I,
 
 	// computation
-	_iadd,
-	_ladd,
-	_fadd,
-	_dadd,
+	SOL_BC_IADD,
+	SOL_BC_LADD,
+	SOL_BC_FADD,
+	SOL_BC_DADD,
 
-	_isub,
-	_lsub,
-	_fsub,
-	_dsub,
+	SOL_BC_ISUB,
+	SOL_BC_LSUB,
+	SOL_BC_FSUB,
+	SOL_BC_DSUB,
 
-	_imul,
-	_lmul,
-	_fmul,
-	_dmul,
+	SOL_BC_IMUL,
+	SOL_BC_LMUL,
+	SOL_BC_FMUL,
+	SOL_BC_DMUL,
 
-	_idiv,
-	_ldiv,
-	_fdiv,
-	_ddiv,
+	SOL_BC_IDIV,
+	SOL_BC_LDIV,
+	SOL_BC_FDIV,
+	SOL_BC_DDIV,
 	// remainder
-	// rem reg1 reg2 result_reg1 result_reg2
-	_irem,
-	_lrem,
-	_frem,
-	_drem,
+	SOL_BC// rem reg1 reg2 result_reg1 result_reg2
+	SOL_BC_IREM,
+	SOL_BC_LREM,
+	SOL_BC_FREM,
+	SOL_BC_DREM,
 	// negate
 	// neg from to
-	_ineg,
-	_lneg,
-	_fneg,
-	_dneg,
-	// and reg1 reg2 result_reg
-	_iand,
-	_land,
-	_fand,
-	_dand,
+	SOL_BC_INEG,
+	SOL_BC_LNEG,
+	SOL_BC_FNEG,
+	SOL_BC_DNEG,
+	SOL_BC// and reg1 reg2 result_reg
+	SOL_BC_IAND,
+	SOL_BC_LAND,
+	SOL_BC_FAND,
+	SOL_BC_DAND,
 	// or
-	_ior,
-	_lor,
-	_for,
-	_dor,
+	SOL_BC_IOR,
+	SOL_BC_LOR,
+	SOL_BC_FOR,
+	SOL_BC_DOR,
 
-	_ixor,
-	_lxor,
+	SOL_BC_IXOR,
+	SOL_BC_LXOR,
 
-	_ishl,
-	_lshl,
+	SOL_BC_ISHL,
+	SOL_BC_LSHL,
 
-	_iushl,
-	_lushl,
+	SOL_BC_IUSHL,
+	SOL_BC_LUSHL,
 
-	_ishr,
-	_lshr,
+	SOL_BC_ISHR,
+	SOL_BC_LSHR,
 
-	_iushr,
-	_lushr,
+	SOL_BC_IUSHR,
+	SOL_BC_LUSHR,
 	
 	// compare
 	// cmp reg1 reg2 result_reg
-	_ieq,
-	_leq,
-	_feq,
-	_deq,
+	SOL_BC_IEQ,
+	SOL_BC_LEQ,
+	SOL_BC_FEQ,
+	SOL_BC_DEQ,
 
-	_ineq,
-	_lneq,
-	_fneq,
-	_dneq,
+	SOL_BC_INEQ,
+	SOL_BC_LNEQ,
+	SOL_BC_FNEQ,
+	SOL_BC_DNEQ,
 
-	_ieqz,
-	_leqz,
-	_feqz,
-	_deqz,
+	SOL_BC_IEQZ,
+	SOL_BC_LEQZ,
+	SOL_BC_FEQZ,
+	SOL_BC_DEQZ,
 
-	_igt,
-	_lgt,
-	_fgt,
-	_dgt,
+	SOL_BC_IGT,
+	SOL_BC_LGT,
+	SOL_BC_FGT,
+	SOL_BC_DGT,
 
-	_ilt,
-	_llt,
-	_flt,
-	_dlt,
+	SOL_BC_ILT,
+	SOL_BC_LLT,
+	SOL_BC_FLT,
+	SOL_BC_DLT,
 
-	_jmp,
-	_jsr,
+	SOL_BC_JMP,
+	SOL_BC_JSR,
 
-	_invoke,
+	SOL_BC_INVOKE,
 
-	_ireturn,
-	_lreturn,
-	_freturn,
-	_dreturn,
-	_areturn,
+	SOL_BC_IRETURN,
+	SOL_BC_LRETURN,
+	SOL_BC_FRETURN,
+	SOL_BC_DRETURN,
+	SOL_BC_ARETURN,
 
-	_halt,
+	SOL_BC_HALT,
 
-	_breakpoint,
-	_number_of_opcodes,
+	SOL_BC_BREAKPOINT,
+	SOL_BC_NUMBER_OF_OPCODES,
 }
 
 #endif
